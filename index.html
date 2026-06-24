@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TOS Design</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0e0e10;
+      --surface: #18181b;
+      --border: #2a2a2f;
+      --accent: #7c6ef7;
+      --accent2: #4ecca3;
+      --text: #e8e8f0;
+      --muted: #6b6b7e;
+      --card-hover: #1e1e24;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* NAV */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 2.5rem;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(14,14,16,0.85);
+    }
+
+    .nav-logo {
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .nav-logo span { color: var(--accent); }
+
+    .nav-badge {
+      font-size: 0.7rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    /* HERO */
+    .hero {
+      padding: 5rem 2.5rem 3rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 300px;
+      background: radial-gradient(ellipse, rgba(124,110,247,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.2rem;
+    }
+
+    .hero-title {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      background: linear-gradient(135deg, #fff 40%, #7c6ef7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1rem;
+    }
+
+    .hero-sub {
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 480px;
+      margin: 0 auto 3rem;
+      line-height: 1.6;
+    }
+
+    /* GRID */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      padding: 0 2.5rem 5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.8rem;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--accent) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(124,110,247,0.4);
+      background: var(--card-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(124,110,247,0.12);
+    }
+
+    .card:hover::before { opacity: 0.04; }
+
+    .card-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 0.6rem;
+      background: rgba(124,110,247,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+    }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .card-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .card-arrow {
+      margin-top: auto;
+      font-size: 0.75rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      opacity: 0;
+      transform: translateX(-4px);
+      transition: all 0.2s ease;
+    }
+
+    .card:hover .card-arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* Featured card */
+    .card.featured {
+      grid-column: span 2;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 2rem;
+    }
+
+    .card.featured .card-content { flex: 1; }
+
+    .card.featured .card-preview {
+      width: 180px;
+      height: 120px;
+      border-radius: 0.6rem;
+      background: linear-gradient(135deg, rgba(124,110,247,0.15), rgba(78,204,163,0.1));
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+
+    /* Tags */
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.65rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      background: rgba(124,110,247,0.1);
+      color: var(--accent);
+      border: 1px solid rgba(124,110,247,0.2);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      width: fit-content;
+    }
+
+    .tag.new { background: rgba(78,204,163,0.1); color: var(--accent2); border-color: rgba(78,204,163,0.2); }
+
+    @media (max-width: 680px) {
+      .card.featured { grid-column: span 1; flex-direction: column; }
+      .card.featured .card-preview { width: 100%; }
+      nav { padding: 1rem 1.2rem; }
+      .grid { padding: 0 1.2rem 3rem; }
+      .hero { padding: 3rem 1.2rem 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-logo">TOS<span>.</span>design</div>
+    <div class="nav-badge">BETA</div>
+  </nav>
+
+  <div class="hero">
+    <p class="hero-eyebrow">Design Tools</p>
+    <h1 class="hero-title">Pick your tool</h1>
+    <p class="hero-sub">A collection of interactive design utilities. Choose a category to get started.</p>
+  </div>
+
+  <div class="grid">
+
+    <a href="desktop-card/index.html" class="card featured">
+      <div class="card-content">
+        <div class="tag new">✦ New</div>
+        <div style="height:0.6rem"></div>
+        <div class="card-icon">🃏</div>
+        <div class="card-title">桌面卡片</div>
+        <div class="card-desc">通过对话式交互生成自定义桌面卡片组件，实时预览效果。</div>
+        <div class="card-arrow">开始使用 →</div>
+      </div>
+      <div class="card-preview">🃏</div>
+    </a>
+
+    <a href="#" class="card" onclick="soon(event)">
+      <div class="card-icon">🔍</div>
+      <div class="card-title">全局搜索</div>
+      <div class="card-desc">设计可嵌入任意产品的全局搜索体验。</div>
+      <div class="tag">Coming soon</div>
+    </a>
+
+    <a href="#" class="card" onclick="soon(event)">
+      <div class="card-icon">🌊</div>
+      <div class="card-title">桌面景深</div>
+      <div class="card-desc">桌面背景景深效果设计与调参工具。</div>
+      <div class="tag">Coming soon</div>
+    </a>
+
+    <a href="#" class="card" onclick="soon(event)">
+      <div class="card-icon">🔤</div>
+      <div class="card-title">AZ</div>
+      <div class="card-desc">字体与排版探索工具，从 A 到 Z 的设计细节。</div>
+      <div class="tag">Coming soon</div>
+    </a>
+
+    <a href="#" class="card" onclick="soon(event)">
+      <div class="card-icon">◀</div>
+      <div class="card-title">侧边栏</div>
+      <div class="card-desc">侧边导航栏交互设计与动效调试器。</div>
+      <div class="tag">Coming soon</div>
+    </a>
+
+    <a href="#" class="card" onclick="soon(event)">
+      <div class="card-icon">🤖</div>
+      <div class="card-title">AImate</div>
+      <div class="card-desc">AI 辅助界面设计，智能生成组件与布局。</div>
+      <div class="tag">Coming soon</div>
+    </a>
+
+    <a href="#" class="card" onclick="soon(event)">
+      <div class="card-icon">❤️</div>
+      <div class="card-title">Myhealth</div>
+      <div class="card-desc">健康数据可视化界面设计工具。</div>
+      <div class="tag">Coming soon</div>
+    </a>
+
+  </div>
+
+  <script>
+    function soon(e) {
+      e.preventDefault();
+      const el = e.currentTarget;
+      el.style.borderColor = 'rgba(124,110,247,0.5)';
+      setTimeout(() => el.style.borderColor = '', 600);
+    }
+  </script>
+
+</body>
+</html>
