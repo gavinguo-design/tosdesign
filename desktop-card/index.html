@@ -163,99 +163,204 @@
       padding: 2rem;
     }
 
-    /* THE CARD PREVIEW */
+    /* THE CARD PREVIEW — 17.0 规范 138×138 */
     .card-preview-wrapper {
-      width: 320px;
       flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
     }
 
-    .desktop-card {
-      background: linear-gradient(135deg, #1c1c28 0%, #16161f 100%);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 1.2rem;
-      padding: 1.4rem;
-      box-shadow:
-        0 0 0 1px rgba(124,110,247,0.1),
-        0 20px 60px rgba(0,0,0,0.5),
-        0 4px 16px rgba(124,110,247,0.08);
+    /* 1x 实际尺寸 */
+    .tos-card {
+      width: 138px;
+      height: 138px;
+      border-radius: 20px;
+      background: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.1);
+      flex-shrink: 0;
       transition: all 0.3s ease;
     }
 
-    .dc-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1rem;
+    /* 2x 放大预览 */
+    .tos-card-2x {
+      width: 276px;
+      height: 276px;
+      border-radius: 40px;
+      background: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25), 0 4px 16px rgba(0,0,0,0.12);
+      flex-shrink: 0;
+      transition: all 0.3s ease;
     }
 
-    .dc-icon {
+    .tos-card-scale { transform-origin: top left; }
+
+    .card-scale-label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* Card inner content — positioned absolutely per spec */
+    .tos-card-inner {
+      position: absolute;
+      inset: 0;
+    }
+
+    /* 双文本 layout */
+    .tos-title {
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      width: 110px;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.2;
+      color: rgba(0,0,0,0.9);
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .tos-subtitle {
+      position: absolute;
+      left: 14px;
+      width: 110px;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 135%;
+      color: rgba(0,0,0,0.6);
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    /* 三文本 layout */
+    .tos-header {
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      width: 110px;
+      height: 14px;
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(0,0,0,0.9);
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .tos-label {
+      position: absolute;
+      left: 14px;
+      top: 30px;
+      width: 110px;
+      height: 24px;
+      font-size: 20px;
+      font-weight: 600;
+      color: rgba(0,0,0,0.9);
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .tos-subtext {
+      position: absolute;
+      left: 14px;
+      width: 110px;
+      height: 12px;
+      font-size: 10px;
+      font-weight: 500;
+      color: rgba(0,0,0,0.6);
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    /* 大字体 layout */
+    .tos-big-header {
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      width: 110px;
+      height: 14px;
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(0,0,0,0.9);
+    }
+
+    .tos-big-data {
+      position: absolute;
+      left: 14px;
+      top: 28px;
+      width: 110px;
+      height: 48px;
+      font-size: 40px;
+      font-weight: 500;
+      color: rgba(0,0,0,0.9);
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .tos-big-unit {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(0,0,0,0.9);
+      align-self: flex-end;
+      padding-bottom: 6px;
+    }
+
+    /* 装饰图标（右下角） */
+    .tos-deco {
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
       width: 36px;
       height: 36px;
-      border-radius: 0.6rem;
-      background: linear-gradient(135deg, var(--accent), #5b4fd4);
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1rem;
+      font-size: 20px;
+      opacity: 0.15;
     }
 
-    .dc-menu {
-      font-size: 1rem;
-      color: var(--muted);
-      cursor: pointer;
-    }
-
-    .dc-title {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--muted);
-      margin-bottom: 0.3rem;
-    }
-
-    .dc-value {
-      font-size: 2rem;
-      font-weight: 700;
-      letter-spacing: -0.04em;
-      line-height: 1;
-      margin-bottom: 0.8rem;
-    }
-
-    .dc-chart {
-      height: 48px;
-      display: flex;
-      align-items: flex-end;
-      gap: 3px;
-      margin-bottom: 0.8rem;
-    }
-
-    .dc-bar {
-      flex: 1;
-      border-radius: 2px 2px 0 0;
-      background: rgba(124,110,247,0.25);
-      transition: height 0.4s ease, background 0.3s;
-    }
-
-    .dc-bar.active { background: var(--accent); }
-
-    .dc-footer {
+    /* 按钮 short */
+    .tos-btn {
+      position: absolute;
+      left: 14px;
+      bottom: 14px;
+      width: 74px;
+      height: 30px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.08);
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(0,0,0,0.8);
     }
 
-    .dc-badge {
-      font-size: 0.7rem;
-      padding: 0.2rem 0.5rem;
-      border-radius: 999px;
-      background: rgba(78,204,163,0.12);
-      color: var(--accent2);
+    /* 暗色卡片 */
+    .tos-card-dark, .tos-card-2x.dark {
+      background: #1c1c1e;
     }
-
-    .dc-date {
-      font-size: 0.7rem;
-      color: var(--muted);
-    }
+    .tos-card-dark .tos-title,
+    .tos-card-dark .tos-big-data,
+    .tos-card-dark .tos-header,
+    .tos-card-dark .tos-label,
+    .tos-card-dark .tos-big-header { color: rgba(255,255,255,0.9); }
+    .tos-card-dark .tos-subtitle,
+    .tos-card-dark .tos-subtext { color: rgba(255,255,255,0.6); }
+    .tos-card-dark .tos-btn { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
 
     /* RIGHT: CHAT */
     .chat-panel {
@@ -468,25 +573,24 @@
       </div>
       <div class="preview-canvas">
         <div class="card-preview-wrapper">
-          <div class="desktop-card" id="previewCard">
-            <div class="dc-header">
-              <div class="dc-icon" id="cardIcon">📊</div>
-              <div class="dc-menu">···</div>
+          <!-- 2x 放大版（主预览） -->
+          <div class="card-scale-label">2× 预览</div>
+          <div class="tos-card-2x" id="previewCard2x">
+            <div class="tos-card-inner" id="cardInner2x">
+              <!-- 双文本 layout（默认） -->
+              <div class="tos-title" id="cardTitle2x" style="font-size:32px;top:28px;left:28px;width:220px;">今日数据</div>
+              <div class="tos-subtitle" id="cardSubtitle2x" style="font-size:24px;top:72px;left:28px;width:220px;">2,847 · 较昨日 ↑12.4%</div>
+              <div style="position:absolute;right:28px;bottom:28px;font-size:40px;opacity:0.12" id="cardDeco2x">📊</div>
             </div>
-            <div class="dc-title" id="cardTitle">今日数据</div>
-            <div class="dc-value" id="cardValue">2,847</div>
-            <div class="dc-chart" id="cardChart">
-              <div class="dc-bar" style="height:30%"></div>
-              <div class="dc-bar" style="height:55%"></div>
-              <div class="dc-bar" style="height:40%"></div>
-              <div class="dc-bar" style="height:70%"></div>
-              <div class="dc-bar" style="height:60%"></div>
-              <div class="dc-bar active" style="height:85%"></div>
-              <div class="dc-bar" style="height:45%"></div>
-            </div>
-            <div class="dc-footer">
-              <div class="dc-badge" id="cardBadge">↑ 12.4%</div>
-              <div class="dc-date" id="cardDate">Jun 24, 2026</div>
+          </div>
+
+          <!-- 1x 实际尺寸 -->
+          <div class="card-scale-label">1× 实际尺寸</div>
+          <div class="tos-card" id="previewCard">
+            <div class="tos-card-inner" id="cardInner">
+              <div class="tos-title" id="cardTitle">今日数据</div>
+              <div class="tos-subtitle" id="cardSubtitle" style="top:38px;">2,847 · 较昨日 ↑12.4%</div>
+              <div style="position:absolute;right:14px;bottom:14px;font-size:20px;opacity:0.12" id="cardDeco">📊</div>
             </div>
           </div>
         </div>
@@ -564,20 +668,183 @@
       }
     };
 
-    function applyPreset(preset) {
-      document.getElementById('cardIcon').textContent = preset.icon;
-      document.getElementById('cardTitle').textContent = preset.title;
-      document.getElementById('cardValue').textContent = preset.value;
-      document.getElementById('cardBadge').textContent = preset.badge;
-      document.getElementById('cardBadge').style.color = preset.color;
-      document.getElementById('cardDate').textContent = new Date().toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'});
+    // 17.0 规范 renderCard
+    function renderCard(data, scale) {
+      // scale=1 → 138px, scale=2 → 276px
+      const s = scale;
+      const layout = data.layout || 'dual'; // single | dual | triple | big
+      const color = data.color || '#000';
+      const dark = data.dark || false;
+      const icon = data.icon || '';
 
-      const bars = document.getElementById('cardChart').children;
-      preset.bars.forEach((h, i) => {
-        bars[i].style.height = h + '%';
-        bars[i].style.background = i === preset.bars.indexOf(Math.max(...preset.bars))
-          ? preset.color : `${preset.color}40`;
-      });
+      const inner = document.getElementById(scale === 2 ? 'cardInner2x' : 'cardInner');
+      const card = document.getElementById(scale === 2 ? 'previewCard2x' : 'previewCard');
+      if (!inner || !card) return;
+
+      card.style.background = dark ? '#1c1c1e' : (data.bg || '#fff');
+      inner.innerHTML = '';
+
+      const px = v => (v * s) + 'px';
+      const mkEl = (tag, styles, text) => {
+        const el = document.createElement(tag);
+        Object.assign(el.style, styles);
+        if (text !== undefined) el.textContent = text;
+        return el;
+      };
+
+      if (layout === 'single') {
+        // 单文本：一段文字，可对齐顶部或底部
+        const el = mkEl('div', {
+          position: 'absolute', left: px(14), top: data.alignBottom ? px(105) : px(14),
+          width: px(110), fontSize: px(16), fontWeight: '600', lineHeight: '1.2',
+          color: dark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
+          overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: '4', WebkitBoxOrient: 'vertical'
+        }, data.title);
+        inner.appendChild(el);
+        // 装饰图标
+        if (icon) {
+          const deco = mkEl('div', {
+            position: 'absolute', right: px(14), bottom: px(14),
+            width: px(36), height: px(36), borderRadius: px(10),
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: px(20), opacity: '0.15'
+          }, icon);
+          inner.appendChild(deco);
+        }
+
+      } else if (layout === 'dual') {
+        // 双文本：title + subtitle
+        const titleEl = mkEl('div', {
+          position: 'absolute', left: px(14), top: px(14),
+          width: px(110), fontSize: px(16), fontWeight: '600', lineHeight: '1.25',
+          color: dark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
+          overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical'
+        }, data.title);
+        inner.appendChild(titleEl);
+
+        // subtitle y = title bottom + 2
+        const titleH = data.title && data.title.length > 12 ? 38 : 23;
+        const subY = 14 + titleH + 2;
+        const subEl = mkEl('div', {
+          position: 'absolute', left: px(14), top: px(subY),
+          width: px(110), fontSize: px(12), fontWeight: '500', lineHeight: '135%',
+          color: dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
+          overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical'
+        }, data.subtitle || '');
+        inner.appendChild(subEl);
+
+        // 装饰图标
+        if (icon) {
+          const deco = mkEl('div', {
+            position: 'absolute', right: px(14), bottom: px(14),
+            fontSize: px(s === 2 ? 36 : 20), opacity: '0.12'
+          }, icon);
+          inner.appendChild(deco);
+        }
+
+        // 按钮（可选）
+        if (data.action) {
+          const btn = mkEl('div', {
+            position: 'absolute', left: px(14), bottom: px(14),
+            width: px(74), height: px(30), borderRadius: '999px',
+            background: dark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: px(12), fontWeight: '600',
+            color: dark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)'
+          }, data.action);
+          inner.appendChild(btn);
+        }
+
+      } else if (layout === 'triple') {
+        // 三文本：header + label + subtext
+        const headerEl = mkEl('div', {
+          position: 'absolute', left: px(14), top: px(14),
+          width: px(110), height: px(14), fontSize: px(12), fontWeight: '500',
+          color: dark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
+          overflow: 'hidden', whiteSpace: 'nowrap'
+        }, data.header || data.title);
+        inner.appendChild(headerEl);
+
+        const labelEl = mkEl('div', {
+          position: 'absolute', left: px(14), top: px(30),
+          width: px(110), height: px(24), fontSize: px(20), fontWeight: '600',
+          color: dark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
+          overflow: 'hidden', whiteSpace: 'nowrap'
+        }, data.value || '');
+        inner.appendChild(labelEl);
+
+        const subtextEl = mkEl('div', {
+          position: 'absolute', left: px(14), top: px(56),
+          width: px(110), height: px(12), fontSize: px(10), fontWeight: '500',
+          color: dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
+          overflow: 'hidden', whiteSpace: 'nowrap'
+        }, data.subtitle || '');
+        inner.appendChild(subtextEl);
+
+        if (icon) {
+          const deco = mkEl('div', {
+            position: 'absolute', right: px(14), bottom: px(14),
+            fontSize: px(s === 2 ? 36 : 20), opacity: '0.12'
+          }, icon);
+          inner.appendChild(deco);
+        }
+
+      } else if (layout === 'big') {
+        // 大字体文本
+        const headerEl = mkEl('div', {
+          position: 'absolute', left: px(14), top: px(14),
+          width: px(110), height: px(14), fontSize: px(12), fontWeight: '500',
+          color: dark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)'
+        }, data.header || data.title);
+        inner.appendChild(headerEl);
+
+        const dataWrap = mkEl('div', {
+          position: 'absolute', left: px(14), top: px(28),
+          width: px(110), height: px(48),
+          display: 'flex', alignItems: 'flex-end', gap: px(2)
+        });
+        const dataEl = mkEl('span', {
+          fontSize: px(40), fontWeight: '500', lineHeight: '1',
+          color: data.accentColor || (dark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)')
+        }, data.value || '');
+        dataWrap.appendChild(dataEl);
+        if (data.unit) {
+          const unitEl = mkEl('span', {
+            fontSize: px(12), fontWeight: '600', paddingBottom: px(6),
+            color: dark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)'
+          }, data.unit);
+          dataWrap.appendChild(unitEl);
+        }
+        inner.appendChild(dataWrap);
+
+        if (data.subtitle) {
+          const sub1 = mkEl('div', {
+            position: 'absolute', left: px(14), top: px(98),
+            width: px(110), height: px(12), fontSize: px(10), fontWeight: '500',
+            color: dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', overflow: 'hidden', whiteSpace: 'nowrap'
+          }, data.subtitle);
+          inner.appendChild(sub1);
+        }
+        if (data.subtitle2) {
+          const sub2 = mkEl('div', {
+            position: 'absolute', left: px(14), top: px(112),
+            width: px(110), height: px(12), fontSize: px(10), fontWeight: '500',
+            color: dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', overflow: 'hidden', whiteSpace: 'nowrap'
+          }, data.subtitle2);
+          inner.appendChild(sub2);
+        }
+      }
+
+      // 颜色 accent 应用到关键数据
+      if (data.accentColor) {
+        const valueEls = inner.querySelectorAll('.tos-label, .tos-big-data');
+        valueEls.forEach(el => el.style.color = data.accentColor);
+      }
+    }
+
+    function applyPreset(data) {
+      renderCard(data, 1);
+      renderCard(data, 2);
     }
 
     function addMsg(text, type) {
