@@ -663,183 +663,127 @@
       }
     };
 
-    // 17.0 规范 renderCard
-    function renderCard(data, scale) {
-      // scale=1 → 138px, scale=2 → 276px
-      const s = scale;
-      const layout = data.layout || 'dual'; // single | dual | triple | big
-      const color = data.color || '#000';
+    // 17.0 规范 renderCard — 严格 138×138px，用 CSS scale 放大2x
+    function buildCardInner(data) {
+      const layout = data.layout || 'dual';
       const dark = data.dark || false;
       const icon = data.icon || '';
+      const tc = dark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)';
+      const sc = dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)';
 
-      const inner = document.getElementById(scale === 2 ? 'cardInner2x' : 'cardInner');
-      const card = document.getElementById(scale === 2 ? 'previewCard2x' : 'previewCard');
-      if (!inner || !card) return;
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'position:absolute;inset:0;';
 
-      card.style.background = dark ? '#1c1c1e' : (data.bg || '#fff');
-      inner.innerHTML = '';
-
-      const px = v => (v * s) + 'px';
-      const mkEl = (tag, styles, text) => {
-        const el = document.createElement(tag);
-        Object.assign(el.style, styles);
+      const mk = (styles, text) => {
+        const el = document.createElement('div');
+        el.style.cssText = styles;
         if (text !== undefined) el.textContent = text;
         return el;
       };
 
       if (layout === 'single') {
-        // 单文本：一段文字，可对齐顶部或底部
-        const el = mkEl('div', {
-          position: 'absolute', left: px(14), top: data.alignBottom ? px(105) : px(14),
-          width: px(110), fontSize: px(16), fontWeight: '600', lineHeight: '1.2',
-          color: dark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
-          overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: '4', WebkitBoxOrient: 'vertical'
-        }, data.title);
-        inner.appendChild(el);
-        // 装饰图标
-        if (icon) {
-          const deco = mkEl('div', {
-            position: 'absolute', right: px(14), bottom: px(14),
-            width: px(36), height: px(36), borderRadius: px(10),
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: px(20), opacity: '0.15'
-          }, icon);
-          inner.appendChild(deco);
-        }
+        wrap.appendChild(mk(
+          `position:absolute;left:14px;top:${data.alignBottom?'105px':'14px'};width:110px;` +
+          `font-size:16px;font-weight:600;line-height:1.2;color:${tc};` +
+          `overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;`,
+          data.title));
 
       } else if (layout === 'dual') {
-        // 双文本：title + subtitle
-        const titleEl = mkEl('div', {
-          position: 'absolute', left: px(14), top: px(14),
-          width: px(110), fontSize: px(16), fontWeight: '600', lineHeight: '1.25',
-          color: dark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
-          overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical'
-        }, data.title);
-        inner.appendChild(titleEl);
-
-        // subtitle y = title bottom + 2
-        const titleH = data.title && data.title.length > 12 ? 38 : 23;
-        const subY = 14 + titleH + 2;
-        const subEl = mkEl('div', {
-          position: 'absolute', left: px(14), top: px(subY),
-          width: px(110), fontSize: px(12), fontWeight: '500', lineHeight: '135%',
-          color: dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
-          overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical'
-        }, data.subtitle || '');
-        inner.appendChild(subEl);
-
-        // 装饰图标
-        if (icon) {
-          const deco = mkEl('div', {
-            position: 'absolute', right: px(14), bottom: px(14),
-            fontSize: px(s === 2 ? 36 : 20), opacity: '0.12'
-          }, icon);
-          inner.appendChild(deco);
-        }
-
-        // 按钮（可选）
-        if (data.action) {
-          const btn = mkEl('div', {
-            position: 'absolute', left: px(14), bottom: px(14),
-            width: px(74), height: px(30), borderRadius: '999px',
-            background: dark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: px(12), fontWeight: '600',
-            color: dark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)'
-          }, data.action);
-          inner.appendChild(btn);
-        }
+        wrap.appendChild(mk(
+          `position:absolute;left:14px;top:14px;width:110px;` +
+          `font-size:16px;font-weight:600;line-height:1.25;color:${tc};` +
+          `overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;`,
+          data.title));
+        wrap.appendChild(mk(
+          `position:absolute;left:14px;top:57px;width:110px;` +
+          `font-size:12px;font-weight:500;line-height:135%;color:${sc};` +
+          `overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;`,
+          data.subtitle || ''));
+        if (data.action) wrap.appendChild(mk(
+          `position:absolute;left:14px;bottom:14px;width:74px;height:30px;border-radius:999px;` +
+          `background:${dark?'rgba(255,255,255,0.15)':'rgba(0,0,0,0.08)'};` +
+          `display:flex;align-items:center;justify-content:center;` +
+          `font-size:12px;font-weight:600;color:${dark?'rgba(255,255,255,0.9)':'rgba(0,0,0,0.8)'};`,
+          data.action));
 
       } else if (layout === 'triple') {
-        // 三文本：header + label + subtext
-        const headerEl = mkEl('div', {
-          position: 'absolute', left: px(14), top: px(14),
-          width: px(110), height: px(14), fontSize: px(12), fontWeight: '500',
-          color: dark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
-          overflow: 'hidden', whiteSpace: 'nowrap'
-        }, data.header || data.title);
-        inner.appendChild(headerEl);
-
-        const labelEl = mkEl('div', {
-          position: 'absolute', left: px(14), top: px(30),
-          width: px(110), height: px(24), fontSize: px(20), fontWeight: '600',
-          color: dark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
-          overflow: 'hidden', whiteSpace: 'nowrap'
-        }, data.value || '');
-        inner.appendChild(labelEl);
-
-        const subtextEl = mkEl('div', {
-          position: 'absolute', left: px(14), top: px(56),
-          width: px(110), height: px(12), fontSize: px(10), fontWeight: '500',
-          color: dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
-          overflow: 'hidden', whiteSpace: 'nowrap'
-        }, data.subtitle || '');
-        inner.appendChild(subtextEl);
-
-        if (icon) {
-          const deco = mkEl('div', {
-            position: 'absolute', right: px(14), bottom: px(14),
-            fontSize: px(s === 2 ? 36 : 20), opacity: '0.12'
-          }, icon);
-          inner.appendChild(deco);
-        }
+        wrap.appendChild(mk(
+          `position:absolute;left:14px;top:14px;width:110px;height:14px;` +
+          `font-size:12px;font-weight:500;color:${tc};overflow:hidden;white-space:nowrap;`,
+          data.header || data.title));
+        wrap.appendChild(mk(
+          `position:absolute;left:14px;top:30px;width:110px;height:24px;` +
+          `font-size:20px;font-weight:600;color:${data.accentColor||tc};overflow:hidden;white-space:nowrap;`,
+          data.value || ''));
+        wrap.appendChild(mk(
+          `position:absolute;left:14px;top:56px;width:110px;height:12px;` +
+          `font-size:10px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;`,
+          data.subtitle || ''));
 
       } else if (layout === 'big') {
-        // 大字体文本
-        const headerEl = mkEl('div', {
-          position: 'absolute', left: px(14), top: px(14),
-          width: px(110), height: px(14), fontSize: px(12), fontWeight: '500',
-          color: dark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)'
-        }, data.header || data.title);
-        inner.appendChild(headerEl);
-
-        const dataWrap = mkEl('div', {
-          position: 'absolute', left: px(14), top: px(28),
-          width: px(110), height: px(48),
-          display: 'flex', alignItems: 'flex-end', gap: px(2)
-        });
-        const dataEl = mkEl('span', {
-          fontSize: px(40), fontWeight: '500', lineHeight: '1',
-          color: data.accentColor || (dark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)')
-        }, data.value || '');
-        dataWrap.appendChild(dataEl);
+        wrap.appendChild(mk(
+          `position:absolute;left:14px;top:14px;width:110px;height:14px;` +
+          `font-size:12px;font-weight:500;color:${tc};`,
+          data.header || data.title));
+        const dw = document.createElement('div');
+        dw.style.cssText = `position:absolute;left:14px;top:28px;width:110px;height:48px;display:flex;align-items:flex-end;gap:2px;`;
+        const de = document.createElement('span');
+        de.style.cssText = `font-size:40px;font-weight:500;line-height:1;color:${data.accentColor||tc};`;
+        de.textContent = data.value || '';
+        dw.appendChild(de);
         if (data.unit) {
-          const unitEl = mkEl('span', {
-            fontSize: px(12), fontWeight: '600', paddingBottom: px(6),
-            color: dark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)'
-          }, data.unit);
-          dataWrap.appendChild(unitEl);
+          const ue = document.createElement('span');
+          ue.style.cssText = `font-size:12px;font-weight:600;padding-bottom:6px;color:${tc};`;
+          ue.textContent = data.unit;
+          dw.appendChild(ue);
         }
-        inner.appendChild(dataWrap);
-
-        if (data.subtitle) {
-          const sub1 = mkEl('div', {
-            position: 'absolute', left: px(14), top: px(98),
-            width: px(110), height: px(12), fontSize: px(10), fontWeight: '500',
-            color: dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', overflow: 'hidden', whiteSpace: 'nowrap'
-          }, data.subtitle);
-          inner.appendChild(sub1);
-        }
-        if (data.subtitle2) {
-          const sub2 = mkEl('div', {
-            position: 'absolute', left: px(14), top: px(112),
-            width: px(110), height: px(12), fontSize: px(10), fontWeight: '500',
-            color: dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', overflow: 'hidden', whiteSpace: 'nowrap'
-          }, data.subtitle2);
-          inner.appendChild(sub2);
-        }
+        wrap.appendChild(dw);
+        if (data.subtitle) wrap.appendChild(mk(
+          `position:absolute;left:14px;top:98px;width:110px;height:12px;` +
+          `font-size:10px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;`,
+          data.subtitle));
+        if (data.subtitle2) wrap.appendChild(mk(
+          `position:absolute;left:14px;top:112px;width:110px;height:12px;` +
+          `font-size:10px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;`,
+          data.subtitle2));
       }
 
-      // 颜色 accent 应用到关键数据
-      if (data.accentColor) {
-        const valueEls = inner.querySelectorAll('.tos-label, .tos-big-data');
-        valueEls.forEach(el => el.style.color = data.accentColor);
+      // 装饰 emoji 右下角
+      if (icon) {
+        const deco = document.createElement('div');
+        deco.style.cssText = `position:absolute;right:14px;bottom:14px;font-size:24px;opacity:0.12;line-height:1;`;
+        deco.textContent = icon;
+        wrap.appendChild(deco);
       }
+
+      return wrap;
     }
 
     function applyPreset(data) {
-      renderCard(data, 1);
-      renderCard(data, 2);
+      const dark = data.dark || false;
+      const bg = dark ? '#1c1c1e' : (data.bg || '#ffffff');
+
+      // 1x 卡片
+      const card1 = document.getElementById('previewCard');
+      const inner1 = document.getElementById('cardInner');
+      if (card1 && inner1) {
+        card1.style.background = bg;
+        inner1.innerHTML = '';
+        inner1.appendChild(buildCardInner(data));
+      }
+
+      // 2x 卡片：用 CSS scale(2) 放大，不重复计算坐标
+      const card2 = document.getElementById('previewCard2x');
+      const inner2 = document.getElementById('cardInner2x');
+      if (card2 && inner2) {
+        card2.style.background = bg;
+        inner2.innerHTML = '';
+        // 内部放一个 138×138 的容器，scale(2) 放大
+        const scaled = document.createElement('div');
+        scaled.style.cssText = `width:138px;height:138px;position:relative;transform:scale(2);transform-origin:top left;`;
+        scaled.appendChild(buildCardInner(data));
+        inner2.appendChild(scaled);
+      }
     }
 
     function addMsg(text, type) {
