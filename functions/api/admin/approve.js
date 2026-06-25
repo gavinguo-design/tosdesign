@@ -1,4 +1,4 @@
-const ADMIN_TOKEN = 'tosdesign-admin-2024';
+const ADMIN_TOKEN = 'gavin*220499';
 
 export async function onRequestPost({ request, env }) {
   const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
