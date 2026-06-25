@@ -577,10 +577,7 @@
           <div class="card-scale-label">2× 预览</div>
           <div class="tos-card-2x" id="previewCard2x">
             <div class="tos-card-inner" id="cardInner2x">
-              <!-- 双文本 layout（默认） -->
-              <div class="tos-title" id="cardTitle2x" style="font-size:32px;top:28px;left:28px;width:220px;">今日数据</div>
-              <div class="tos-subtitle" id="cardSubtitle2x" style="font-size:24px;top:72px;left:28px;width:220px;">2,847 · 较昨日 ↑12.4%</div>
-              <div style="position:absolute;right:28px;bottom:28px;font-size:40px;opacity:0.12" id="cardDeco2x">📊</div>
+              <!-- 初始空状态，renderCard 调用后会替换 -->
             </div>
           </div>
 
@@ -588,9 +585,7 @@
           <div class="card-scale-label">1× 实际尺寸</div>
           <div class="tos-card" id="previewCard">
             <div class="tos-card-inner" id="cardInner">
-              <div class="tos-title" id="cardTitle">今日数据</div>
-              <div class="tos-subtitle" id="cardSubtitle" style="top:38px;">2,847 · 较昨日 ↑12.4%</div>
-              <div style="position:absolute;right:14px;bottom:14px;font-size:20px;opacity:0.12" id="cardDeco">📊</div>
+              <!-- 初始空状态 -->
             </div>
           </div>
         </div>
@@ -938,14 +933,8 @@
         if (cardMatch) {
           try {
             const cardData = JSON.parse(cardMatch[1]);
-            applyPreset({
-              icon: cardData.icon || '📊',
-              title: cardData.title || '卡片标题',
-              value: cardData.value || '—',
-              badge: cardData.badge || '',
-              color: cardData.color || '#7c6ef7',
-              bars: cardData.bars || [40, 60, 80, 50, 70, 90, 65],
-            });
+            // Pass all fields directly to applyPreset → renderCard
+            applyPreset(cardData);
           } catch(e) { console.warn('card parse error', e); }
         }
       } catch(e) {
@@ -975,8 +964,15 @@
       alert('导出功能即将上线 🚀');
     }
 
-    // Init date
-    document.getElementById('cardDate').textContent = new Date().toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'});
+    // Init default card
+    applyPreset({
+      layout: 'dual',
+      title: '告诉我你想要的卡片',
+      subtitle: '比如「天气卡片」或「步数统计」',
+      icon: '🃏',
+      bg: '#fff',
+      dark: false
+    });
   </script>
 
 </body>
