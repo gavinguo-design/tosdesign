@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin · TOS Design</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0e0e10; --surface: #18181b; --border: #2a2a2f;
+      --accent: #7c6ef7; --accent2: #4ecca3; --text: #e8e8f0; --muted: #6b6b7e;
+    }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; min-height: 100vh; }
+
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.25rem 2.5rem; border-bottom: 1px solid var(--border);
+      background: rgba(14,14,16,0.9); backdrop-filter: blur(12px);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-logo { font-size: 1.1rem; font-weight: 600; }
+    .nav-logo span { color: var(--accent); }
+    .nav-badge { font-size: 0.7rem; padding: 0.25rem 0.7rem; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+
+    /* Lock screen */
+    .lock-screen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: calc(100vh - 70px);
+    }
+    .lock-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 1.2rem;
+      padding: 2.5rem; width: 100%; max-width: 360px; text-align: center;
+    }
+    .lock-icon { font-size: 2.5rem; margin-bottom: 1.2rem; }
+    .lock-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .lock-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.8rem; }
+    .form-input {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 0.6rem;
+      padding: 0.75rem 1rem; font-size: 0.9rem; color: var(--text); width: 100%;
+      outline: none; transition: border-color 0.2s; margin-bottom: 1rem;
+    }
+    .form-input:focus { border-color: var(--accent); }
+    .btn-primary {
+      width: 100%; padding: 0.85rem; border-radius: 0.6rem; border: none;
+      background: var(--accent); color: #fff; font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .btn-primary:hover { background: #6a5ef0; }
+    .lock-error { font-size: 0.78rem; color: #f87171; margin-top: 0.6rem; min-height: 1.2em; }
+
+    /* Dashboard */
+    .dashboard { display: none; padding: 2.5rem; max-width: 1100px; margin: 0 auto; }
+    .dashboard-header { margin-bottom: 2rem; }
+    .dashboard-title { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.03em; }
+    .dashboard-sub { font-size: 0.85rem; color: var(--muted); margin-top: 0.3rem; }
+
+    /* Stats */
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 0.8rem;
+      padding: 1.2rem 1.5rem;
+    }
+    .stat-label { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.4rem; }
+    .stat-value { font-size: 2rem; font-weight: 700; }
+    .stat-value.pending { color: #fbbf24; }
+    .stat-value.approved { color: var(--accent2); }
+    .stat-value.total { color: var(--accent); }
+
+    /* Table */
+    .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 0.8rem; overflow: hidden; }
+    .table-header { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .table-title { font-size: 0.9rem; font-weight: 600; }
+    .btn-refresh { font-size: 0.78rem; padding: 0.35rem 0.8rem; border-radius: 0.4rem; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.2s; }
+    .btn-refresh:hover { color: var(--text); border-color: rgba(124,110,247,0.4); }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; padding: 0.9rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border); }
+    td { padding: 1rem 1.5rem; font-size: 0.85rem; border-bottom: 1px solid rgba(42,42,47,0.5); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(124,110,247,0.03); }
+
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 999px;
+      font-weight: 600; letter-spacing: 0.04em;
+    }
+    .status-pending { background: rgba(251,191,36,0.1); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+    .status-approved { background: rgba(78,204,163,0.1); color: var(--accent2); border: 1px solid rgba(78,204,163,0.2); }
+    .status-rejected { background: rgba(248,113,113,0.1); color: #f87171; border: 1px solid rgba(248,113,113,0.2); }
+
+    .btn-approve { font-size: 0.75rem; padding: 0.3rem 0.7rem; border-radius: 0.4rem; border: 1px solid rgba(78,204,163,0.3); background: rgba(78,204,163,0.08); color: var(--accent2); cursor: pointer; transition: all 0.2s; margin-right: 0.4rem; }
+    .btn-approve:hover { background: rgba(78,204,163,0.15); }
+    .btn-reject { font-size: 0.75rem; padding: 0.3rem 0.7rem; border-radius: 0.4rem; border: 1px solid rgba(248,113,113,0.3); background: rgba(248,113,113,0.08); color: #f87171; cursor: pointer; transition: all 0.2s; }
+    .btn-reject:hover { background: rgba(248,113,113,0.15); }
+
+    .empty { text-align: center; padding: 3rem; color: var(--muted); font-size: 0.85rem; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--surface); border: 1px solid var(--border); border-radius: 0.7rem; padding: 0.7rem 1.2rem; font-size: 0.82rem; color: var(--text); z-index: 2000; opacity: 0; transition: all 0.25s; pointer-events: none; white-space: nowrap; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.success { border-color: rgba(78,204,163,0.4); color: var(--accent2); }
+    .toast.error { border-color: rgba(248,113,113,0.4); color: #f87171; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">TOS<span>.</span>design</div>
+  <div class="nav-badge">ADMIN</div>
+</nav>
+
+<!-- Lock Screen -->
+<div class="lock-screen" id="lock-screen">
+  <div class="lock-box">
+    <div class="lock-icon">🔐</div>
+    <div class="lock-title">管理员入口</div>
+    <div class="lock-sub">输入管理员密码继续</div>
+    <input class="form-input" id="admin-pwd" type="password" placeholder="管理员密码"
+      onkeydown="if(event.key==='Enter')unlock()" />
+    <button class="btn-primary" onclick="unlock()">进入后台</button>
+    <div class="lock-error" id="lock-error"></div>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div class="dashboard" id="dashboard">
+  <div class="dashboard-header">
+    <div class="dashboard-title">用户管理</div>
+    <div class="dashboard-sub">审批注册用户，管理访问权限</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">总注册</div>
+      <div class="stat-value total" id="stat-total">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">待审批</div>
+      <div class="stat-value pending" id="stat-pending">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">已通过</div>
+      <div class="stat-value approved" id="stat-approved">—</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <div class="table-title">注册用户</div>
+      <button class="btn-refresh" onclick="loadUsers()">↻ 刷新</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>昵称</th>
+          <th>邮箱</th>
+          <th>注册时间</th>
+          <th>状态</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="user-table-body">
+        <tr><td colspan="5" class="empty">加载中…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const ADMIN_TOKEN = 'tosdesign-admin-2024';
+  let adminUnlocked = false;
+
+  function unlock() {
+    const pwd = document.getElementById('admin-pwd').value;
+    if (pwd !== ADMIN_TOKEN) {
+      document.getElementById('lock-error').textContent = '密码错误';
+      return;
+    }
+    adminUnlocked = true;
+    document.getElementById('lock-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadUsers();
+  }
+
+  async function loadUsers() {
+    const tbody = document.getElementById('user-table-body');
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">加载中…</td></tr>';
+    try {
+      const res = await fetch('/api/admin/users', {
+        headers: { 'Authorization': `Bearer ${ADMIN_TOKEN}` }
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      renderUsers(data.users);
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="5" class="empty">加载失败：${e.message}</td></tr>`;
+    }
+  }
+
+  function renderUsers(users) {
+    const tbody = document.getElementById('user-table-body');
+    document.getElementById('stat-total').textContent = users.length;
+    document.getElementById('stat-pending').textContent = users.filter(u => u.status === 'pending').length;
+    document.getElementById('stat-approved').textContent = users.filter(u => u.status === 'approved').length;
+
+    if (!users.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty">暂无注册用户</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = users.map(u => `
+      <tr>
+        <td><strong>${esc(u.name)}</strong></td>
+        <td style="color:var(--muted)">${esc(u.email)}</td>
+        <td style="color:var(--muted);font-size:0.78rem">${new Date(u.created_at).toLocaleString('zh-CN')}</td>
+        <td><span class="status-badge status-${u.status}">${
+          u.status === 'pending' ? '⏳ 待审批' :
+          u.status === 'approved' ? '✓ 已通过' : '✕ 已拒绝'
+        }</span></td>
+        <td>${u.status === 'pending' ? `
+          <button class="btn-approve" onclick="action(${u.id},'approve')">✓ 通过</button>
+          <button class="btn-reject" onclick="action(${u.id},'reject')">✕ 拒绝</button>
+        ` : `<span style="color:var(--muted);font-size:0.78rem">—</span>`}</td>
+      </tr>
+    `).join('');
+  }
+
+  async function action(userId, act) {
+    try {
+      const res = await fetch('/api/admin/approve', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${ADMIN_TOKEN}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, action: act })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      showToast(act === 'approve' ? '✓ 已通过' : '✕ 已拒绝', act === 'approve' ? 'success' : 'error');
+      loadUsers();
+    } catch (e) {
+      showToast('操作失败：' + e.message, 'error');
+    }
+  }
+
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'toast show' + (type ? ' ' + type : '');
+    setTimeout(() => t.className = 'toast', 2600);
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !adminUnlocked) unlock();
+  });
+</script>
+</body>
+</html>

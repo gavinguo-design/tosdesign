@@ -1,0 +1,7 @@
+name = "tosdesign"
+compatibility_date = "2024-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tosdesign-db"
+database_id = "8bb2f465-55cd-4fb3-9538-686382cb0cbd"
