@@ -17,7 +17,7 @@ export async function onRequestPost({ request }) {
   }
 
   try {
-    const res = await fetch(, {
+    const res = await fetch(`${NICKCLOUD_BASE}/v1/messages`, {
       method: 'POST',
       headers: {
         'x-api-key': NICKCLOUD_KEY,
