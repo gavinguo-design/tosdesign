@@ -632,23 +632,59 @@
       return { preset, reply };
     }
 
-    function sendMessage() {
+    const chatHistory = [];
+
+    async function sendMessage() {
       const input = document.getElementById('chatInput');
       const text = input.value.trim();
       if (!text) return;
 
       addMsg(text, 'user');
+      chatHistory.push({ role: 'user', content: text });
       input.value = '';
       input.style.height = '';
       document.getElementById('suggestions').style.display = 'none';
 
       addTyping();
-      setTimeout(() => {
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: chatHistory }),
+        });
+        const data = await res.json();
         removeTyping();
-        const { preset, reply } = getBotReply(text);
-        addMsg(reply, 'bot');
-        if (preset) applyPreset(preset);
-      }, 900 + Math.random() * 600);
+
+        if (!data.ok) {
+          addMsg('出错了：' + (data.error || '请重试'), 'bot');
+          return;
+        }
+
+        const reply = data.text;
+        chatHistory.push({ role: 'assistant', content: reply });
+
+        // Parse card-update block if present
+        const cardMatch = reply.match(/```card-update\n([\s\S]*?)```/);
+        let displayReply = reply.replace(/```card-update\n[\s\S]*?```/g, '').trim();
+        addMsg(displayReply || '卡片已更新 ✨', 'bot');
+
+        if (cardMatch) {
+          try {
+            const cardData = JSON.parse(cardMatch[1]);
+            applyPreset({
+              icon: cardData.icon || '📊',
+              title: cardData.title || '卡片标题',
+              value: cardData.value || '—',
+              badge: cardData.badge || '',
+              color: cardData.color || '#7c6ef7',
+              bars: cardData.bars || [40, 60, 80, 50, 70, 90, 65],
+            });
+          } catch(e) { console.warn('card parse error', e); }
+        }
+      } catch(e) {
+        removeTyping();
+        addMsg('网络错误，请重试', 'bot');
+      }
     }
 
     function sendSuggestion(el) {
