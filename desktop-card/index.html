@@ -817,10 +817,6 @@
           <div class="tos-card-2x" id="previewCard2x">
             <div class="tos-card-inner" id="cardInner2x"></div>
           </div>
-          <div class="card-scale-label">1× 实际尺寸</div>
-          <div class="tos-card" id="previewCard">
-            <div class="tos-card-inner" id="cardInner"></div>
-          </div>
         </div>
 
         <!-- PHONE MOCKUP MODE -->
@@ -1071,15 +1067,6 @@
       const bg = dark ? '#1c1c1e' : (data.bg || '#ffffff');
 
       // 1x
-      const card1 = document.getElementById('previewCard');
-      const inner1 = document.getElementById('cardInner');
-      if (card1 && inner1) {
-        card1.style.background = bg;
-        if (dark) card1.classList.add('dark-card'); else card1.classList.remove('dark-card');
-        inner1.innerHTML = '';
-        inner1.appendChild(buildCardInner(data));
-      }
-
       // 2x via CSS scale
       const card2 = document.getElementById('previewCard2x');
       const inner2 = document.getElementById('cardInner2x');
