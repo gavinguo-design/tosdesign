@@ -809,7 +809,7 @@
         </div>
       </div>
 
-      <div class="preview-canvas">
+      <div class="preview-canvas" id="previewCanvas">
 
         <!-- CARD MODE -->
         <div class="card-preview-wrapper" id="cardPreviewWrapper">
@@ -884,9 +884,11 @@
     // ─── PROGRESS PANEL ──────────────────────────────────
     function showProgress() {
       document.getElementById('progressPanel').classList.add('visible');
+      document.getElementById('previewCanvas').style.paddingLeft = '300px';
     }
     function hideProgress() {
       document.getElementById('progressPanel').classList.remove('visible');
+      document.getElementById('previewCanvas').style.paddingLeft = '';
     }
 
     function renderSteps(states) {
