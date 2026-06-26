@@ -588,15 +588,22 @@
 
     .phone-mockup {
       width: 280px;
-      height: 550px;
-      border-radius: 42px;
-      background: #1a1a1a;
-      border: 2px solid rgba(255,255,255,0.12);
+      height: 602px;
+      border-radius: 0;
+      background: transparent;
+      border: none;
       position: relative;
-      overflow: hidden;
-      box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
-      display: flex;
-      flex-direction: column;
+      overflow: visible;
+      box-shadow: none;
+    }
+    .phone-mockup-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+      z-index: 2;
     }
 
     /* Phone notch */
@@ -627,32 +634,28 @@
 
     /* Phone wallpaper / home screen */
     .phone-screen {
-      flex: 1;
-      background: linear-gradient(135deg, #1a1a3a 0%, #0d1a2e 50%, #0a1a1a 100%);
-      position: relative;
-      padding-top: 35px;
+      position: absolute;
+      inset: 0;
+      background: transparent;
+      z-index: 1;
     }
 
-    /* Widget area on phone screen */
+    /* Widget — single absolute positioned card */
     .phone-widget-area {
       position: absolute;
-      top: 55px;
-      left: 14px;
-      right: 14px;
-      display: flex;
-      justify-content: center;
-      gap: 8px;
+      top: 100px;
+      right: 32px;
+      width: 102px;
+      height: 102px;
+      z-index: 3;
     }
-
-    /* Small widget on phone — actual 1x size */
     .phone-widget {
-      width: 69px; height: 69px; /* half of 138 for phone scale */
+      width: 102px; height: 102px;
       border-radius: 14px;
       position: relative;
       overflow: hidden;
       background: #fff;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      flex-shrink: 0;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.35);
     }
 
     /* Placeholder wallpaper text */
@@ -911,26 +914,15 @@
         <!-- PHONE MOCKUP MODE -->
         <div class="phone-preview-wrapper" id="phonePreviewWrapper">
           <div class="phone-mockup">
-            <div class="phone-notch">
-              <div class="notch-sensor"></div>
-              <div class="notch-camera"></div>
-            </div>
+            <img class="phone-mockup-img" src="./assets/phone-mockup.png" alt="phone mockup" />
             <div class="phone-screen">
               <div class="phone-widget-area">
-                <!-- Left: 1x widget (scaled to phone) -->
                 <div class="phone-widget" id="phoneWidget1">
-                  <div class="tos-card-inner" id="phoneCardInner1" style="transform:scale(0.5);transform-origin:top left;width:200%;height:200%;"></div>
-                </div>
-                <!-- Right: same -->
-                <div class="phone-widget" id="phoneWidget2">
-                  <div class="tos-card-inner" id="phoneCardInner2" style="transform:scale(0.5);transform-origin:top left;width:200%;height:200%;"></div>
+                  <div class="tos-card-inner" id="phoneCardInner1" style="transform:scale(0.739);transform-origin:top left;width:135%;height:135%;"></div>
                 </div>
               </div>
-              <div class="phone-placeholder-text">— 桌面壁纸区域 —</div>
-              <div class="phone-indicator"></div>
             </div>
           </div>
-          <div class="phone-mockup-note">手机机模预览 · 机型图待接入</div>
         </div>
 
       </div>
@@ -1170,8 +1162,8 @@
         inner2.appendChild(scaled);
       }
 
-      // Phone widgets (scale 0.5)
-      ['phoneCardInner1', 'phoneCardInner2'].forEach(id => {
+      // Phone widget
+      ['phoneCardInner1'].forEach(id => {
         const pInner = document.getElementById(id);
         if (pInner) {
           pInner.innerHTML = '';
