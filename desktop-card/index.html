@@ -707,9 +707,98 @@
     .dark-card { background: #1c1c1e !important; }
 
     * { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+    /* ─── LOGIN OVERLAY ─── */
+    #loginOverlay {
+      position: fixed; inset: 0; z-index: 999;
+      background: rgba(8,8,12,0.85);
+      backdrop-filter: blur(12px);
+      display: flex; align-items: center; justify-content: center;
+    }
+    #loginOverlay.hidden { display: none; }
+    .login-box {
+      background: rgba(20,20,26,0.95);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 2rem 2.2rem;
+      width: 320px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .login-logo { font-size: 2rem; text-align: center; margin-bottom: 0.4rem; }
+    .login-title { text-align: center; font-size: 1.1rem; font-weight: 600; color: var(--text); margin-bottom: 0.2rem; }
+    .login-sub { text-align: center; font-size: 0.75rem; color: var(--muted); margin-bottom: 1.5rem; }
+    .login-field { margin-bottom: 0.9rem; }
+    .login-field label { display: block; font-size: 0.72rem; color: var(--muted); margin-bottom: 0.3rem; }
+    .login-field input {
+      width: 100%; box-sizing: border-box;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 0.55rem 0.8rem;
+      color: var(--text); font-size: 0.9rem;
+      outline: none; transition: border 0.2s;
+    }
+    .login-field input:focus { border-color: rgba(124,110,247,0.5); }
+    .login-btn {
+      width: 100%; padding: 0.65rem;
+      background: var(--accent); border: none; border-radius: 10px;
+      color: #fff; font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; margin-top: 0.3rem;
+      transition: opacity 0.2s;
+    }
+    .login-btn:hover { opacity: 0.85; }
+    .login-err { color: #ff6b6b; font-size: 0.75rem; text-align: center; margin-top: 0.6rem; min-height: 1em; }
+    .login-switch { text-align: center; font-size: 0.75rem; color: var(--muted); margin-top: 0.9rem; }
+    .login-switch a { color: var(--accent); cursor: pointer; text-decoration: none; }
+    .login-user-bar {
+      position: fixed; top: 14px; right: 16px; z-index: 50;
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(20,20,26,0.7); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 20px; padding: 5px 12px 5px 8px;
+      backdrop-filter: blur(10px);
+    }
+    .login-user-bar.hidden { display: none; }
+    .login-avatar {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--accent); display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 700; color: #fff;
+    }
+    .login-uname { font-size: 0.78rem; color: var(--text); }
+    .login-logout { font-size: 0.72rem; color: var(--muted); cursor: pointer; margin-left: 4px; }
+    .login-logout:hover { color: #ff6b6b; }
   </style>
 </head>
 <body>
+
+  <!-- LOGIN OVERLAY -->
+  <div id="loginOverlay">
+    <div class="login-box">
+      <div class="login-logo">🎨</div>
+      <div class="login-title">TOS Design</div>
+      <div class="login-sub" id="loginSubtitle">AI 卡片设计工具</div>
+      <div id="loginForm">
+        <div class="login-field"><label>邮箱</label><input type="email" id="loginEmail" placeholder="your@email.com" /></div>
+        <div class="login-field"><label>密码</label><input type="password" id="loginPassword" placeholder="至少6位" /></div>
+        <button class="login-btn" onclick="doLogin()">登录</button>
+        <div class="login-err" id="loginErr"></div>
+        <div class="login-switch">还没有账号？<a onclick="showRegister()"> 立即注册</a></div>
+      </div>
+      <div id="registerForm" style="display:none">
+        <div class="login-field"><label>姓名</label><input type="text" id="regName" placeholder="你的名字" /></div>
+        <div class="login-field"><label>邮箱</label><input type="email" id="regEmail" placeholder="your@email.com" /></div>
+        <div class="login-field"><label>密码</label><input type="password" id="regPassword" placeholder="至少6位" /></div>
+        <button class="login-btn" onclick="doRegister()">注册</button>
+        <div class="login-err" id="registerErr"></div>
+        <div class="login-switch">已有账号？<a onclick="showLogin()"> 返回登录</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- USER BAR -->
+  <div class="login-user-bar hidden" id="userBar">
+    <div class="login-avatar" id="userAvatar"></div>
+    <span class="login-uname" id="userName"></span>
+    <span class="login-logout" onclick="doLogout()">退出</span>
+  </div>
 
   <nav>
     <a href="../index.html" class="nav-back">← 返回</a>
@@ -1217,9 +1306,10 @@
       simulateProgress(); // start progress alongside API call
 
       try {
+        const token = localStorage.getItem('tos_token') || '';
         const res = await fetch('/api/chat', {
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ messages: chatHistory }),
         });
         const data = await res.json();
@@ -1272,6 +1362,80 @@
       alert('导出功能即将上线 🚀');
     }
 
+    // AUTH
+    function initAuth() {
+      const token = localStorage.getItem('tos_token');
+      const name  = localStorage.getItem('tos_name');
+      if (token && name) {
+        document.getElementById('loginOverlay').classList.add('hidden');
+        showUserBar(name);
+      }
+    }
+    function showUserBar(name) {
+      const bar = document.getElementById('userBar');
+      bar.classList.remove('hidden');
+      document.getElementById('userName').textContent = name;
+      document.getElementById('userAvatar').textContent = name[0].toUpperCase();
+    }
+    function showLogin() {
+      document.getElementById('loginForm').style.display = '';
+      document.getElementById('registerForm').style.display = 'none';
+      document.getElementById('loginSubtitle').textContent = 'AI 卡片设计工具';
+      document.getElementById('loginErr').textContent = '';
+    }
+    function showRegister() {
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('registerForm').style.display = '';
+      document.getElementById('loginSubtitle').textContent = '创建新账号';
+      document.getElementById('registerErr').textContent = '';
+    }
+    async function doLogin() {
+      const email    = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const errEl    = document.getElementById('loginErr');
+      errEl.textContent = '';
+      if (!email || !password) { errEl.textContent = '请填写邮箱和密码'; return; }
+      const btn = document.querySelector('#loginForm .login-btn');
+      btn.textContent = '登录中...'; btn.disabled = true;
+      try {
+        const res  = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+        const data = await res.json();
+        if (!data.ok) { errEl.textContent = data.error || '登录失败'; return; }
+        localStorage.setItem('tos_token', data.token);
+        localStorage.setItem('tos_name',  data.user.name);
+        document.getElementById('loginOverlay').classList.add('hidden');
+        showUserBar(data.user.name);
+      } catch(e) { errEl.textContent = '网络错误，请重试'; }
+      finally { btn.textContent = '登录'; btn.disabled = false; }
+    }
+    async function doRegister() {
+      const name     = document.getElementById('regName').value.trim();
+      const email    = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value;
+      const errEl    = document.getElementById('registerErr');
+      errEl.textContent = '';
+      if (!name || !email || !password) { errEl.textContent = '请填写所有字段'; return; }
+      const btn = document.querySelector('#registerForm .login-btn');
+      btn.textContent = '提交中...'; btn.disabled = true;
+      try {
+        const res  = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, password }) });
+        const data = await res.json();
+        if (!data.ok) { errEl.textContent = data.error || '注册失败'; return; }
+        errEl.style.color = '#01CB65';
+        errEl.textContent = '注册成功！等待管理员审批后可登录';
+      } catch(e) { errEl.textContent = '网络错误，请重试'; }
+      finally { btn.textContent = '注册'; btn.disabled = false; }
+    }
+    function doLogout() {
+      localStorage.removeItem('tos_token');
+      localStorage.removeItem('tos_name');
+      document.getElementById('userBar').classList.add('hidden');
+      document.getElementById('loginOverlay').classList.remove('hidden');
+      showLogin();
+    }
+
+
+    initAuth();
     // ─── INIT ─────────────────────────────────────────────
     applyPreset({
       layout: 'dual',
