@@ -936,7 +936,7 @@
       statusEl.className = `step-status ${status}`;
       statusEl.innerHTML = `<span>${status === 'done' ? '✓' : status === 'running' ? '·' : status === 'error' ? '✕' : ''}</span>`;
       nameEl.className = `step-name ${status === 'pending' ? 'pending' : 'done'}`;
-      if (resultEl && desc) resultEl.textContent = desc;
+      if (resultEl && desc) resultEl.innerHTML = desc;
     }
 
     function toggleStep(stepId) {
@@ -1121,6 +1121,63 @@
     }
 
     // Simulate skill steps while waiting for API
+    // Layout labels
+    const LAYOUT_LABELS = { single: '单行标题', dual: '双行内容', triple: '三段式', big: '大数字突显' };
+
+    // Tone axis labels
+    const AXIS_LABELS = {
+      VA: { 1: '信息展示', 2: '平衡呈现', 3: '视觉强刺激' },
+      IS: { 1: '极简洁', 2: '标准密度', 3: '信息密集' },
+      AA: { 1: '纯展示', 2: '轻引导', 3: '强操作引导' },
+    };
+
+    function updateStepsFromResponse(fullReply, textPart, cardData) {
+      // 1. 需求分析 — 提取正文前两句
+      const analyzeDesc = textPart
+        ? textPart.split(/。|\n/)[0].trim().slice(0, 60)
+        : null;
+
+      // 2. 调性分析 — 提取 VA/IS/AA 分数
+      const axisMatch = fullReply.match(/VA(\d)\+IS(\d)\+AA(\d)/);
+      let toneDesc = null;
+      if (axisMatch) {
+        const va = axisMatch[1], is = axisMatch[2], aa = axisMatch[3];
+        const vaLabel = AXIS_LABELS.VA[va] || `视觉张力 ${va}`;
+        const isLabel = AXIS_LABELS.IS[is] || `信息密度 ${is}`;
+        const aaLabel = AXIS_LABELS.AA[aa] || `行动引导 ${aa}`;
+        toneDesc = `VA${va} 视觉张力·${vaLabel}<br>IS${is} 信息密度·${isLabel}<br>AA${aa} 行动引导·${aaLabel}`;
+      }
+
+      // 3. 布局规划
+      let layoutDesc = null;
+      if (cardData?.layout) {
+        const ll = LAYOUT_LABELS[cardData.layout] || cardData.layout;
+        layoutDesc = `选用 ${cardData.layout} 布局（${ll}）`;
+        if (cardData.header) layoutDesc += `<br>主标题：${cardData.header}`;
+        if (cardData.value)  layoutDesc += `<br>核心数据：${cardData.value}${cardData.unit || ''}`;
+      }
+
+      // 4. 配色方案
+      let colorDesc = null;
+      if (cardData?.accentColor || cardData?.bg) {
+        colorDesc = '';
+        if (cardData.accentColor) colorDesc += `强调色：${cardData.accentColor}`;
+        if (cardData.bg)          colorDesc += `<br>背景色：${cardData.bg}`;
+        if (cardData.dark)        colorDesc += `<br>深色模式已开启`;
+      }
+
+      // 5. 卡片渲染
+      const fieldCount = cardData ? Object.keys(cardData).length : 0;
+      const renderDesc = fieldCount ? `共输出 ${fieldCount} 个字段，138×138px 卡片已渲染` : '卡片已生成';
+
+      // 回填真实内容
+      if (analyzeDesc) updateStep('analyze', 'done', analyzeDesc);
+      if (toneDesc)    updateStep('tone',    'done', toneDesc);
+      if (layoutDesc)  updateStep('layout',  'done', layoutDesc);
+      if (colorDesc)   updateStep('color',   'done', colorDesc);
+      updateStep('render', 'done', renderDesc);
+    }
+
     async function simulateProgress() {
       const steps = ['analyze','tone','layout','color','render'];
       const descs = {
@@ -1180,12 +1237,14 @@
         let displayReply = reply.replace(/```card-update\n[\s\S]*?```/g, '').trim();
         addMsg(displayReply || '卡片已更新 ✨', 'bot');
 
+        let cardData = null;
         if (cardMatch) {
           try {
-            const cardData = JSON.parse(cardMatch[1]);
+            cardData = JSON.parse(cardMatch[1]);
             applyPreset({ ...cardData, dark: currentTheme === 'dark' });
           } catch(e) { console.warn('card parse error', e); }
         }
+        updateStepsFromResponse(reply, displayReply, cardData);
       } catch(e) {
         removeTyping();
         addMsg('网络错误，请重试', 'bot');
