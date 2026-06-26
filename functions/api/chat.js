@@ -1,5 +1,5 @@
-const NICKCLOUD_BASE = "https://admin.nickcloud.xyz";
-const NICKCLOUD_KEY = "sk-2c5…1542";
+const CRS_BASE = "https://crs.chenge.ink";
+const CRS_KEY = "cr_3a07c6ba66da659eaae348c5782ac9934507be57af7c040220bbc1af67bc1b49";
 const TOKEN_SECRET = 'tosdesign-secret-2024';
 
 async function verifyToken(token) {
@@ -39,18 +39,16 @@ export async function onRequestPost({ request, env }) {
   }
 
   try {
-    const res = await fetch(`${NICKCLOUD_BASE}/v1/messages`, {
+    const res = await fetch(`${CRS_BASE}/openai/v1/chat/completions`, {
       method: 'POST',
       headers: {
-        'x-api-key': NICKCLOUD_KEY,
-        'anthropic-version': '2023-06-01',
+        'Authorization': `Bearer ${CRS_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 1024,
-        system: SYSTEM_PROMPT,
-        messages: messages,
+        messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
       }),
     });
 
@@ -59,7 +57,7 @@ export async function onRequestPost({ request, env }) {
       return new Response(JSON.stringify({ ok: false, error: data.error?.message || 'API error' }), { status: 500, headers });
     }
 
-    const text = data.content?.[0]?.text || '';
+    const text = data.choices?.[0]?.message?.content || '';
     return new Response(JSON.stringify({ ok: true, text }), { headers });
   } catch (e) {
     return new Response(JSON.stringify({ ok: false, error: e.message }), { status: 500, headers });
