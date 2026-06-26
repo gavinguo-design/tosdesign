@@ -873,7 +873,7 @@
       <!-- PROGRESS PANEL -->
       <div class="progress-panel" id="progressPanel">
         <div class="progress-header">
-          <span class="progress-title">生成进度</span>
+          <span class="progress-title">Widget skill</span>
           <button class="progress-close" onclick="hideProgress()">✕</button>
         </div>
         <div class="progress-steps" id="progressSteps">
@@ -941,6 +941,7 @@
       { id: 'tone',      name: '调性分析',   desc: null },
       { id: 'layout',    name: '布局规划',   desc: null },
       { id: 'color',     name: '配色方案',   desc: null },
+      { id: 'illust',    name: '插图生成',   desc: null },
       { id: 'render',    name: '卡片渲染',   desc: null },
     ];
 
@@ -1247,7 +1248,10 @@
         if (cardData.dark)        colorDesc += `<br>深色模式已开启`;
       }
 
-      // 5. 卡片渲染
+      // 5. 插图生成（占位）
+      updateStep('illust', 'done', '待接入 Image 2 生成规则');
+
+      // 6. 卡片渲染
       const fieldCount = cardData ? Object.keys(cardData).length : 0;
       const renderDesc = fieldCount ? `共输出 ${fieldCount} 个字段，138×138px 卡片已渲染` : '卡片已生成';
 
@@ -1260,12 +1264,13 @@
     }
 
     async function simulateProgress() {
-      const steps = ['analyze','tone','layout','color','render'];
+      const steps = ['analyze','tone','layout','color','illust','render'];
       const descs = {
         analyze: '用户想要一张展示数据的桌面卡片',
         tone: '简洁现代，色彩干净',
         layout: '选用 triple 三段式布局',
         color: '主色 #7c6ef7，背景白色',
+        illust: '插图生成中…',
         render: '卡片已生成',
       };
       // Init all pending
