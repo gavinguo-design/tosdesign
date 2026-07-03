@@ -1360,7 +1360,9 @@
       document.getElementById('themeLight').classList.toggle('active', theme === 'light');
       document.getElementById('themeDark').classList.toggle('active', theme === 'dark');
       if (currentCardData) {
-        applyPreset({ ...currentCardData, dark: theme === 'dark' });
+        // 插图卡的明暗由亮度采样锁定，主题切换不覆盖
+        const dk = currentCardData.bgImage ? currentCardData.dark : (theme === 'dark');
+        applyPreset({ ...currentCardData, dark: dk });
       }
       renderVersionPanel();
       if (pendingVariants) showCompare(pendingVariants);
@@ -1382,7 +1384,7 @@
       versions.push({ data, time: new Date(), variant: variant || null });
       activeVersionIdx = versions.length - 1;
       renderVersionPanel();
-      applyPreset({ ...data, dark: currentTheme === 'dark' });
+      applyPreset({ ...data, dark: data.bgImage ? data.dark : (currentTheme === 'dark') });
       updateFigmaBtnVisibility();
     }
 
@@ -1390,7 +1392,8 @@
       if (i < 0 || i >= versions.length) return;
       activeVersionIdx = i;
       renderVersionPanel();
-      applyPreset({ ...versions[i].data, dark: currentTheme === 'dark' });
+      const vd = versions[i].data;
+      applyPreset({ ...vd, dark: vd.bgImage ? vd.dark : (currentTheme === 'dark') });
     }
 
     function renderVersionPanel() {
@@ -1399,8 +1402,9 @@
       if (!panel || !list) return;
       panel.classList.toggle('visible', versions.length > 0);
       list.innerHTML = '';
-      const dark = currentTheme === 'dark';
+      const themeDark = currentTheme === 'dark';
       versions.forEach((v, i) => {
+        const dark = v.data.bgImage ? !!v.data.dark : themeDark;
         const item = document.createElement('div');
         item.className = 'version-item' + (i === activeVersionIdx ? ' active' : '');
         item.onclick = () => selectVersion(i);
@@ -1438,9 +1442,11 @@
       pendingVariants = variants;
       const wrap = document.getElementById('compareWrapper');
       wrap.innerHTML = '';
-      const dark = currentTheme === 'dark';
+      const themeDark = currentTheme === 'dark';
       const labels = ['A', 'B'];
       variants.forEach((data, i) => {
+        // 有插图的卡：文字明暗由亮度采样决定，不被页面主题覆盖
+        const dark = data.bgImage ? !!data.dark : themeDark;
         const item = document.createElement('div');
         item.className = 'compare-item';
 
@@ -1766,8 +1772,8 @@
       if (data.bgImage) {
         // 文字保护层：暗底加左上深化渐变，亮底加左上提白渐变，增强对比
         const scrim = dark
-          ? 'linear-gradient(135deg, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.12) 55%, rgba(0,0,0,0) 75%)'
-          : 'linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.18) 55%, rgba(255,255,255,0) 75%)';
+          ? 'linear-gradient(135deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 55%, rgba(0,0,0,0) 78%)'
+          : 'linear-gradient(135deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.3) 55%, rgba(255,255,255,0) 78%)';
         bg = `${scrim}, url(${data.bgImage}) center/cover no-repeat`;
       }
 
@@ -2063,7 +2069,7 @@
     async function applyIllustration(cd, url) {
       const luma = await probeTextAreaLuma(url);
       // luma>150 亮底 → 黑字(dark:false)；否则白字(dark:true)；采样失败默认白字
-      const dark = luma === null ? true : luma <= 150;
+      const dark = luma === null ? true : luma <= 168; // 中间调偏向白字+暗化保护层
       return { ...cd, bgImage: url, dark, heroIcon: false, icon: '' };
     }
 
