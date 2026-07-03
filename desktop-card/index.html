@@ -1992,7 +1992,9 @@
         setTimeout(hideProgress, 1500); // steps done, free the canvas
         if (parsed.length >= 2) {
           addMsg((displayReply || '我出了两个方案') + toneBlockHtml + '<br>👆 在预览区选择你喜欢的方案', 'bot');
-          showCompare(parsed.slice(0, 2));
+          const variants = parsed.slice(0, 2);
+          showCompare(variants);
+          illustrateVariants(variants);
           cardData = parsed[0];
         } else if (parsed.length === 1) {
           addMsg((displayReply || '卡片已更新 ✨') + toneBlockHtml, 'bot');
@@ -2025,6 +2027,25 @@
     function autoResize(el) {
       el.style.height = '';
       el.style.height = Math.min(el.scrollHeight, 90) + 'px';
+    }
+
+    async function illustrateVariants(variants) {
+      // 双方案并行生图：各自有 illustPrompt 才生成，完成后原地刷新对比卡
+      variants.forEach(async (data, i) => {
+        if (!data.illustPrompt || data.bgImage) return;
+        try {
+          const token = localStorage.getItem('tos_token') || '';
+          const res = await fetch('/api/illustration', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ prompt: data.illustPrompt }),
+          });
+          const d = await res.json();
+          if (!d.ok) return;
+          variants[i] = { ...data, bgImage: d.url, dark: true, heroIcon: false, icon: '' };
+          if (pendingVariants === variants) showCompare(variants); // 仍在对比态才刷新
+        } catch(e) {}
+      });
     }
 
     async function autoIllustrate() {
