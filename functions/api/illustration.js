@@ -1,7 +1,7 @@
 // 插图生成 API — 即梦 Seedream 4.5（火山方舟）
 const ARK_URL = 'https://ark.cn-beijing.volces.com/api/v3/images/generations';
-const ARK_KEY = 'c14b87…1738';
-const TOKEN_SECRET = 'tosdes…2024';
+const ARK_KEY = 'c14b8773-990a-4513-8107-1f6a5d131738';
+const TOKEN_SECRET = 'tosdesign-secret-2024';
 
 async function verifyToken(token) {
   if (!token) return false;
