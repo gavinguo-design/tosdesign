@@ -1619,11 +1619,7 @@
         }
         wrap.appendChild(dw);
         if (data.action) {
-          // 有按钮时：subtitle 上移，subtitle2 省略，底部留给按钮
-          if (data.subtitle) wrap.appendChild(mk(
-            `position:absolute;left:14px;top:80px;width:110px;height:12px;` +
-            `font-size:10px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;`,
-            data.subtitle));
+          // Figma规范：big+按钮 无副文本槽位（header+DATA+Button）；副文本需求应选triple
         } else {
           if (data.subtitle) wrap.appendChild(mk(
             `position:absolute;left:14px;top:98px;width:110px;height:12px;` +
