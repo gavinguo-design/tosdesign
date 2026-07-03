@@ -1598,7 +1598,7 @@
         w += /[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]/.test(ch) ? 1 : ratio;
       }
       const fitted = Math.floor(maxWidth / w);
-      return Math.max(14, Math.min(baseSize, fitted));
+      return Math.max(arguments.length > 4 && arguments[4] ? arguments[4] : 9, Math.min(baseSize, fitted));
     }
 
     function buildCardInner(data) {
@@ -1663,9 +1663,10 @@
           `font-size:12px;font-weight:600;` + buttonStyle(data, dark),
           data.action));
       } else if (layout === 'triple') {
+        const triHeadSize = fitFontSize(data.header || data.title, 12, data.headerIcon ? 92 : 110);
         const triHeader = mk(
           `position:absolute;left:14px;top:14px;width:110px;height:14px;` +
-          `font-size:12px;font-weight:500;color:${tc};overflow:hidden;white-space:nowrap;display:flex;align-items:center;gap:4px;`,
+          `font-size:${triHeadSize}px;font-weight:500;color:${tc};overflow:hidden;white-space:nowrap;display:flex;align-items:center;gap:4px;`,
           '');
         if (data.headerIcon) {
           const hi = document.createElement('span');
@@ -1683,12 +1684,13 @@
           data.value || ''));
         wrap.appendChild(mk(
           `position:absolute;left:14px;top:56px;width:110px;height:12px;` +
-          `font-size:10px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;`,
+          `font-size:${fitFontSize(data.subtitle, 10, 110)}px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;`,
           data.subtitle || ''));
       } else if (layout === 'big') {
+        const bigHeadSize = fitFontSize(data.header || data.title, 12, data.headerIcon ? 92 : 110);
         const bigHeader = mk(
           `position:absolute;left:14px;top:14px;width:110px;height:14px;` +
-          `font-size:12px;font-weight:500;color:${tc};overflow:hidden;white-space:nowrap;display:flex;align-items:center;gap:4px;`,
+          `font-size:${bigHeadSize}px;font-weight:500;color:${tc};overflow:hidden;white-space:nowrap;display:flex;align-items:center;gap:4px;`,
           '');
         if (data.headerIcon) {
           const hi = document.createElement('span');
@@ -1704,7 +1706,7 @@
         dw.style.cssText = `position:absolute;left:14px;top:28px;width:110px;height:48px;display:flex;align-items:flex-end;gap:2px;`;
         const de = document.createElement('span');
         const unitW = data.unit ? (String(data.unit).length * 12 + 4) : 0;
-        const bigSize = fitFontSize(data.value, 40, 110 - unitW);
+        const bigSize = fitFontSize(data.value, 40, 110 - unitW, undefined, 14);
         de.style.cssText = `font-size:${bigSize}px;font-weight:500;line-height:1;color:${(data.userColorOk&&data.accentColor)||tc};white-space:nowrap;`;
         de.textContent = data.value || '';
         dw.appendChild(de);
@@ -1720,11 +1722,11 @@
         } else {
           if (data.subtitle) wrap.appendChild(mk(
             `position:absolute;left:14px;top:98px;width:110px;height:12px;` +
-            `font-size:10px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;`,
+            `font-size:${fitFontSize(data.subtitle, 10, 110)}px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;`,
             data.subtitle));
           if (data.subtitle2) wrap.appendChild(mk(
             `position:absolute;left:14px;top:112px;width:110px;height:12px;` +
-            `font-size:10px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;`,
+            `font-size:${fitFontSize(data.subtitle2, 10, 110)}px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;`,
             data.subtitle2));
         }
       }
