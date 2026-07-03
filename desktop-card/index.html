@@ -1761,7 +1761,13 @@
       const dark = data.dark || false;
       // dark 只决定文字反白；背景以 data.bg 优先（支持渐变），无 bg 时才用默认深/浅色
       let bg = data.bg || (dark ? '#1c1c1e' : '#ffffff');
-      if (data.bgImage) bg = `url(${data.bgImage}) center/cover no-repeat`;
+      if (data.bgImage) {
+        // 文字保护层：暗底加左上深化渐变，亮底加左上提白渐变，增强对比
+        const scrim = dark
+          ? 'linear-gradient(135deg, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.12) 55%, rgba(0,0,0,0) 75%)'
+          : 'linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.18) 55%, rgba(255,255,255,0) 75%)';
+        bg = `${scrim}, url(${data.bgImage}) center/cover no-repeat`;
+      }
 
       // 1x
       // 2x via CSS scale
@@ -2025,6 +2031,40 @@
       el.style.height = Math.min(el.scrollHeight, 90) + 'px';
     }
 
+    // 采样插图左上文字区亮度，决定文字反色（亮底黑字/暗底白字）
+    function probeTextAreaLuma(imgUrl) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          try {
+            const cv = document.createElement('canvas');
+            const s = 48; // 缩样采样
+            cv.width = s; cv.height = s;
+            const ctx = cv.getContext('2d');
+            ctx.drawImage(img, 0, 0, s, s);
+            // 左上 2/3 x 2/3 区域 = 文字区
+            const d = ctx.getImageData(0, 0, Math.floor(s * 0.67), Math.floor(s * 0.67)).data;
+            let sum = 0, n = 0;
+            for (let i = 0; i < d.length; i += 4) {
+              sum += 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+              n++;
+            }
+            resolve(sum / n); // 0-255
+          } catch(e) { resolve(null); }
+        };
+        img.onerror = () => resolve(null);
+        img.src = '/api/imgproxy?url=' + encodeURIComponent(imgUrl);
+      });
+    }
+
+    async function applyIllustration(cd, url) {
+      const luma = await probeTextAreaLuma(url);
+      // luma>150 亮底 → 黑字(dark:false)；否则白字(dark:true)；采样失败默认白字
+      const dark = luma === null ? true : luma <= 150;
+      return { ...cd, bgImage: url, dark, heroIcon: false, icon: '' };
+    }
+
     async function fetchIllustration(prompt) {
       const token = localStorage.getItem('tos_token') || '';
       const res = await fetch('/api/illustration', {
@@ -2046,7 +2086,7 @@
         if (!data.illustPrompt || data.bgImage) return;
         try {
           const url = await fetchIllustration(data.illustPrompt);
-          variants[i] = { ...data, bgImage: url, dark: true, heroIcon: false, icon: '' };
+          variants[i] = await applyIllustration(data, url);
         } catch(e) {}
       }));
       updateStep('illust', 'done', '✓ 方案插图已生成');
@@ -2059,7 +2099,7 @@
         updateStep('illust', 'running', '🎨 即梦 Seedream 生成插图中（约10秒）…');
         try {
           const url = await fetchIllustration(cd.illustPrompt);
-          cd = { ...cd, bgImage: url, dark: true, heroIcon: false, icon: '' };
+          cd = await applyIllustration(cd, url);
           updateStep('illust', 'done', '✓ 插图已生成并应用为卡片背景');
         } catch(e) {
           updateStep('illust', 'error', '插图生成失败，已使用纯色背景，可展开手动重试');
@@ -2084,7 +2124,7 @@
         });
         const data = await res.json();
         if (!data.ok) { alert('插图生成失败：' + (data.error || '请重试')); btn.textContent = '🎨 生成插图（即梦 Seedream）'; btn.disabled = false; return; }
-        const updated = { ...currentCardData, bgImage: data.url, dark: true, heroIcon: false, icon: '' };
+        const updated = await applyIllustration(currentCardData, data.url);
         pushVersion(updated);
         btn.textContent = '✓ 已生成并应用';
         setTimeout(() => { btn.textContent = '🎨 重新生成插图'; btn.disabled = false; }, 2000);
