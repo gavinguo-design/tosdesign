@@ -1868,44 +1868,34 @@
 
       // 5. 插图生成（占位）
       const illustBtnHtml = '<button class="step-adjust-btn" style="margin-top:6px" onclick="generateIllustration(this)">🎨 生成插图（即梦 Seedream）</button>';
-      const illustHint = (currentCardData && currentCardData.illustPrompt)
-        ? ('插图提示词：' + currentCardData.illustPrompt + '<br>' + illustBtnHtml)
-        : ('当前卡片使用 emoji 图标；可生成 AI 插图作为卡片背景<br>' + illustBtnHtml);
-      updateStep('illust', 'done', illustHint);
+      if (cardData && cardData.illustPrompt) {
+        // 自动生图流程接管此步骤状态（running→done/error），这里不覆盖
+      } else {
+        updateStep('illust', 'done', '本卡无插图需求（数据/工具类）；也可手动生成<br>' + illustBtnHtml);
+      }
 
       // 6. 卡片渲染
       const fieldCount = cardData ? Object.keys(cardData).length : 0;
-      const renderDesc = fieldCount ? `共输出 ${fieldCount} 个字段，138×138px 卡片已渲染` : '卡片已生成';
+      const renderDesc = fieldCount ? `共输出 ${fieldCount} 个字段，138×138px 卡片已渲染` : '未输出卡片数据';
 
       // 回填真实内容
       if (analyzeDesc) updateStep('analyze', 'done', analyzeDesc);
       if (toneDesc)    updateStep('tone',    'done', toneDesc);
       if (layoutDesc)  updateStep('layout',  'done', layoutDesc);
       if (colorDesc)   updateStep('color',   'done', colorDesc);
-      updateStep('render', 'done', renderDesc);
+      updateStep('render', cardData ? 'done' : 'error', renderDesc);
     }
 
-    async function simulateProgress() {
-      const steps = ['analyze','tone','layout','color','illust','render'];
-      const descs = {
-        analyze: '用户想要一张展示数据的桌面卡片',
-        tone: '简洁现代，色彩干净',
-        layout: '选用 triple 三段式布局',
-        color: '主色 #7c6ef7，背景白色',
-        illust: '插图生成中…',
-        render: '卡片已生成',
-      };
-      // Init all pending
+    function startProgressReal() {
+      // 真实进度：初始化全部 pending，AI 分析中只亮第一步
       const initStates = {};
-      steps.forEach(s => initStates[s] = { status: 'pending', desc: null });
+      SKILL_STEPS.forEach(s => initStates[s.id] = { status: 'pending', desc: null });
       renderSteps(initStates);
       showProgress();
-
-      for (let i = 0; i < steps.length; i++) {
-        updateStep(steps[i], 'running', null);
-        await delay(400 + Math.random() * 300);
-        updateStep(steps[i], 'done', descs[steps[i]]);
-      }
+      updateStep('analyze', 'running', 'AI 分析中…');
+      updateStep('tone', 'running', null);
+      updateStep('layout', 'running', null);
+      updateStep('color', 'running', null);
     }
 
     function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -1937,7 +1927,7 @@
       document.getElementById('suggestions').style.display = 'none';
 
       addTyping();
-      simulateProgress(); // start progress alongside API call
+      startProgressReal(); // 真实进度：等 API 返回才标记完成
 
       try {
         const token = localStorage.getItem('tos_token') || '';
@@ -1951,6 +1941,7 @@
 
         if (!data.ok) {
           addMsg('出错了：' + (data.error || '请重试'), 'bot');
+          ['analyze','tone','layout','color'].forEach(s => updateStep(s, 'error', null));
           return;
         }
 
@@ -1989,7 +1980,6 @@
           try { parsed.push(JSON.parse(m[1])); } catch(e) { console.warn('card parse error', e); }
         });
 
-        setTimeout(hideProgress, 1500); // steps done, free the canvas
         if (parsed.length >= 2) {
           addMsg((displayReply || '我出了两个方案') + toneBlockHtml + '<br>👆 在预览区选择你喜欢的方案', 'bot');
           const variants = parsed.slice(0, 2);
@@ -2009,6 +1999,7 @@
       } catch(e) {
         removeTyping();
         addMsg('网络错误，请重试', 'bot');
+        ['analyze','tone','layout','color'].forEach(s => updateStep(s, 'error', null));
       }
     }
 
@@ -2031,6 +2022,15 @@
 
     async function illustrateVariants(variants) {
       // 双方案并行生图：各自有 illustPrompt 才生成，完成后原地刷新对比卡
+      if (variants.some(v => v.illustPrompt)) {
+        updateStep('illust', 'running', '🎨 即梦为两个方案并行生成插图中…');
+        let doneCount = 0;
+        const need = variants.filter(v => v.illustPrompt).length;
+        window.__variantIllustDone = () => {
+          doneCount++;
+          if (doneCount >= need) updateStep('illust', 'done', '✓ 方案插图已生成');
+        };
+      }
       variants.forEach(async (data, i) => {
         if (!data.illustPrompt || data.bgImage) return;
         try {
@@ -2043,6 +2043,7 @@
           const d = await res.json();
           if (!d.ok) return;
           variants[i] = { ...data, bgImage: d.url, dark: true, heroIcon: false, icon: '' };
+          if (window.__variantIllustDone) window.__variantIllustDone();
           if (pendingVariants === variants) showCompare(variants); // 仍在对比态才刷新
         } catch(e) {}
       });
