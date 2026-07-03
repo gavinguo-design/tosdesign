@@ -40,7 +40,7 @@ export async function onRequestPost({ request }) {
   }
 
   // 卡片插图统一后缀：小组件语境、简洁、无文字
-  const fullPrompt = prompt + '，桌面小组件插图素材，简洁现代扁平风格，构图居中留白，无任何文字，纯净背景';
+  const fullPrompt = prompt + '，桌面小组件背景插图。构图硬性要求：画面左上方约2/3区域必须干净简洁（纯色或柔和渐变，无图形元素，用于叠加文字），主体图形元素只放在右下角区域，占画面不超过1/3。简洁现代扁平风格，无任何文字，色调统一';
 
   try {
     const res = await fetch(ARK_URL, {
