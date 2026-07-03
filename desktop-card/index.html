@@ -710,6 +710,44 @@
       .es-flow { gap: 0.8rem; }
     }
 
+    /* ─── TONE BLOCK in chat ─── */
+    .tone-block {
+      margin-top: 0.6rem;
+      border: 1px solid rgba(124,110,247,0.25);
+      background: rgba(124,110,247,0.07);
+      border-radius: 0.7rem;
+      padding: 0.6rem 0.7rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .tone-block-title {
+      font-size: 0.62rem;
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+    .tone-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+    }
+    .tone-badge {
+      flex-shrink: 0;
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 0.15rem 0.4rem;
+      border-radius: 5px;
+      background: rgba(124,110,247,0.22);
+      color: var(--accent);
+      letter-spacing: 0.03em;
+      min-width: 30px;
+      text-align: center;
+    }
+    .tone-row-body { display: flex; flex-direction: column; gap: 0.1rem; }
+    .tone-row-name { font-size: 0.66rem; font-weight: 600; color: var(--text); }
+    .tone-row-reason { font-size: 0.64rem; line-height: 1.45; color: var(--muted); }
+
     /* ─── VARIANT COMPARE ─── */
     .compare-wrapper {
       display: none;
@@ -1711,8 +1749,29 @@
 
         const cardMatches = [...reply.matchAll(/```card-update\n([\s\S]*?)```/g)];
         let displayReply = reply.replace(/```card-update\n[\s\S]*?```/g, '').trim();
-        // 调性分析细节收进进度面板，聊天气泡只留结论
-        displayReply = displayReply.replace(/调性分析[：:][\s\S]*?(综合调性[^\n]*\n?)/, '$1').trim();
+
+        // 解析逐轴调性推理 → 结构化徽章块
+        const AXIS_NAMES = { VA: '视觉吸引力', IS: '信息显著性', AA: '行动权威性' };
+        const toneRows = [];
+        ['VA', 'IS', 'AA'].forEach(ax => {
+          const m = displayReply.match(new RegExp(ax + '(\\d)[\\s·]*' + AXIS_NAMES[ax] + '[：:]\\s*([^\\n]+)'));
+          if (m) toneRows.push({ ax, level: m[1], reason: m[2].trim() });
+        });
+        let toneBlockHtml = '';
+        if (toneRows.length) {
+          toneBlockHtml = '<div class="tone-block"><div class="tone-block-title">调性分析</div>' +
+            toneRows.map(r =>
+              '<div class="tone-row"><span class="tone-badge">' + r.ax + r.level + '</span>' +
+              '<span class="tone-row-body"><span class="tone-row-name">' + AXIS_NAMES[r.ax] + '</span>' +
+              '<span class="tone-row-reason">' + r.reason + '</span></span></div>'
+            ).join('') + '</div>';
+          // 从正文中移除原始调性段落（已经结构化展示了）
+          displayReply = displayReply.replace(/调性分析[：:]?\s*/,'');
+          ['VA','IS','AA'].forEach(ax => {
+            displayReply = displayReply.replace(new RegExp(ax + '\\d[\\s·]*' + AXIS_NAMES[ax] + '[：:][^\\n]*\\n?'), '');
+          });
+          displayReply = displayReply.replace(/综合调性[^\n]*\n?/, '').trim();
+        }
 
         let cardData = null;
         const parsed = [];
@@ -1722,11 +1781,11 @@
 
         setTimeout(hideProgress, 1500); // steps done, free the canvas
         if (parsed.length >= 2) {
-          addMsg((displayReply || '我出了两个方案') + '<br><br>👆 右侧预览区选择你喜欢的方案', 'bot');
+          addMsg((displayReply || '我出了两个方案') + toneBlockHtml + '<br>👆 在预览区选择你喜欢的方案', 'bot');
           showCompare(parsed.slice(0, 2));
           cardData = parsed[0];
         } else if (parsed.length === 1) {
-          addMsg(displayReply || '卡片已更新 ✨', 'bot');
+          addMsg((displayReply || '卡片已更新 ✨') + toneBlockHtml, 'bot');
           const { reason, ...cd } = parsed[0];
           cardData = cd;
           pushVersion(cd);
