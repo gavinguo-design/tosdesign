@@ -558,6 +558,46 @@
       text-transform: uppercase;
     }
 
+    /* ─── VERSION STRIP ─── */
+    .version-strip {
+      display: flex;
+      gap: 0.9rem;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 660px;
+      min-height: 0;
+    }
+    .version-strip:empty { display: none; }
+    .version-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+    }
+    .version-thumb {
+      width: 92px; height: 92px;
+      border-radius: 14px;
+      position: relative;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+      border: 2px solid transparent;
+      transition: all 0.18s;
+    }
+    .version-item.active .version-thumb {
+      border-color: var(--accent);
+      box-shadow: 0 4px 18px rgba(124,110,247,0.45);
+    }
+    .version-item:hover .version-thumb { transform: translateY(-2px); }
+    .version-tag {
+      font-size: 0.62rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+    .version-item.active .version-tag { color: var(--accent); font-weight: 600; }
+
     /* 1x */
     .tos-card {
       width: 138px; height: 138px;
@@ -905,7 +945,8 @@
 
         <!-- CARD MODE -->
         <div class="card-preview-wrapper" id="cardPreviewWrapper">
-          <div class="card-scale-label">2× 预览</div>
+          <div class="version-strip" id="versionStrip"></div>
+          <div class="card-scale-label" id="scaleLabel">2× 预览</div>
           <div class="tos-card-2x" id="previewCard2x">
             <div class="tos-card-inner" id="cardInner2x"></div>
           </div>
@@ -933,6 +974,8 @@
     let currentCardData = null;
     let currentTheme = 'light';
     let currentMode = 'card';
+    let versions = [];          // [{ data, time }]
+    let activeVersionIdx = -1;
 
     const SKILL_STEPS = [
       { id: 'analyze',   name: '需求分析',   desc: null },
@@ -959,6 +1002,52 @@
       if (currentCardData) {
         applyPreset({ ...currentCardData, dark: theme === 'dark' });
       }
+      renderVersionStrip();
+    }
+
+    // ─── VERSION HISTORY ─────────────────────────────────
+    function pushVersion(data) {
+      versions.push({ data, time: new Date() });
+      activeVersionIdx = versions.length - 1;
+      renderVersionStrip();
+      applyPreset({ ...data, dark: currentTheme === 'dark' });
+    }
+
+    function selectVersion(i) {
+      if (i < 0 || i >= versions.length) return;
+      activeVersionIdx = i;
+      renderVersionStrip();
+      applyPreset({ ...versions[i].data, dark: currentTheme === 'dark' });
+    }
+
+    function renderVersionStrip() {
+      const strip = document.getElementById('versionStrip');
+      if (!strip) return;
+      strip.innerHTML = '';
+      const dark = currentTheme === 'dark';
+      versions.forEach((v, i) => {
+        const item = document.createElement('div');
+        item.className = 'version-item' + (i === activeVersionIdx ? ' active' : '');
+        item.onclick = () => selectVersion(i);
+
+        const thumb = document.createElement('div');
+        thumb.className = 'version-thumb';
+        thumb.style.background = dark ? '#1c1c1e' : (v.data.bg || '#fff');
+        const scaled = document.createElement('div');
+        scaled.style.cssText = 'width:138px;height:138px;position:relative;transform:scale(0.6667);transform-origin:top left;pointer-events:none;';
+        scaled.appendChild(buildCardInner({ ...v.data, dark }));
+        thumb.appendChild(scaled);
+
+        const tag = document.createElement('div');
+        tag.className = 'version-tag';
+        tag.textContent = 'V' + (i + 1) + (i === activeVersionIdx ? ' · 当前' : '');
+
+        item.appendChild(thumb);
+        item.appendChild(tag);
+        strip.appendChild(item);
+      });
+      const label = document.getElementById('scaleLabel');
+      if (label) label.textContent = activeVersionIdx >= 0 ? ('V' + (activeVersionIdx + 1) + ' · 2× 预览') : '2× 预览';
     }
 
     // ─── PROGRESS PANEL ──────────────────────────────────
@@ -1326,7 +1415,7 @@
         if (cardMatch) {
           try {
             cardData = JSON.parse(cardMatch[1]);
-            applyPreset({ ...cardData, dark: currentTheme === 'dark' });
+            pushVersion(cardData);
           } catch(e) { console.warn('card parse error', e); }
         }
         updateStepsFromResponse(reply, displayReply, cardData);
