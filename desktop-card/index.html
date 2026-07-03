@@ -1569,7 +1569,11 @@
 
       if (icon) {
         const deco = document.createElement('div');
-        deco.style.cssText = `position:absolute;right:14px;bottom:14px;font-size:24px;opacity:0.12;line-height:1;`;
+        if (data.heroIcon) {
+          deco.style.cssText = `position:absolute;right:10px;bottom:8px;font-size:52px;opacity:0.95;line-height:1;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18));`;
+        } else {
+          deco.style.cssText = `position:absolute;right:14px;bottom:14px;font-size:24px;opacity:0.12;line-height:1;`;
+        }
         deco.textContent = icon;
         wrap.appendChild(deco);
       }
@@ -1579,7 +1583,8 @@
     function applyPreset(data) {
       currentCardData = data;
       const dark = data.dark || false;
-      const bg = dark ? '#1c1c1e' : (data.bg || '#ffffff');
+      // dark 只决定文字反白；背景以 data.bg 优先（支持渐变），无 bg 时才用默认深/浅色
+      const bg = data.bg || (dark ? '#1c1c1e' : '#ffffff');
 
       // 1x
       // 2x via CSS scale
