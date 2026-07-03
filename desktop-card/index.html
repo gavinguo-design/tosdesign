@@ -710,6 +710,21 @@
       .es-flow { gap: 0.8rem; }
     }
 
+    /* ─── WIP BADGE ─── */
+    .wip-badge {
+      display: inline-block;
+      font-size: 0.55rem;
+      font-weight: 600;
+      padding: 0.08rem 0.4rem;
+      border-radius: 999px;
+      background: rgba(255,175,0,0.15);
+      color: #FFAF00;
+      border: 1px solid rgba(255,175,0,0.35);
+      margin-left: 0.4rem;
+      vertical-align: middle;
+      letter-spacing: 0.05em;
+    }
+
     /* ─── TONE BLOCK in chat ─── */
     .tone-block {
       margin-top: 0.6rem;
@@ -1237,7 +1252,7 @@
       { id: 'tone',      name: '调性分析',   desc: null },
       { id: 'layout',    name: '布局规划',   desc: null },
       { id: 'color',     name: '配色方案',   desc: null },
-      { id: 'illust',    name: '插图生成',   desc: null },
+      { id: 'illust',    name: '插图生成',   desc: null, wip: true },
       { id: 'render',    name: '卡片渲染',   desc: null },
     ];
 
@@ -1408,7 +1423,7 @@
             <div class="step-status ${state.status}">
               <span>${statusIcon}</span>
             </div>
-            <div class="step-name ${nameClass}">${step.name}</div>
+            <div class="step-name ${nameClass}">${step.name}${step.wip ? '<span class="wip-badge">待调试</span>' : ''}</div>
             <span class="step-expand-icon">▾</span>
           </div>
           <div class="step-detail">
@@ -1416,7 +1431,7 @@
               ${state.desc ? `<div class="step-result">${state.desc}</div>` : '<div class="step-result" style="color:var(--muted2)">—</div>'}
               <div class="step-adjust-label">微调指令</div>
               <textarea class="step-adjust-input" rows="2" placeholder="描述你想调整的内容..."></textarea>
-              <button class="step-adjust-btn" onclick="rerunStep('${step.id}', this)">重新生成 ↺</button>
+              <button class="step-adjust-btn" onclick="rerunStep('${step.id}', this)">重新生成 ↺<span class="wip-badge">待调试</span></button>
             </div>
           </div>
         `;
@@ -1676,7 +1691,7 @@
       }
 
       // 5. 插图生成（占位）
-      updateStep('illust', 'done', '待接入 Image 2 生成规则');
+      updateStep('illust', 'done', '🚧 功能开发中：将接入 Image 2 生成插图，当前卡片图标为 emoji 占位');
 
       // 6. 卡片渲染
       const fieldCount = cardData ? Object.keys(cardData).length : 0;
