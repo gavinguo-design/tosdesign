@@ -1478,8 +1478,7 @@
       document.getElementById('cardPreviewWrapper').classList.toggle('hidden', currentMode !== 'card');
       if (currentMode === 'phone') document.getElementById('phonePreviewWrapper').classList.add('visible');
       const { reason, ...cardData } = chosen;
-      pushVersion(cardData, variantLabel);
-      autoIllustrate();
+      presentCard(cardData, variantLabel);
       chatHistory.push({ role: 'user', content: '我选择方案' + variantLabel });
       chatHistory.push({ role: 'assistant', content: '好的，已采用方案' + variantLabel + '，可以继续述说你想调整的细节。' });
       addMsg('已采用方案 ' + variantLabel + ' ✨ 继续告诉我你想调整的细节', 'bot');
@@ -1983,15 +1982,14 @@
         if (parsed.length >= 2) {
           addMsg((displayReply || '我出了两个方案') + toneBlockHtml + '<br>👆 在预览区选择你喜欢的方案', 'bot');
           const variants = parsed.slice(0, 2);
-          showCompare(variants);
-          illustrateVariants(variants);
           cardData = parsed[0];
+          await illustrateVariants(variants); // 先出图，后亮对比卡
+          showCompare(variants);
         } else if (parsed.length === 1) {
           addMsg((displayReply || '卡片已更新 ✨') + toneBlockHtml, 'bot');
           const { reason, ...cd } = parsed[0];
           cardData = cd;
-          pushVersion(cd);
-          autoIllustrate();
+          presentCard(cd);
         } else {
           addMsg(displayReply || '卡片已更新 ✨', 'bot');
         }
@@ -2020,58 +2018,49 @@
       el.style.height = Math.min(el.scrollHeight, 90) + 'px';
     }
 
-    async function illustrateVariants(variants) {
-      // 双方案并行生图：各自有 illustPrompt 才生成，完成后原地刷新对比卡
-      if (variants.some(v => v.illustPrompt)) {
-        updateStep('illust', 'running', '🎨 即梦为两个方案并行生成插图中…');
-        let doneCount = 0;
-        const need = variants.filter(v => v.illustPrompt).length;
-        window.__variantIllustDone = () => {
-          doneCount++;
-          if (doneCount >= need) updateStep('illust', 'done', '✓ 方案插图已生成');
-        };
-      }
-      variants.forEach(async (data, i) => {
-        if (!data.illustPrompt || data.bgImage) return;
-        try {
-          const token = localStorage.getItem('tos_token') || '';
-          const res = await fetch('/api/illustration', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ prompt: data.illustPrompt }),
-          });
-          const d = await res.json();
-          if (!d.ok) return;
-          variants[i] = { ...data, bgImage: d.url, dark: true, heroIcon: false, icon: '' };
-          if (window.__variantIllustDone) window.__variantIllustDone();
-          if (pendingVariants === variants) showCompare(variants); // 仍在对比态才刷新
-        } catch(e) {}
+    async function fetchIllustration(prompt) {
+      const token = localStorage.getItem('tos_token') || '';
+      const res = await fetch('/api/illustration', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ prompt }),
       });
+      const d = await res.json();
+      if (!d.ok) throw new Error(d.error || 'illustration failed');
+      return d.url;
     }
 
-    async function autoIllustrate() {
-      if (!currentCardData || !currentCardData.illustPrompt || currentCardData.bgImage) return;
-      updateStep('illust', 'running', '🎨 即梦 Seedream 生成插图中（约10秒）…');
-      try {
-        const token = localStorage.getItem('tos_token') || '';
-        const res = await fetch('/api/illustration', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ prompt: currentCardData.illustPrompt }),
-        });
-        const data = await res.json();
-        if (!data.ok) { updateStep('illust', 'error', '插图生成失败：' + (data.error || '') + '，可展开手动重试'); return; }
-        // 原地更新当前版本：插图作背景、文字反白、撤 emoji
-        const updated = { ...currentCardData, bgImage: data.url, dark: true, heroIcon: false, icon: '' };
-        if (activeVersionIdx >= 0) versions[activeVersionIdx].data = updated;
-        currentCardData = updated;
-        applyPreset({ ...updated });
-        renderVersionPanel();
-        updateStep('illust', 'done', '✓ 插图已生成并应用为卡片背景');
-      } catch(e) {
-        updateStep('illust', 'error', '网络错误，可展开手动重试');
-      }
+    // 双方案并行生图：全部完成后才返回（先出图后亮卡）
+    async function illustrateVariants(variants) {
+      const need = variants.filter(v => v.illustPrompt && !v.bgImage).length;
+      if (!need) return variants;
+      updateStep('illust', 'running', '🎨 即梦为两个方案并行生成插图中（约10秒）…');
+      await Promise.all(variants.map(async (data, i) => {
+        if (!data.illustPrompt || data.bgImage) return;
+        try {
+          const url = await fetchIllustration(data.illustPrompt);
+          variants[i] = { ...data, bgImage: url, dark: true, heroIcon: false, icon: '' };
+        } catch(e) {}
+      }));
+      updateStep('illust', 'done', '✓ 方案插图已生成');
+      return variants;
     }
+
+    // 单卡：先生图再亮卡
+    async function presentCard(cd, variantLabel) {
+      if (cd.illustPrompt && !cd.bgImage) {
+        updateStep('illust', 'running', '🎨 即梦 Seedream 生成插图中（约10秒）…');
+        try {
+          const url = await fetchIllustration(cd.illustPrompt);
+          cd = { ...cd, bgImage: url, dark: true, heroIcon: false, icon: '' };
+          updateStep('illust', 'done', '✓ 插图已生成并应用为卡片背景');
+        } catch(e) {
+          updateStep('illust', 'error', '插图生成失败，已使用纯色背景，可展开手动重试');
+        }
+      }
+      pushVersion(cd, variantLabel);
+    }
+
 
     async function generateIllustration(btn) {
       if (!currentCardData) { alert('先生成一张卡片'); return; }
