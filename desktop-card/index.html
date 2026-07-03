@@ -710,6 +710,83 @@
       .es-flow { gap: 0.8rem; }
     }
 
+    /* ─── FIGMA GEN BUTTON (under card) ─── */
+    .figma-gen-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.55rem 1.5rem;
+      border-radius: 999px;
+      border: 1px solid rgba(124,110,247,0.4);
+      background: rgba(124,110,247,0.15);
+      color: var(--accent);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .figma-gen-btn:hover { background: rgba(124,110,247,0.3); }
+    .figma-gen-btn:disabled { opacity: 0.6; cursor: default; }
+    .figma-link-box {
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.6rem;
+      padding: 0.5rem 0.9rem;
+      max-width: 420px;
+    }
+    .figma-link-box.visible { display: flex; }
+    .figma-link-box a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 300px;
+    }
+    .figma-link-box a:hover { text-decoration: underline; }
+
+    /* ─── UPLOAD BUTTON in chat input ─── */
+    .upload-btn {
+      width: 30px; height: 30px;
+      border-radius: 0.5rem;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+      flex-shrink: 0;
+      align-self: flex-end;
+      margin-bottom: 2px;
+    }
+    .upload-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+    .upload-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.68rem;
+      color: var(--text);
+      background: rgba(124,110,247,0.12);
+      border: 1px solid rgba(124,110,247,0.3);
+      border-radius: 0.5rem;
+      padding: 0.3rem 0.6rem;
+      margin: 0.4rem 0.9rem 0;
+      max-width: fit-content;
+    }
+    .upload-chip .rm {
+      cursor: pointer;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .upload-chip .rm:hover { color: #FF3430; }
+
     /* ─── WIP BADGE ─── */
     .wip-badge {
       display: inline-block;
@@ -1113,7 +1190,10 @@
         </div>
 
         <div class="chat-input-area">
+          <div id="uploadChipArea"></div>
           <div class="chat-input-wrap">
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()" title="上传图片 / PDF / 文档">📎</button>
+            <input type="file" id="fileInput" accept="image/*,.pdf,.doc,.docx,.txt,.md" style="display:none" onchange="handleFileSelect(this)" />
             <textarea
               class="chat-input"
               id="chatInput"
@@ -1152,9 +1232,6 @@
             <span>📱</span> 手机预览
           </button>
         </div>
-        <button class="mode-btn" id="figmaBtn" onclick="sendToFigma()" title="把当前卡片画进 Figma">
-          <span>🖼</span> 生成 Figma
-        </button>
         <div class="device-switcher">
           <button class="device-btn active" id="themeLight" title="浅色" onclick="switchTheme('light')">☀️</button>
           <button class="device-btn" id="themeDark" title="深色" onclick="switchTheme('dark')">🌙</button>
@@ -1215,6 +1292,10 @@
           <div class="tos-card-2x" id="previewCard2x">
             <div class="tos-card-inner" id="cardInner2x"></div>
           </div>
+          <button class="figma-gen-btn" id="figmaBtn" onclick="sendToFigma()">
+            <span>🖼</span> 生成 Figma
+          </button>
+          <div class="figma-link-box" id="figmaLinkBox"></div>
         </div>
 
         <!-- PHONE MOCKUP MODE -->
@@ -1294,6 +1375,7 @@
       activeVersionIdx = versions.length - 1;
       renderVersionPanel();
       applyPreset({ ...data, dark: currentTheme === 'dark' });
+      updateFigmaBtnVisibility();
     }
 
     function selectVersion(i) {
@@ -1384,6 +1466,7 @@
       wrap.classList.add('visible');
       document.getElementById('cardPreviewWrapper').classList.add('hidden');
       document.getElementById('phonePreviewWrapper').classList.remove('visible');
+      updateFigmaBtnVisibility();
     }
 
     function pickVariant(i) {
@@ -1826,8 +1909,23 @@
       const text = input.value.trim();
       if (!text) return;
 
-      addMsg(text, 'user');
-      chatHistory.push({ role: 'user', content: text });
+      let userContent = text;
+      let msgHtml = text;
+      if (uploadedFile) {
+        if (uploadedFile.type.startsWith('image/')) {
+          msgHtml = text + '<br><img src="' + uploadedFile.dataUrl + '" style="max-width:160px;border-radius:8px;margin-top:6px;" />';
+          userContent = [
+            { type: 'image', source: { type: 'base64', media_type: uploadedFile.type, data: uploadedFile.dataUrl.split(',')[1] } },
+            { type: 'text', text: text || '参考这张图片设计卡片' },
+          ];
+        } else {
+          msgHtml = text + '<br>📄 ' + uploadedFile.name;
+          userContent = text + '\n\n[用户上传了文件: ' + uploadedFile.name + '，请基于文件名和描述理解需求]';
+        }
+        clearUpload();
+      }
+      addMsg(msgHtml, 'user');
+      chatHistory.push({ role: 'user', content: userContent });
       input.value = '';
       input.style.height = '';
       document.getElementById('suggestions').style.display = 'none';
@@ -1922,6 +2020,8 @@
       el.style.height = Math.min(el.scrollHeight, 90) + 'px';
     }
 
+    const FIGMA_FILE_URL = 'https://www.figma.com/design/01lBr811lgrEAdKkYeGEYr/Untitled';
+
     async function sendToFigma() {
       if (!currentCardData) { alert('先生成一张卡片再推送到 Figma'); return; }
       const btn = document.getElementById('figmaBtn');
@@ -1938,6 +2038,9 @@
         const data = await res.json();
         if (data.ok) {
           btn.innerHTML = '<span>✓</span> 已推送';
+          const box = document.getElementById('figmaLinkBox');
+          box.innerHTML = '🔗 卡片将在几秒内出现在 Figma：<a href="' + FIGMA_FILE_URL + '" target="_blank">打开 Figma 文件 ↗</a>';
+          box.classList.add('visible');
           setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 2000);
         } else {
           alert('推送失败：' + (data.error || '请重试'));
@@ -1948,6 +2051,40 @@
         btn.innerHTML = orig; btn.disabled = false;
       }
     }
+
+    function updateFigmaBtnVisibility() {
+      const btn = document.getElementById('figmaBtn');
+      if (!btn) return;
+      // 只在：有确定的当前卡片 且 不在双方案待选状态 时显示
+      const show = !!currentCardData && !pendingVariants && versions.length > 0;
+      btn.style.display = show ? 'flex' : 'none';
+      if (!show) document.getElementById('figmaLinkBox').classList.remove('visible');
+    }
+
+    // ─── FILE UPLOAD ─────────────────────────────────────
+    let uploadedFile = null; // { name, type, dataUrl }
+
+    function handleFileSelect(input) {
+      const file = input.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) { alert('文件不能超过 5MB'); input.value = ''; return; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        uploadedFile = { name: file.name, type: file.type, dataUrl: reader.result };
+        renderUploadChip();
+      };
+      reader.readAsDataURL(file);
+      input.value = '';
+    }
+
+    function renderUploadChip() {
+      const area = document.getElementById('uploadChipArea');
+      if (!uploadedFile) { area.innerHTML = ''; return; }
+      const icon = uploadedFile.type.startsWith('image/') ? '🖼' : '📄';
+      area.innerHTML = '<div class="upload-chip">' + icon + ' <span>' + uploadedFile.name + '</span> <span class="rm" onclick="clearUpload()">✕</span></div>';
+    }
+
+    function clearUpload() { uploadedFile = null; renderUploadChip(); }
 
     function exportCard() {
       alert('导出功能即将上线 🚀');
@@ -2030,6 +2167,7 @@
     // ─── INIT ─────────────────────────────────────────────
     // Empty state (methodology intro) shown until first card is generated
     document.getElementById('cardPreviewWrapper').classList.add('hidden');
+    updateFigmaBtnVisibility();
   </script>
 
 </body>
