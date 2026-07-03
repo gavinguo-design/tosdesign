@@ -1479,6 +1479,7 @@
       if (currentMode === 'phone') document.getElementById('phonePreviewWrapper').classList.add('visible');
       const { reason, ...cardData } = chosen;
       pushVersion(cardData, variantLabel);
+      autoIllustrate();
       chatHistory.push({ role: 'user', content: '我选择方案' + variantLabel });
       chatHistory.push({ role: 'assistant', content: '好的，已采用方案' + variantLabel + '，可以继续述说你想调整的细节。' });
       addMsg('已采用方案 ' + variantLabel + ' ✨ 继续告诉我你想调整的细节', 'bot');
@@ -1998,6 +1999,7 @@
           const { reason, ...cd } = parsed[0];
           cardData = cd;
           pushVersion(cd);
+          autoIllustrate();
         } else {
           addMsg(displayReply || '卡片已更新 ✨', 'bot');
         }
@@ -2023,6 +2025,30 @@
     function autoResize(el) {
       el.style.height = '';
       el.style.height = Math.min(el.scrollHeight, 90) + 'px';
+    }
+
+    async function autoIllustrate() {
+      if (!currentCardData || !currentCardData.illustPrompt || currentCardData.bgImage) return;
+      updateStep('illust', 'running', '🎨 即梦 Seedream 生成插图中（约10秒）…');
+      try {
+        const token = localStorage.getItem('tos_token') || '';
+        const res = await fetch('/api/illustration', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ prompt: currentCardData.illustPrompt }),
+        });
+        const data = await res.json();
+        if (!data.ok) { updateStep('illust', 'error', '插图生成失败：' + (data.error || '') + '，可展开手动重试'); return; }
+        // 原地更新当前版本：插图作背景、文字反白、撤 emoji
+        const updated = { ...currentCardData, bgImage: data.url, dark: true, heroIcon: false, icon: '' };
+        if (activeVersionIdx >= 0) versions[activeVersionIdx].data = updated;
+        currentCardData = updated;
+        applyPreset({ ...updated });
+        renderVersionPanel();
+        updateStep('illust', 'done', '✓ 插图已生成并应用为卡片背景');
+      } catch(e) {
+        updateStep('illust', 'error', '网络错误，可展开手动重试');
+      }
     }
 
     async function generateIllustration(btn) {
