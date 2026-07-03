@@ -1152,6 +1152,9 @@
             <span>📱</span> 手机预览
           </button>
         </div>
+        <button class="mode-btn" id="figmaBtn" onclick="sendToFigma()" title="把当前卡片画进 Figma">
+          <span>🖼</span> 生成 Figma
+        </button>
         <div class="device-switcher">
           <button class="device-btn active" id="themeLight" title="浅色" onclick="switchTheme('light')">☀️</button>
           <button class="device-btn" id="themeDark" title="深色" onclick="switchTheme('dark')">🌙</button>
@@ -1917,6 +1920,33 @@
     function autoResize(el) {
       el.style.height = '';
       el.style.height = Math.min(el.scrollHeight, 90) + 'px';
+    }
+
+    async function sendToFigma() {
+      if (!currentCardData) { alert('先生成一张卡片再推送到 Figma'); return; }
+      const btn = document.getElementById('figmaBtn');
+      const orig = btn.innerHTML;
+      btn.innerHTML = '<span>⏳</span> 推送中…';
+      btn.disabled = true;
+      try {
+        const token = localStorage.getItem('tos_token') || '';
+        const res = await fetch('/api/figma/queue', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ card: { ...currentCardData, dark: currentTheme === 'dark' } }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          btn.innerHTML = '<span>✓</span> 已推送';
+          setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 2000);
+        } else {
+          alert('推送失败：' + (data.error || '请重试'));
+          btn.innerHTML = orig; btn.disabled = false;
+        }
+      } catch(e) {
+        alert('网络错误，请重试');
+        btn.innerHTML = orig; btn.disabled = false;
+      }
     }
 
     function exportCard() {

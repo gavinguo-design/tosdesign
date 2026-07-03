@@ -1,0 +1,10 @@
+{
+  "name": "TOS Card Bridge",
+  "id": "tos-card-bridge",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": ["figma"],
+  "networkAccess": {
+    "allowedDomains": ["https://tosdesign.club"]
+  }
+}
