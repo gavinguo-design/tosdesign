@@ -1480,6 +1480,23 @@
       return String(v);
     }
 
+    // 按钮用色规范：primary=语义色实底白字 / subtle=中性半透明 / frosted=白色磨砂(渐变背景用)
+    function buttonStyle(data, dark) {
+      const style = data.actionStyle || 'primary';
+      const isGradient = typeof data.bg === 'string' && data.bg.includes('gradient');
+      if (style === 'frosted' || (isGradient && style !== 'subtle')) {
+        return 'background:rgba(255,255,255,0.28);backdrop-filter:blur(6px);color:#fff;';
+      }
+      if (style === 'subtle') {
+        return dark
+          ? 'background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.9);'
+          : 'background:rgba(0,0,0,0.08);color:rgba(0,0,0,0.8);';
+      }
+      // primary: 语义色实底 + 白字
+      const fill = data.accentColor || '#0079FE';
+      return `background:${fill};color:#fff;`;
+    }
+
     // 字号降级：按可用宽度和字符数自动缩小，避免大数字溢出
     function fitFontSize(text, baseSize, maxWidth, charRatio) {
       if (!text) return baseSize;
@@ -1534,9 +1551,8 @@
           data.subtitle || ''));
         if (data.action) wrap.appendChild(mk(
           `position:absolute;left:14px;bottom:14px;width:74px;height:30px;border-radius:999px;` +
-          `background:${dark?'rgba(255,255,255,0.15)':'rgba(0,0,0,0.08)'};` +
           `display:flex;align-items:center;justify-content:center;` +
-          `font-size:12px;font-weight:600;color:${dark?'rgba(255,255,255,0.9)':'rgba(0,0,0,0.8)'};`,
+          `font-size:12px;font-weight:600;` + buttonStyle(data, dark),
           data.action));
       } else if (layout === 'triple') {
         wrap.appendChild(mk(
@@ -1591,12 +1607,11 @@
 
       // 行动按钮：所有布局通用（dual 布局已在上面渲染过，跳过）
       if (data.action && layout !== 'dual') {
+        const styles = buttonStyle(data, dark);
         const btn = mk(
           `position:absolute;left:14px;bottom:14px;height:26px;padding:0 12px;border-radius:999px;` +
-          `background:${data.accentColor || (dark?'rgba(255,255,255,0.15)':'rgba(0,0,0,0.08)')};` +
           `display:inline-flex;align-items:center;justify-content:center;max-width:96px;` +
-          `font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;` +
-          `color:${data.accentColor ? '#fff' : (dark?'rgba(255,255,255,0.9)':'rgba(0,0,0,0.8)')};`,
+          `font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;` + styles,
           data.action);
         wrap.appendChild(btn);
       }
