@@ -1367,8 +1367,16 @@
     }
 
     // ─── VERSION HISTORY ─────────────────────────────────
+    function clearCompare() {
+      pendingVariants = null;
+      const wrap = document.getElementById('compareWrapper');
+      wrap.classList.remove('visible');
+      wrap.innerHTML = '';
+    }
+
     function pushVersion(data, variant) {
       hideEmptyState();
+      clearCompare(); // 新卡上桌，撤掉未选完的 A/B 对比，防止重叠
       document.getElementById('cardPreviewWrapper').classList.toggle('hidden', currentMode !== 'card');
       document.getElementById('phonePreviewWrapper').classList.toggle('visible', currentMode === 'phone');
       versions.push({ data, time: new Date(), variant: variant || null });
@@ -1473,8 +1481,7 @@
       if (!pendingVariants) return;
       const chosen = pendingVariants[i];
       const variantLabel = i === 0 ? 'A' : 'B';
-      pendingVariants = null;
-      document.getElementById('compareWrapper').classList.remove('visible');
+      clearCompare();
       document.getElementById('cardPreviewWrapper').classList.toggle('hidden', currentMode !== 'card');
       if (currentMode === 'phone') document.getElementById('phonePreviewWrapper').classList.add('visible');
       const { reason, ...cardData } = chosen;
