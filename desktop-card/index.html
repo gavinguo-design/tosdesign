@@ -1597,15 +1597,26 @@
         ? textPart.split(/。|\n/)[0].trim().slice(0, 60)
         : null;
 
-      // 2. 调性分析 — 提取 VA/IS/AA 分数
-      const axisMatch = fullReply.match(/VA(\d)\+IS(\d)\+AA(\d)/);
+      // 2. 调性分析 — 优先提取逐轴推理（VA2 视觉吸引力：xxx），退回旧格式
       let toneDesc = null;
-      if (axisMatch) {
-        const va = axisMatch[1], is = axisMatch[2], aa = axisMatch[3];
-        const vaLabel = AXIS_LABELS.VA[va] || `视觉张力 ${va}`;
-        const isLabel = AXIS_LABELS.IS[is] || `信息密度 ${is}`;
-        const aaLabel = AXIS_LABELS.AA[aa] || `行动引导 ${aa}`;
-        toneDesc = `VA${va} 视觉张力·${vaLabel}<br>IS${is} 信息密度·${isLabel}<br>AA${aa} 行动引导·${aaLabel}`;
+      const vaLine = fullReply.match(/VA(\d)[\s·]*视觉吸引力[：:]\s*([^\n]+)/);
+      const isLine = fullReply.match(/IS(\d)[\s·]*信息显著性[：:]\s*([^\n]+)/);
+      const aaLine = fullReply.match(/AA(\d)[\s·]*行动权威性[：:]\s*([^\n]+)/);
+      if (vaLine || isLine || aaLine) {
+        const rows = [];
+        if (vaLine) rows.push(`<b>VA${vaLine[1]}</b> 视觉吸引力 — ${vaLine[2].trim()}`);
+        if (isLine) rows.push(`<b>IS${isLine[1]}</b> 信息显著性 — ${isLine[2].trim()}`);
+        if (aaLine) rows.push(`<b>AA${aaLine[1]}</b> 行动权威性 — ${aaLine[2].trim()}`);
+        toneDesc = rows.join('<br>');
+      } else {
+        const axisMatch = fullReply.match(/VA(\d)\+IS(\d)\+AA(\d)/);
+        if (axisMatch) {
+          const va = axisMatch[1], is = axisMatch[2], aa = axisMatch[3];
+          const vaLabel = AXIS_LABELS.VA[va] || `视觉张力 ${va}`;
+          const isLabel = AXIS_LABELS.IS[is] || `信息密度 ${is}`;
+          const aaLabel = AXIS_LABELS.AA[aa] || `行动引导 ${aa}`;
+          toneDesc = `VA${va} 视觉张力·${vaLabel}<br>IS${is} 信息密度·${isLabel}<br>AA${aa} 行动引导·${aaLabel}`;
+        }
       }
 
       // 3. 布局规划
@@ -1700,6 +1711,8 @@
 
         const cardMatches = [...reply.matchAll(/```card-update\n([\s\S]*?)```/g)];
         let displayReply = reply.replace(/```card-update\n[\s\S]*?```/g, '').trim();
+        // 调性分析细节收进进度面板，聊天气泡只留结论
+        displayReply = displayReply.replace(/调性分析[：:][\s\S]*?(综合调性[^\n]*\n?)/, '$1').trim();
 
         let cardData = null;
         const parsed = [];
