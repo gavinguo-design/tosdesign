@@ -1539,11 +1539,27 @@
           `overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;`,
           data.title));
       } else if (layout === 'dual') {
-        wrap.appendChild(mk(
-          `position:absolute;left:14px;top:14px;width:110px;` +
-          `font-size:16px;font-weight:600;line-height:19px;color:${tc};` +
-          `overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;`,
-          data.title));
+        if (data.headerIcon) {
+          const dh = mk(
+            `position:absolute;left:14px;top:14px;width:110px;height:19px;` +
+            `font-size:16px;font-weight:600;line-height:19px;color:${tc};` +
+            `overflow:hidden;white-space:nowrap;display:flex;align-items:center;gap:4px;`,
+            '');
+          const hi = document.createElement('span');
+          hi.style.cssText = 'font-size:16px;line-height:1;';
+          hi.textContent = str(data.headerIcon);
+          dh.appendChild(hi);
+          const dt = document.createElement('span');
+          dt.textContent = data.title;
+          dh.appendChild(dt);
+          wrap.appendChild(dh);
+        } else {
+          wrap.appendChild(mk(
+            `position:absolute;left:14px;top:14px;width:110px;` +
+            `font-size:16px;font-weight:600;line-height:19px;color:${tc};` +
+            `overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;`,
+            data.title));
+        }
         wrap.appendChild(mk(
           `position:absolute;left:14px;top:57px;width:110px;` +
           `font-size:12px;font-weight:500;line-height:16px;color:${sc};` +
@@ -1555,10 +1571,20 @@
           `font-size:12px;font-weight:600;` + buttonStyle(data, dark),
           data.action));
       } else if (layout === 'triple') {
-        wrap.appendChild(mk(
+        const triHeader = mk(
           `position:absolute;left:14px;top:14px;width:110px;height:14px;` +
-          `font-size:12px;font-weight:500;color:${tc};overflow:hidden;white-space:nowrap;`,
-          data.header || data.title));
+          `font-size:12px;font-weight:500;color:${tc};overflow:hidden;white-space:nowrap;display:flex;align-items:center;gap:4px;`,
+          '');
+        if (data.headerIcon) {
+          const hi = document.createElement('span');
+          hi.style.cssText = 'font-size:12px;line-height:1;';
+          hi.textContent = str(data.headerIcon);
+          triHeader.appendChild(hi);
+        }
+        const ht = document.createElement('span');
+        ht.textContent = data.header || data.title;
+        triHeader.appendChild(ht);
+        wrap.appendChild(triHeader);
         wrap.appendChild(mk(
           `position:absolute;left:14px;top:30px;width:110px;height:24px;` +
           `font-size:${fitFontSize(data.value, 20, 110)}px;font-weight:600;color:${data.accentColor||tc};overflow:hidden;white-space:nowrap;`,
@@ -1568,10 +1594,20 @@
           `font-size:10px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;`,
           data.subtitle || ''));
       } else if (layout === 'big') {
-        wrap.appendChild(mk(
+        const bigHeader = mk(
           `position:absolute;left:14px;top:14px;width:110px;height:14px;` +
-          `font-size:12px;font-weight:500;color:${tc};`,
-          data.header || data.title));
+          `font-size:12px;font-weight:500;color:${tc};overflow:hidden;white-space:nowrap;display:flex;align-items:center;gap:4px;`,
+          '');
+        if (data.headerIcon) {
+          const hi = document.createElement('span');
+          hi.style.cssText = 'font-size:12px;line-height:1;';
+          hi.textContent = str(data.headerIcon);
+          bigHeader.appendChild(hi);
+        }
+        const bt = document.createElement('span');
+        bt.textContent = data.header || data.title;
+        bigHeader.appendChild(bt);
+        wrap.appendChild(bigHeader);
         const dw = document.createElement('div');
         dw.style.cssText = `position:absolute;left:14px;top:28px;width:110px;height:48px;display:flex;align-items:flex-end;gap:2px;`;
         const de = document.createElement('span');
