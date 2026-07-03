@@ -1571,14 +1571,34 @@
           dw.appendChild(ue);
         }
         wrap.appendChild(dw);
-        if (data.subtitle) wrap.appendChild(mk(
-          `position:absolute;left:14px;top:98px;width:110px;height:12px;` +
-          `font-size:10px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;`,
-          data.subtitle));
-        if (data.subtitle2) wrap.appendChild(mk(
-          `position:absolute;left:14px;top:112px;width:110px;height:12px;` +
-          `font-size:10px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;`,
-          data.subtitle2));
+        if (data.action) {
+          // 有按钮时：subtitle 上移，subtitle2 省略，底部留给按钮
+          if (data.subtitle) wrap.appendChild(mk(
+            `position:absolute;left:14px;top:80px;width:110px;height:12px;` +
+            `font-size:10px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;`,
+            data.subtitle));
+        } else {
+          if (data.subtitle) wrap.appendChild(mk(
+            `position:absolute;left:14px;top:98px;width:110px;height:12px;` +
+            `font-size:10px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;`,
+            data.subtitle));
+          if (data.subtitle2) wrap.appendChild(mk(
+            `position:absolute;left:14px;top:112px;width:110px;height:12px;` +
+            `font-size:10px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;`,
+            data.subtitle2));
+        }
+      }
+
+      // 行动按钮：所有布局通用（dual 布局已在上面渲染过，跳过）
+      if (data.action && layout !== 'dual') {
+        const btn = mk(
+          `position:absolute;left:14px;bottom:14px;height:26px;padding:0 12px;border-radius:999px;` +
+          `background:${data.accentColor || (dark?'rgba(255,255,255,0.15)':'rgba(0,0,0,0.08)')};` +
+          `display:inline-flex;align-items:center;justify-content:center;max-width:96px;` +
+          `font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;` +
+          `color:${data.accentColor ? '#fff' : (dark?'rgba(255,255,255,0.9)':'rgba(0,0,0,0.8)')};`,
+          data.action);
+        wrap.appendChild(btn);
       }
 
       if (icon) {
