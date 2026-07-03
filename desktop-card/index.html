@@ -1713,13 +1713,13 @@
         const de = document.createElement('span');
         const unitW = data.unit ? (String(data.unit).length * 12 + 4) : 0;
         const bigSize = fitFontSize(data.value, 40, 110 - unitW, undefined, 14);
-        de.style.cssText = `font-size:${bigSize}px;font-weight:500;line-height:1;color:${(data.userColorOk&&data.accentColor)||tc};white-space:nowrap;`;
+        de.style.cssText = `font-size:${bigSize}px;font-weight:500;line-height:1;color:${(data.userColorOk&&data.accentColor)||tc};white-space:nowrap;overflow:hidden;min-width:0;flex-shrink:1;`;
         de.textContent = data.value || '';
         dw.appendChild(de);
         if (data.unit) {
           const ue = document.createElement('span');
-          ue.style.cssText = `font-size:12px;font-weight:600;padding-bottom:6px;color:${tc};`;
-          ue.textContent = data.unit;
+          ue.style.cssText = `font-size:12px;font-weight:600;padding-bottom:6px;color:${tc};white-space:nowrap;flex-shrink:0;`;
+          ue.textContent = String(data.unit).slice(0, 4);
           dw.appendChild(ue);
         }
         wrap.appendChild(dw);
