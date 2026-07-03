@@ -622,65 +622,92 @@
     }
     .version-item.active .version-tag { color: var(--accent); font-weight: 600; }
 
-    /* ─── EMPTY STATE: methodology intro ─── */
+    /* ─── EMPTY STATE: how I design ─── */
     .empty-state {
       display: flex;
-      gap: 1.5rem;
-      align-items: stretch;
-      justify-content: center;
-      flex-wrap: wrap;
-      max-width: 980px;
+      flex-direction: column;
+      align-items: center;
+      gap: 2.2rem;
+      max-width: 900px;
       margin: auto;
     }
     .empty-state.hidden { display: none; }
-    .method-card {
+    .es-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.02em;
+    }
+    .es-title span { color: var(--accent); }
+    .es-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: -1.4rem;
+    }
+    .es-flow {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .es-step {
+      width: 150px;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 1rem;
-      padding: 1.6rem 1.8rem;
-      flex: 1;
-      min-width: 380px;
-      max-width: 560px;
+      padding: 1.1rem 1rem 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      transition: all 0.25s;
+      position: relative;
     }
-    .method-title {
-      font-size: 0.95rem;
+    .es-step:hover {
+      transform: translateY(-4px);
+      border-color: rgba(124,110,247,0.45);
+      box-shadow: 0 12px 32px rgba(124,110,247,0.12);
+    }
+    .es-step-num {
+      font-size: 0.6rem;
+      color: var(--muted2, var(--muted));
+      letter-spacing: 0.12em;
+    }
+    .es-step-icon { font-size: 1.5rem; line-height: 1; }
+    .es-step-name {
+      font-size: 0.85rem;
       font-weight: 700;
       color: var(--text);
-      margin-bottom: 1.3rem;
     }
-    .method-title span {
-      font-weight: 400;
+    .es-step-desc {
+      font-size: 0.68rem;
+      line-height: 1.55;
       color: var(--muted);
-      font-size: 0.8rem;
-      margin-left: 0.5rem;
     }
-    .axis-cols { display: flex; gap: 0.7rem; }
-    .axis-col { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
-    .axis-head {
-      background: #0079FE;
-      color: #fff;
-      border-radius: 8px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-align: center;
-      padding: 0.5rem 0.3rem;
+    .es-step-desc em {
+      font-style: normal;
+      color: rgba(124,110,247,0.95);
     }
-    .axis-cell {
-      border-radius: 8px;
-      padding: 0.5rem 0.6rem;
-      font-size: 0.62rem;
-      line-height: 1.45;
-    }
-    .axis-cell b { font-size: 0.7rem; display: block; margin-bottom: 0.15rem; }
-    .axis-cell .lv { opacity: 0.55; font-weight: 400; margin-left: 0.3rem; }
-    .axis-cell.l1 { background: rgba(255,255,255,0.10); color: rgba(255,255,255,0.75); }
-    .axis-cell.l2 { background: rgba(255,255,255,0.16); color: rgba(255,255,255,0.85); }
-    .axis-cell.l3 { background: rgba(0,0,0,0.5); color: rgba(255,255,255,0.92); border: 1px solid rgba(255,255,255,0.1); }
-    .radar-wrap {
+    .es-arrow {
       display: flex;
       align-items: center;
-      justify-content: center;
-      padding: 0.5rem 0;
+      padding: 0 0.55rem;
+      color: var(--muted);
+      opacity: 0.5;
+      font-size: 0.9rem;
+    }
+    .es-hint {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .es-hint b {
+      color: var(--accent);
+      font-weight: 600;
+      cursor: pointer;
+    }
+    @media (max-width: 1100px) {
+      .es-arrow { display: none; }
+      .es-flow { gap: 0.8rem; }
     }
 
     /* ─── VARIANT COMPARE ─── */
@@ -1081,56 +1108,47 @@
       <div class="preview-body">
       <div class="preview-canvas" id="previewCanvas">
 
-        <!-- EMPTY STATE: methodology intro -->
+        <!-- EMPTY STATE: how I design -->
         <div class="empty-state" id="emptyState">
-          <div class="method-card">
-            <div class="method-title">卡片调性 <span>│ 视觉、信息、操作的权重</span></div>
-            <div class="axis-cols">
-              <div class="axis-col">
-                <div class="axis-head">🌊 视觉吸引力</div>
-                <div class="axis-cell l1"><b>克制 <span class="lv">VA1</span></b>纯白色、轻色彩、小图标等</div>
-                <div class="axis-cell l2"><b>明确 <span class="lv">VA2</span></b>轻渐变、局部插画、品牌色点缀等</div>
-                <div class="axis-cell l3"><b>强吸引 <span class="lv">VA3</span></b>大面渐变、大插画、强品牌色等</div>
-              </div>
-              <div class="axis-col">
-                <div class="axis-head">📝 信息显著性</div>
-                <div class="axis-cell l1"><b>低显著 <span class="lv">IS1</span></b>只展示内容，无明确状态或原因</div>
-                <div class="axis-cell l2"><b>中显著 <span class="lv">IS2</span></b>有上下文原因，有轻行动建议说明</div>
-                <div class="axis-cell l3"><b>高显著 <span class="lv">IS3</span></b>有明确数字、时间、阈值、风险等</div>
-              </div>
-              <div class="axis-col">
-                <div class="axis-head">☝️ 行动权威性</div>
-                <div class="axis-cell l1"><b>无行动 <span class="lv">AA1</span></b>只浏览/整卡点击/无按钮</div>
-                <div class="axis-cell l2"><b>弱行动 <span class="lv">AA2</span></b>Learn more/View/try，可忽略</div>
-                <div class="axis-cell l3"><b>强行动 <span class="lv">AA3</span></b>确认/立即处理这类高价值操作</div>
-              </div>
+          <div class="es-title">我是这样帮你设计一张卡片的 <span>✦</span></div>
+          <div class="es-sub">138 × 138 的方寸之间，每一步都有讲究</div>
+          <div class="es-flow">
+            <div class="es-step">
+              <div class="es-step-num">STEP 1</div>
+              <div class="es-step-icon">🧠</div>
+              <div class="es-step-name">听懂你要什么</div>
+              <div class="es-step-desc">一句「天气卡片」背后，我会拆出<em>场景、数据、想传达的情绪</em></div>
+            </div>
+            <div class="es-arrow">→</div>
+            <div class="es-step">
+              <div class="es-step-num">STEP 2</div>
+              <div class="es-step-icon">🎯</div>
+              <div class="es-step-name">定调性</div>
+              <div class="es-step-desc">在<em>视觉吸引、信息密度、行动引导</em>三个维度间找平衡——展示型克制，操作型鲜明</div>
+            </div>
+            <div class="es-arrow">→</div>
+            <div class="es-step">
+              <div class="es-step-num">STEP 3</div>
+              <div class="es-step-icon">📐</div>
+              <div class="es-step-name">挑布局</div>
+              <div class="es-step-desc">大数字要突显？信息要分层？<em>4 种布局</em>按内容结构选，不硬塞</div>
+            </div>
+            <div class="es-arrow">→</div>
+            <div class="es-step">
+              <div class="es-step-num">STEP 4</div>
+              <div class="es-step-icon">🎨</div>
+              <div class="es-step-name">配色</div>
+              <div class="es-step-desc">跟着场景走：晴天暖、夜间深、警示红，<em>浅色深色</em>各一套</div>
+            </div>
+            <div class="es-arrow">→</div>
+            <div class="es-step">
+              <div class="es-step-num">STEP 5</div>
+              <div class="es-step-icon">✨</div>
+              <div class="es-step-name">出稿给你挑</div>
+              <div class="es-step-desc">拿不准时我会给<em>两个方案</em>让你选，选完再一起打磨细节</div>
             </div>
           </div>
-          <div class="method-card">
-            <div class="method-title">用户感知 <span>│ 三轴分布模型</span></div>
-            <div class="radar-wrap">
-              <svg width="300" height="250" viewBox="0 0 300 250">
-                <defs>
-                  <linearGradient id="radarFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#0079FE" stop-opacity="0.9"/>
-                    <stop offset="100%" stop-color="#0079FE" stop-opacity="0.35"/>
-                  </linearGradient>
-                </defs>
-                <!-- outer triangle -->
-                <polygon points="150,30 262,215 38,215" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
-                <!-- mid filled -->
-                <polygon points="150,58 234,199 66,199" fill="url(#radarFill)" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
-                <!-- inner -->
-                <polygon points="150,105 197,183 103,183" fill="rgba(255,255,255,0.85)" stroke="rgba(0,0,0,0.15)" stroke-width="1"/>
-                <!-- axis ticks -->
-                <line x1="150" y1="30" x2="150" y2="22" stroke="rgba(255,255,255,0.5)"/>
-                <!-- labels -->
-                <text x="150" y="14" text-anchor="middle" font-size="11" fill="rgba(255,255,255,0.85)" font-weight="600">视觉吸引力</text>
-                <text x="30" y="234" text-anchor="middle" font-size="11" fill="rgba(255,255,255,0.85)" font-weight="600">信息显著性</text>
-                <text x="268" y="234" text-anchor="middle" font-size="11" fill="rgba(255,255,255,0.85)" font-weight="600">行动权威性</text>
-              </svg>
-            </div>
-          </div>
+          <div class="es-hint">试试对我说：<b onclick="document.getElementById('chatInput').value='做一个天气卡片';sendMessage()">「做一个天气卡片」</b></div>
         </div>
 
         <!-- VARIANT COMPARE MODE -->
