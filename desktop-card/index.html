@@ -1399,7 +1399,7 @@
 
         const thumb = document.createElement('div');
         thumb.className = 'version-thumb';
-        thumb.style.background = dark ? '#1c1c1e' : (v.data.bg || '#fff');
+        thumb.style.background = v.data.bgImage ? `url(${v.data.bgImage}) center/cover no-repeat` : (dark ? '#1c1c1e' : (v.data.bg || '#fff'));
         const scaled = document.createElement('div');
         scaled.style.cssText = 'width:138px;height:138px;position:relative;transform:scale(0.6667);transform-origin:top left;pointer-events:none;';
         scaled.appendChild(buildCardInner({ ...v.data, dark }));
@@ -1442,7 +1442,7 @@
 
         const card = document.createElement('div');
         card.className = 'compare-card';
-        card.style.background = dark ? '#1c1c1e' : (data.bg || '#fff');
+        card.style.background = data.bgImage ? `url(${data.bgImage}) center/cover no-repeat` : (dark ? '#1c1c1e' : (data.bg || '#fff'));
         const scaled = document.createElement('div');
         scaled.style.cssText = 'width:138px;height:138px;position:relative;transform:scale(1.5);transform-origin:top left;pointer-events:none;';
         scaled.appendChild(buildCardInner({ ...data, dark }));
@@ -1753,7 +1753,8 @@
       currentCardData = data;
       const dark = data.dark || false;
       // dark 只决定文字反白；背景以 data.bg 优先（支持渐变），无 bg 时才用默认深/浅色
-      const bg = data.bg || (dark ? '#1c1c1e' : '#ffffff');
+      let bg = data.bg || (dark ? '#1c1c1e' : '#ffffff');
+      if (data.bgImage) bg = `url(${data.bgImage}) center/cover no-repeat`;
 
       // 1x
       // 2x via CSS scale
@@ -1865,7 +1866,11 @@
       }
 
       // 5. 插图生成（占位）
-      updateStep('illust', 'done', '🚧 功能开发中：将接入 Image 2 生成插图，当前卡片图标为 emoji 占位');
+      const illustBtnHtml = '<button class="step-adjust-btn" style="margin-top:6px" onclick="generateIllustration(this)">🎨 生成插图（即梦 Seedream）</button>';
+      const illustHint = (currentCardData && currentCardData.illustPrompt)
+        ? ('插图提示词：' + currentCardData.illustPrompt + '<br>' + illustBtnHtml)
+        : ('当前卡片使用 emoji 图标；可生成 AI 插图作为卡片背景<br>' + illustBtnHtml);
+      updateStep('illust', 'done', illustHint);
 
       // 6. 卡片渲染
       const fieldCount = cardData ? Object.keys(cardData).length : 0;
@@ -2018,6 +2023,31 @@
     function autoResize(el) {
       el.style.height = '';
       el.style.height = Math.min(el.scrollHeight, 90) + 'px';
+    }
+
+    async function generateIllustration(btn) {
+      if (!currentCardData) { alert('先生成一张卡片'); return; }
+      btn.textContent = '⏳ 生成中（约10秒）…';
+      btn.disabled = true;
+      const subject = currentCardData.illustPrompt
+        || (currentCardData.header || currentCardData.title || '') + ' 主题场景插画';
+      try {
+        const token = localStorage.getItem('tos_token') || '';
+        const res = await fetch('/api/illustration', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ prompt: subject }),
+        });
+        const data = await res.json();
+        if (!data.ok) { alert('插图生成失败：' + (data.error || '请重试')); btn.textContent = '🎨 生成插图（即梦 Seedream）'; btn.disabled = false; return; }
+        const updated = { ...currentCardData, bgImage: data.url, dark: true, heroIcon: false, icon: '' };
+        pushVersion(updated);
+        btn.textContent = '✓ 已生成并应用';
+        setTimeout(() => { btn.textContent = '🎨 重新生成插图'; btn.disabled = false; }, 2000);
+      } catch(e) {
+        alert('网络错误，请重试');
+        btn.textContent = '🎨 生成插图（即梦 Seedream）'; btn.disabled = false;
+      }
     }
 
     const FIGMA_FILE_URL = 'https://www.figma.com/design/01lBr811lgrEAdKkYeGEYr/Untitled';
