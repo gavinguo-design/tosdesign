@@ -1331,7 +1331,11 @@
       // newest on top visually: scroll to bottom (versions appended)
       list.scrollTop = list.scrollHeight;
       const label = document.getElementById('scaleLabel');
-      if (label) label.textContent = activeVersionIdx >= 0 ? ('V' + (activeVersionIdx + 1) + ' · 2× 预览') : '2× 预览';
+      if (label) {
+        const cur = versions[activeVersionIdx];
+        const lay = cur && cur.data.layout ? (' · ' + cur.data.layout + '布局') : '';
+        label.textContent = activeVersionIdx >= 0 ? ('V' + (activeVersionIdx + 1) + lay + ' · 2× 预览') : '2× 预览';
+      }
     }
 
     // ─── VARIANT COMPARE ─────────────────────────────────
