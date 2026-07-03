@@ -1480,6 +1480,18 @@
       return String(v);
     }
 
+    // 字号降级：按可用宽度和字符数自动缩小，避免大数字溢出
+    function fitFontSize(text, baseSize, maxWidth, charRatio) {
+      if (!text) return baseSize;
+      const ratio = charRatio || 0.62; // 数字/字母平均宽度系数
+      let w = 0;
+      for (const ch of String(text)) {
+        w += /[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]/.test(ch) ? 1 : ratio;
+      }
+      const fitted = Math.floor(maxWidth / w);
+      return Math.max(14, Math.min(baseSize, fitted));
+    }
+
     function buildCardInner(data) {
       const layout = data.layout || 'dual';
       const dark = data.dark || false;
@@ -1533,7 +1545,7 @@
           data.header || data.title));
         wrap.appendChild(mk(
           `position:absolute;left:14px;top:30px;width:110px;height:24px;` +
-          `font-size:20px;font-weight:600;color:${data.accentColor||tc};overflow:hidden;white-space:nowrap;`,
+          `font-size:${fitFontSize(data.value, 20, 110)}px;font-weight:600;color:${data.accentColor||tc};overflow:hidden;white-space:nowrap;`,
           data.value || ''));
         wrap.appendChild(mk(
           `position:absolute;left:14px;top:56px;width:110px;height:12px;` +
@@ -1547,7 +1559,9 @@
         const dw = document.createElement('div');
         dw.style.cssText = `position:absolute;left:14px;top:28px;width:110px;height:48px;display:flex;align-items:flex-end;gap:2px;`;
         const de = document.createElement('span');
-        de.style.cssText = `font-size:40px;font-weight:500;line-height:1;color:${data.accentColor||tc};`;
+        const unitW = data.unit ? (String(data.unit).length * 12 + 4) : 0;
+        const bigSize = fitFontSize(data.value, 40, 110 - unitW);
+        de.style.cssText = `font-size:${bigSize}px;font-weight:500;line-height:1;color:${data.accentColor||tc};white-space:nowrap;`;
         de.textContent = data.value || '';
         dw.appendChild(de);
         if (data.unit) {
