@@ -630,6 +630,7 @@
       justify-content: center;
       flex-wrap: wrap;
       max-width: 980px;
+      margin: auto;
     }
     .empty-state.hidden { display: none; }
     .method-card {
@@ -685,9 +686,11 @@
     /* ─── VARIANT COMPARE ─── */
     .compare-wrapper {
       display: none;
-      gap: 3rem;
+      gap: 2.5rem;
       align-items: flex-start;
       justify-content: center;
+      flex-wrap: wrap;
+      margin: auto;
     }
     .compare-wrapper.visible { display: flex; }
     .compare-item {
@@ -1263,6 +1266,7 @@
     // ─── VARIANT COMPARE ─────────────────────────────────
     function showCompare(variants) {
       hideEmptyState();
+      hideProgress(); // avoid progress panel covering the compare cards
       pendingVariants = variants;
       const wrap = document.getElementById('compareWrapper');
       wrap.innerHTML = '';
@@ -1685,6 +1689,7 @@
           try { parsed.push(JSON.parse(m[1])); } catch(e) { console.warn('card parse error', e); }
         });
 
+        setTimeout(hideProgress, 1500); // steps done, free the canvas
         if (parsed.length >= 2) {
           addMsg((displayReply || '我出了两个方案') + '<br><br>👆 右侧预览区选择你喜欢的方案', 'bot');
           showCompare(parsed.slice(0, 2));
