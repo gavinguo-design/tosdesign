@@ -1589,7 +1589,7 @@
         wrap.appendChild(triHeader);
         wrap.appendChild(mk(
           `position:absolute;left:14px;top:30px;width:110px;height:24px;` +
-          `font-size:${fitFontSize(data.value, 20, 110)}px;font-weight:600;color:${data.accentColor||tc};overflow:hidden;white-space:nowrap;`,
+          `font-size:${fitFontSize(data.value, 20, 110)}px;font-weight:600;color:${(data.userColorOk&&data.accentColor)||tc};overflow:hidden;white-space:nowrap;`,
           data.value || ''));
         wrap.appendChild(mk(
           `position:absolute;left:14px;top:56px;width:110px;height:12px;` +
@@ -1615,7 +1615,7 @@
         const de = document.createElement('span');
         const unitW = data.unit ? (String(data.unit).length * 12 + 4) : 0;
         const bigSize = fitFontSize(data.value, 40, 110 - unitW);
-        de.style.cssText = `font-size:${bigSize}px;font-weight:500;line-height:1;color:${data.accentColor||tc};white-space:nowrap;`;
+        de.style.cssText = `font-size:${bigSize}px;font-weight:500;line-height:1;color:${(data.userColorOk&&data.accentColor)||tc};white-space:nowrap;`;
         de.textContent = data.value || '';
         dw.appendChild(de);
         if (data.unit) {
