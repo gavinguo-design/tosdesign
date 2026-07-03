@@ -558,22 +558,46 @@
       text-transform: uppercase;
     }
 
-    /* ─── VERSION STRIP ─── */
-    .version-strip {
+    .preview-body {
+      flex: 1;
       display: flex;
-      gap: 0.9rem;
-      align-items: flex-end;
-      flex-wrap: wrap;
-      justify-content: center;
-      max-width: 660px;
+      overflow: hidden;
       min-height: 0;
     }
-    .version-strip:empty { display: none; }
+
+    /* ─── VERSION PANEL (right side) ─── */
+    .version-panel {
+      width: 148px;
+      flex-shrink: 0;
+      border-left: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .version-panel.visible { display: flex; }
+    .version-panel-title {
+      font-size: 0.68rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.9rem 1rem 0.6rem;
+      flex-shrink: 0;
+    }
+    .version-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.4rem 0 1.2rem;
+    }
     .version-item {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.35rem;
       cursor: pointer;
     }
     .version-thumb {
@@ -597,6 +621,56 @@
       letter-spacing: 0.06em;
     }
     .version-item.active .version-tag { color: var(--accent); font-weight: 600; }
+
+    /* ─── VARIANT COMPARE ─── */
+    .compare-wrapper {
+      display: none;
+      gap: 3rem;
+      align-items: flex-start;
+      justify-content: center;
+    }
+    .compare-wrapper.visible { display: flex; }
+    .compare-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.9rem;
+    }
+    .compare-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: 0.05em;
+    }
+    .compare-card {
+      width: 207px; height: 207px;
+      border-radius: 30px;
+      position: relative;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.25), 0 4px 12px rgba(0,0,0,0.12);
+      transition: transform 0.18s;
+    }
+    .compare-item:hover .compare-card { transform: translateY(-3px); }
+    .compare-reason {
+      font-size: 0.72rem;
+      color: var(--muted);
+      max-width: 200px;
+      text-align: center;
+      line-height: 1.5;
+    }
+    .compare-pick-btn {
+      padding: 0.45rem 1.6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(124,110,247,0.4);
+      background: rgba(124,110,247,0.15);
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .compare-pick-btn:hover { background: rgba(124,110,247,0.32); }
 
     /* 1x */
     .tos-card {
@@ -941,11 +1015,13 @@
         </div>
       </div>
 
+      <div class="preview-body">
       <div class="preview-canvas" id="previewCanvas">
 
-        <!-- CARD MODE -->
+        <!-- VARIANT COMPARE MODE -->
+        <div class="compare-wrapper" id="compareWrapper"></div>
+
         <div class="card-preview-wrapper" id="cardPreviewWrapper">
-          <div class="version-strip" id="versionStrip"></div>
           <div class="card-scale-label" id="scaleLabel">2× 预览</div>
           <div class="tos-card-2x" id="previewCard2x">
             <div class="tos-card-inner" id="cardInner2x"></div>
@@ -965,6 +1041,13 @@
         </div>
 
       </div>
+
+      <!-- VERSION HISTORY PANEL -->
+      <div class="version-panel" id="versionPanel">
+        <div class="version-panel-title">版本历史</div>
+        <div class="version-list" id="versionList"></div>
+      </div>
+      </div><!-- /preview-body -->
     </div>
 
   </div>
@@ -974,8 +1057,9 @@
     let currentCardData = null;
     let currentTheme = 'light';
     let currentMode = 'card';
-    let versions = [];          // [{ data, time }]
+    let versions = [];          // [{ data, time, variant }]
     let activeVersionIdx = -1;
+    let pendingVariants = null; // [dataA, dataB] awaiting user pick
 
     const SKILL_STEPS = [
       { id: 'analyze',   name: '需求分析',   desc: null },
@@ -991,6 +1075,7 @@
       currentMode = mode;
       document.getElementById('modeCard').classList.toggle('active', mode === 'card');
       document.getElementById('modePhone').classList.toggle('active', mode === 'phone');
+      if (pendingVariants) return; // compare mode owns the canvas until user picks
       document.getElementById('cardPreviewWrapper').classList.toggle('hidden', mode !== 'card');
       document.getElementById('phonePreviewWrapper').classList.toggle('visible', mode === 'phone');
     }
@@ -1002,28 +1087,31 @@
       if (currentCardData) {
         applyPreset({ ...currentCardData, dark: theme === 'dark' });
       }
-      renderVersionStrip();
+      renderVersionPanel();
+      if (pendingVariants) showCompare(pendingVariants);
     }
 
     // ─── VERSION HISTORY ─────────────────────────────────
-    function pushVersion(data) {
-      versions.push({ data, time: new Date() });
+    function pushVersion(data, variant) {
+      versions.push({ data, time: new Date(), variant: variant || null });
       activeVersionIdx = versions.length - 1;
-      renderVersionStrip();
+      renderVersionPanel();
       applyPreset({ ...data, dark: currentTheme === 'dark' });
     }
 
     function selectVersion(i) {
       if (i < 0 || i >= versions.length) return;
       activeVersionIdx = i;
-      renderVersionStrip();
+      renderVersionPanel();
       applyPreset({ ...versions[i].data, dark: currentTheme === 'dark' });
     }
 
-    function renderVersionStrip() {
-      const strip = document.getElementById('versionStrip');
-      if (!strip) return;
-      strip.innerHTML = '';
+    function renderVersionPanel() {
+      const panel = document.getElementById('versionPanel');
+      const list = document.getElementById('versionList');
+      if (!panel || !list) return;
+      panel.classList.toggle('visible', versions.length > 0);
+      list.innerHTML = '';
       const dark = currentTheme === 'dark';
       versions.forEach((v, i) => {
         const item = document.createElement('div');
@@ -1040,14 +1128,74 @@
 
         const tag = document.createElement('div');
         tag.className = 'version-tag';
-        tag.textContent = 'V' + (i + 1) + (i === activeVersionIdx ? ' · 当前' : '');
+        tag.textContent = 'V' + (i + 1) + (v.variant ? ' (方案' + v.variant + ')' : '') + (i === activeVersionIdx ? ' · 当前' : '');
 
         item.appendChild(thumb);
         item.appendChild(tag);
-        strip.appendChild(item);
+        list.appendChild(item);
       });
+      // newest on top visually: scroll to bottom (versions appended)
+      list.scrollTop = list.scrollHeight;
       const label = document.getElementById('scaleLabel');
       if (label) label.textContent = activeVersionIdx >= 0 ? ('V' + (activeVersionIdx + 1) + ' · 2× 预览') : '2× 预览';
+    }
+
+    // ─── VARIANT COMPARE ─────────────────────────────────
+    function showCompare(variants) {
+      pendingVariants = variants;
+      const wrap = document.getElementById('compareWrapper');
+      wrap.innerHTML = '';
+      const dark = currentTheme === 'dark';
+      const labels = ['A', 'B'];
+      variants.forEach((data, i) => {
+        const item = document.createElement('div');
+        item.className = 'compare-item';
+
+        const label = document.createElement('div');
+        label.className = 'compare-label';
+        label.textContent = '方案 ' + labels[i];
+
+        const card = document.createElement('div');
+        card.className = 'compare-card';
+        card.style.background = dark ? '#1c1c1e' : (data.bg || '#fff');
+        const scaled = document.createElement('div');
+        scaled.style.cssText = 'width:138px;height:138px;position:relative;transform:scale(1.5);transform-origin:top left;pointer-events:none;';
+        scaled.appendChild(buildCardInner({ ...data, dark }));
+        card.appendChild(scaled);
+
+        const reason = document.createElement('div');
+        reason.className = 'compare-reason';
+        reason.textContent = data.reason || (LAYOUT_LABELS[data.layout] || data.layout || '');
+
+        const btn = document.createElement('button');
+        btn.className = 'compare-pick-btn';
+        btn.textContent = '选这个';
+        btn.onclick = () => pickVariant(i);
+
+        item.appendChild(label);
+        item.appendChild(card);
+        item.appendChild(reason);
+        item.appendChild(btn);
+        wrap.appendChild(item);
+      });
+      wrap.classList.add('visible');
+      document.getElementById('cardPreviewWrapper').classList.add('hidden');
+      document.getElementById('phonePreviewWrapper').classList.remove('visible');
+    }
+
+    function pickVariant(i) {
+      if (!pendingVariants) return;
+      const chosen = pendingVariants[i];
+      const variantLabel = i === 0 ? 'A' : 'B';
+      pendingVariants = null;
+      document.getElementById('compareWrapper').classList.remove('visible');
+      document.getElementById('cardPreviewWrapper').classList.toggle('hidden', currentMode !== 'card');
+      if (currentMode === 'phone') document.getElementById('phonePreviewWrapper').classList.add('visible');
+      const { reason, ...cardData } = chosen;
+      pushVersion(cardData, variantLabel);
+      chatHistory.push({ role: 'user', content: '我选择方案' + variantLabel });
+      chatHistory.push({ role: 'assistant', content: '好的，已采用方案' + variantLabel + '，可以继续述说你想调整的细节。' });
+      addMsg('已采用方案 ' + variantLabel + ' ✨ 继续告诉我你想调整的细节', 'bot');
     }
 
     // ─── PROGRESS PANEL ──────────────────────────────────
@@ -1407,16 +1555,26 @@
         const reply = data.text;
         chatHistory.push({ role: 'assistant', content: reply });
 
-        const cardMatch = reply.match(/```card-update\n([\s\S]*?)```/);
+        const cardMatches = [...reply.matchAll(/```card-update\n([\s\S]*?)```/g)];
         let displayReply = reply.replace(/```card-update\n[\s\S]*?```/g, '').trim();
-        addMsg(displayReply || '卡片已更新 ✨', 'bot');
 
         let cardData = null;
-        if (cardMatch) {
-          try {
-            cardData = JSON.parse(cardMatch[1]);
-            pushVersion(cardData);
-          } catch(e) { console.warn('card parse error', e); }
+        const parsed = [];
+        cardMatches.forEach(m => {
+          try { parsed.push(JSON.parse(m[1])); } catch(e) { console.warn('card parse error', e); }
+        });
+
+        if (parsed.length >= 2) {
+          addMsg((displayReply || '我出了两个方案') + '<br><br>👆 右侧预览区选择你喜欢的方案', 'bot');
+          showCompare(parsed.slice(0, 2));
+          cardData = parsed[0];
+        } else if (parsed.length === 1) {
+          addMsg(displayReply || '卡片已更新 ✨', 'bot');
+          const { reason, ...cd } = parsed[0];
+          cardData = cd;
+          pushVersion(cd);
+        } else {
+          addMsg(displayReply || '卡片已更新 ✨', 'bot');
         }
         updateStepsFromResponse(reply, displayReply, cardData);
       } catch(e) {
