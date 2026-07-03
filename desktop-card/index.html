@@ -622,6 +622,66 @@
     }
     .version-item.active .version-tag { color: var(--accent); font-weight: 600; }
 
+    /* ─── EMPTY STATE: methodology intro ─── */
+    .empty-state {
+      display: flex;
+      gap: 1.5rem;
+      align-items: stretch;
+      justify-content: center;
+      flex-wrap: wrap;
+      max-width: 980px;
+    }
+    .empty-state.hidden { display: none; }
+    .method-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.6rem 1.8rem;
+      flex: 1;
+      min-width: 380px;
+      max-width: 560px;
+    }
+    .method-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 1.3rem;
+    }
+    .method-title span {
+      font-weight: 400;
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-left: 0.5rem;
+    }
+    .axis-cols { display: flex; gap: 0.7rem; }
+    .axis-col { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+    .axis-head {
+      background: #0079FE;
+      color: #fff;
+      border-radius: 8px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-align: center;
+      padding: 0.5rem 0.3rem;
+    }
+    .axis-cell {
+      border-radius: 8px;
+      padding: 0.5rem 0.6rem;
+      font-size: 0.62rem;
+      line-height: 1.45;
+    }
+    .axis-cell b { font-size: 0.7rem; display: block; margin-bottom: 0.15rem; }
+    .axis-cell .lv { opacity: 0.55; font-weight: 400; margin-left: 0.3rem; }
+    .axis-cell.l1 { background: rgba(255,255,255,0.10); color: rgba(255,255,255,0.75); }
+    .axis-cell.l2 { background: rgba(255,255,255,0.16); color: rgba(255,255,255,0.85); }
+    .axis-cell.l3 { background: rgba(0,0,0,0.5); color: rgba(255,255,255,0.92); border: 1px solid rgba(255,255,255,0.1); }
+    .radar-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem 0;
+    }
+
     /* ─── VARIANT COMPARE ─── */
     .compare-wrapper {
       display: none;
@@ -1018,6 +1078,58 @@
       <div class="preview-body">
       <div class="preview-canvas" id="previewCanvas">
 
+        <!-- EMPTY STATE: methodology intro -->
+        <div class="empty-state" id="emptyState">
+          <div class="method-card">
+            <div class="method-title">卡片调性 <span>│ 视觉、信息、操作的权重</span></div>
+            <div class="axis-cols">
+              <div class="axis-col">
+                <div class="axis-head">🌊 视觉吸引力</div>
+                <div class="axis-cell l1"><b>克制 <span class="lv">VA1</span></b>纯白色、轻色彩、小图标等</div>
+                <div class="axis-cell l2"><b>明确 <span class="lv">VA2</span></b>轻渐变、局部插画、品牌色点缀等</div>
+                <div class="axis-cell l3"><b>强吸引 <span class="lv">VA3</span></b>大面渐变、大插画、强品牌色等</div>
+              </div>
+              <div class="axis-col">
+                <div class="axis-head">📝 信息显著性</div>
+                <div class="axis-cell l1"><b>低显著 <span class="lv">IS1</span></b>只展示内容，无明确状态或原因</div>
+                <div class="axis-cell l2"><b>中显著 <span class="lv">IS2</span></b>有上下文原因，有轻行动建议说明</div>
+                <div class="axis-cell l3"><b>高显著 <span class="lv">IS3</span></b>有明确数字、时间、阈值、风险等</div>
+              </div>
+              <div class="axis-col">
+                <div class="axis-head">☝️ 行动权威性</div>
+                <div class="axis-cell l1"><b>无行动 <span class="lv">AA1</span></b>只浏览/整卡点击/无按钮</div>
+                <div class="axis-cell l2"><b>弱行动 <span class="lv">AA2</span></b>Learn more/View/try，可忽略</div>
+                <div class="axis-cell l3"><b>强行动 <span class="lv">AA3</span></b>确认/立即处理这类高价值操作</div>
+              </div>
+            </div>
+          </div>
+          <div class="method-card">
+            <div class="method-title">用户感知 <span>│ 三轴分布模型</span></div>
+            <div class="radar-wrap">
+              <svg width="300" height="250" viewBox="0 0 300 250">
+                <defs>
+                  <linearGradient id="radarFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#0079FE" stop-opacity="0.9"/>
+                    <stop offset="100%" stop-color="#0079FE" stop-opacity="0.35"/>
+                  </linearGradient>
+                </defs>
+                <!-- outer triangle -->
+                <polygon points="150,30 262,215 38,215" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+                <!-- mid filled -->
+                <polygon points="150,58 234,199 66,199" fill="url(#radarFill)" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+                <!-- inner -->
+                <polygon points="150,105 197,183 103,183" fill="rgba(255,255,255,0.85)" stroke="rgba(0,0,0,0.15)" stroke-width="1"/>
+                <!-- axis ticks -->
+                <line x1="150" y1="30" x2="150" y2="22" stroke="rgba(255,255,255,0.5)"/>
+                <!-- labels -->
+                <text x="150" y="14" text-anchor="middle" font-size="11" fill="rgba(255,255,255,0.85)" font-weight="600">视觉吸引力</text>
+                <text x="30" y="234" text-anchor="middle" font-size="11" fill="rgba(255,255,255,0.85)" font-weight="600">信息显著性</text>
+                <text x="268" y="234" text-anchor="middle" font-size="11" fill="rgba(255,255,255,0.85)" font-weight="600">行动权威性</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+
         <!-- VARIANT COMPARE MODE -->
         <div class="compare-wrapper" id="compareWrapper"></div>
 
@@ -1076,8 +1188,13 @@
       document.getElementById('modeCard').classList.toggle('active', mode === 'card');
       document.getElementById('modePhone').classList.toggle('active', mode === 'phone');
       if (pendingVariants) return; // compare mode owns the canvas until user picks
+      if (versions.length === 0) return; // empty state owns the canvas until first card
       document.getElementById('cardPreviewWrapper').classList.toggle('hidden', mode !== 'card');
       document.getElementById('phonePreviewWrapper').classList.toggle('visible', mode === 'phone');
+    }
+
+    function hideEmptyState() {
+      document.getElementById('emptyState').classList.add('hidden');
     }
 
     function switchTheme(theme) {
@@ -1093,6 +1210,9 @@
 
     // ─── VERSION HISTORY ─────────────────────────────────
     function pushVersion(data, variant) {
+      hideEmptyState();
+      document.getElementById('cardPreviewWrapper').classList.toggle('hidden', currentMode !== 'card');
+      document.getElementById('phonePreviewWrapper').classList.toggle('visible', currentMode === 'phone');
       versions.push({ data, time: new Date(), variant: variant || null });
       activeVersionIdx = versions.length - 1;
       renderVersionPanel();
@@ -1142,6 +1262,7 @@
 
     // ─── VARIANT COMPARE ─────────────────────────────────
     function showCompare(variants) {
+      hideEmptyState();
       pendingVariants = variants;
       const wrap = document.getElementById('compareWrapper');
       wrap.innerHTML = '';
@@ -1679,14 +1800,8 @@
 
     initAuth();
     // ─── INIT ─────────────────────────────────────────────
-    applyPreset({
-      layout: 'dual',
-      title: '告诉我你想要的卡片',
-      subtitle: '比如「天气卡片」或「步数统计」',
-      icon: '🃏',
-      bg: '#fff',
-      dark: false
-    });
+    // Empty state (methodology intro) shown until first card is generated
+    document.getElementById('cardPreviewWrapper').classList.add('hidden');
   </script>
 
 </body>
