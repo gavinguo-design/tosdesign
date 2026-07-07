@@ -2527,11 +2527,10 @@
       document.getElementById('cardPreviewWrapper').classList.add('hidden');
       document.getElementById('phonePreviewWrapper').classList.remove('visible');
       updateFigmaBtnVisibility();
-      // Workbench: overlay covers right panel, compare cards are hidden behind it.
-      // Show first variant in wb-card area so user sees something; chat remains available to iterate.
+      // Workbench: show both variants A/B side by side for selection
       const _wbViewEl = document.getElementById('workbench-view');
       if (_wbViewEl && _wbViewEl.classList.contains('active')) {
-        renderWbCard(variants[0]);
+        renderWbVariants(variants);
         renderWbAnalysis(variants[0]);
       }
     }
@@ -3562,6 +3561,63 @@
       } else {
         // don’t show stage yet until renderWbCard is called
       }
+    }
+
+    function renderWbVariants(variants) {
+      setWbLoading(false);
+      const stage = document.getElementById('wb-card-stage');
+      if (!stage) return;
+      stage.innerHTML = '';
+      stage.style.display = 'flex';
+      stage.style.flexDirection = 'row';
+      stage.style.gap = '32px';
+      stage.style.alignItems = 'center';
+      stage.style.justifyContent = 'center';
+      stage.style.width = '100%';
+      stage.style.height = '100%';
+      stage.classList.add('visible');
+      variants.slice(0, 2).forEach((data, i) => {
+        const label = ['A', 'B'][i];
+        const dark = !!data.dark;
+        let bg = data.bg || (dark ? '#1c1c1e' : '#fff');
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;';
+        const lbl = document.createElement('div');
+        lbl.textContent = '方案 ' + label;
+        lbl.style.cssText = 'font-size:11px;font-weight:700;color:#888;letter-spacing:1px;text-transform:uppercase;';
+        const card = document.createElement('div');
+        card.style.cssText = `width:276px;height:276px;border-radius:40px;overflow:hidden;background:${bg};box-shadow:0 16px 48px rgba(0,0,0,0.18),0 4px 12px rgba(0,0,0,0.1);cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;`;
+        card.onmouseenter = () => { card.style.transform='scale(1.03)'; card.style.boxShadow='0 24px 60px rgba(0,0,0,0.22),0 6px 16px rgba(0,0,0,0.12)'; };
+        card.onmouseleave = () => { card.style.transform=''; card.style.boxShadow='0 16px 48px rgba(0,0,0,0.18),0 4px 12px rgba(0,0,0,0.1)'; };
+        const inner = document.createElement('div');
+        inner.style.cssText = 'width:100%;height:100%;position:relative;';
+        const scaled = document.createElement('div');
+        scaled.style.cssText = 'width:138px;height:138px;position:relative;transform:scale(2);transform-origin:top left;pointer-events:none;';
+        scaled.appendChild(buildCardInner({ ...data, dark }));
+        inner.appendChild(scaled);
+        card.appendChild(inner);
+        const reason = document.createElement('div');
+        reason.textContent = data.reason || '';
+        reason.style.cssText = 'font-size:11px;color:#888;max-width:200px;text-align:center;line-height:1.4;';
+        const btn = document.createElement('button');
+        btn.textContent = '选这个';
+        btn.style.cssText = 'padding:6px 20px;border-radius:999px;border:1px solid rgba(0,0,0,0.12);background:#fff;color:#333;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.15s;box-shadow:0 1px 4px rgba(0,0,0,0.08);';
+        btn.onmouseenter = () => { btn.style.background='#7C5CFC'; btn.style.color='#fff'; btn.style.borderColor='#7C5CFC'; };
+        btn.onmouseleave = () => { btn.style.background='#fff'; btn.style.color='#333'; btn.style.borderColor='rgba(0,0,0,0.12)'; };
+        const idx = i;
+        btn.onclick = () => {
+          pickVariant(idx);
+          // reset stage to single card
+          stage.style.flexDirection = '';
+          stage.style.gap = '';
+        };
+        card.onclick = btn.onclick;
+        wrapper.appendChild(lbl);
+        wrapper.appendChild(card);
+        wrapper.appendChild(reason);
+        wrapper.appendChild(btn);
+        stage.appendChild(wrapper);
+      });
     }
 
     function renderWbCard(data) {
