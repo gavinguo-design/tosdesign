@@ -2609,6 +2609,11 @@
           try { parsed.push(JSON.parse(m[1])); } catch(e) { console.warn('card parse error', e); }
         });
 
+        // 工作台loading关掉（无论有没有卡片数据）
+        if (document.getElementById('workbench-view').classList.contains('active')) {
+          setWbLoading(false);
+        }
+
         if (parsed.length >= 2) {
           addMsg((displayReply || '我出了两个方案') + toneBlockHtml + '<br>👆 在预览区选择你喜欢的方案', 'bot');
           const variants = parsed.slice(0, 2);
