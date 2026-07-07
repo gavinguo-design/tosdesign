@@ -3083,7 +3083,7 @@
           addMsg((displayReply || '我出了两个方案') + toneBlockHtml + '<br>👆 在预览区选择你喜欢的方案', 'bot');
           const variants = parsed.slice(0, 2);
           cardData = parsed[0];
-          await illustrateVariants(variants); // 先出图，后亮对比卡
+          try { await illustrateVariants(variants); } catch(e) { console.warn('illustrate failed', e); }
           showCompare(variants);
         } else if (parsed.length === 1) {
           addMsg((displayReply || '卡片已更新 ✨') + toneBlockHtml, 'bot');
