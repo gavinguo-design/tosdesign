@@ -1296,7 +1296,7 @@
     #workbench-view {
       position: absolute; inset: 0;
       display: none;
-      flex-direction: column;
+      flex-direction: row;
       z-index: 24;
       background:
         radial-gradient(ellipse 65% 55% at 92% 5%, rgba(230,210,205,0.70), transparent),
@@ -1304,7 +1304,13 @@
         #eeecf1;
     }
     #workbench-view.active { display: flex; }
-    #workbench-view { padding-bottom: 12px; }
+    #wb-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
 
     #wb-preview {
       flex: 1;
@@ -1441,6 +1447,111 @@
     }
     .wb-skel.short { width: 55%; }
     @keyframes wb-shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    /* ─── RIGHT PANEL (workbench) ─── */
+    #wb-right-panel {
+      width: 300px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      background: rgba(255,255,255,0.78);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-left: 1px solid rgba(0,0,0,0.07);
+      box-shadow: inset 1px 0 0 rgba(255,255,255,0.5);
+      height: 100%;
+      overflow: hidden;
+    }
+    .wb-rp-header {
+      padding: 1.2rem 1.1rem 0.8rem;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      flex-shrink: 0;
+    }
+    .wb-rp-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+    .wb-rp-sub {
+      font-size: 0.72rem;
+      color: #999;
+      margin-top: 2px;
+    }
+    .wb-rp-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      min-height: 0;
+    }
+    .wb-rp-messages::-webkit-scrollbar { width: 3px; }
+    .wb-rp-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .wb-rp-msg { display: flex; flex-direction: column; }
+    .wb-rp-msg.user { align-items: flex-end; }
+    .wb-rp-msg.bot { align-items: flex-start; }
+    .wb-rp-bubble {
+      max-width: 88%;
+      padding: 0.55rem 0.85rem;
+      border-radius: 1rem;
+      font-size: 0.82rem;
+      line-height: 1.55;
+    }
+    .wb-rp-msg.user .wb-rp-bubble {
+      background: #7C5CFC;
+      color: #fff;
+      border-bottom-right-radius: 0.25rem;
+    }
+    .wb-rp-msg.bot .wb-rp-bubble {
+      background: rgba(255,255,255,0.9);
+      color: #1a1a1a;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-bottom-left-radius: 0.25rem;
+    }
+    .wb-rp-input-area {
+      padding: 0.7rem;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      flex-shrink: 0;
+    }
+    .wb-rp-input-wrap {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-end;
+      gap: 0.4rem;
+      background: rgba(0,0,0,0.04);
+      border-radius: 0.75rem;
+      padding: 0.5rem 0.7rem;
+    }
+    .wb-rp-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      resize: none;
+      font-size: 0.82rem;
+      color: #1a1a1a;
+      max-height: 80px;
+      font-family: inherit;
+      line-height: 1.5;
+    }
+    .wb-rp-input::placeholder { color: var(--muted); }
+    .wb-rp-send {
+      width: 28px;
+      height: 28px;
+      border-radius: 0.45rem;
+      background: #7C5CFC;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: opacity 0.2s;
+    }
+    .wb-rp-send:hover { opacity: 0.85; }
 
     /* ─── FLOATING CHAT (workbench) ─── */
     #wb-chat-float {
@@ -1714,24 +1825,41 @@
 
     <!-- WORKBENCH VIEW -->
     <div id="workbench-view">
-      <!-- Top preview area (60%) -->
-      <div id="wb-preview">
-        <div id="wb-loading" style="display:none">
-          <div class="wb-spinner"></div>
-          <div class="wb-loading-text">AI 正在为你创作...</div>
+      <!-- Middle main column -->
+      <div id="wb-main">
+        <!-- Top preview area -->
+        <div id="wb-preview">
+          <div id="wb-loading" style="display:none">
+            <div class="wb-spinner"></div>
+            <div class="wb-loading-text">AI 正在为你创作...</div>
+          </div>
+          <div id="wb-card-stage">
+            <div class="card-scale-label">2× 预览</div>
+            <div class="wb-card-container" id="wb-card">
+              <div class="tos-card-inner" id="wb-card-inner"></div>
+            </div>
+          </div>
         </div>
-        <div id="wb-card-stage">
-          <div class="card-scale-label">2× 预览</div>
-          <div class="wb-card-container" id="wb-card">
-            <div class="tos-card-inner" id="wb-card-inner"></div>
+        <!-- Bottom analysis cards -->
+        <div id="wb-analysis">
+          <div class="wb-analysis-header">设计分析</div>
+          <div class="wb-analysis-scroll" id="wb-analysis-scroll">
+            <!-- populated by JS -->
           </div>
         </div>
       </div>
-      <!-- Bottom analysis cards (210px) -->
-      <div id="wb-analysis">
-        <div class="wb-analysis-header">设计分析</div>
-        <div class="wb-analysis-scroll" id="wb-analysis-scroll">
-          <!-- populated by JS -->
+      <!-- Right chat panel -->
+      <div id="wb-right-panel">
+        <div class="wb-rp-header">
+          <div class="wb-rp-title">继续创作</div>
+          <div class="wb-rp-sub">告诉我你想怎么调整</div>
+        </div>
+        <div id="wb-rp-messages" class="wb-rp-messages"></div>
+        <div class="wb-rp-input-area">
+          <div class="wb-rp-input-wrap">
+            <textarea id="wb-rp-input" class="wb-rp-input" rows="1" placeholder="告诉我怎么改..." onkeydown="handleWbRpKey(event)" oninput="autoResize(this)"></textarea>
+            <button class="wb-rp-send" onclick="sendWbRpMessage()">&#x2191;</button>
+          </div>
         </div>
       </div>
     </div>
@@ -2629,11 +2757,13 @@
           showCompare(variants);
         } else if (parsed.length === 1) {
           addMsg((displayReply || '卡片已更新 ✨') + toneBlockHtml, 'bot');
+          addWbRpMsg(displayReply || '卡片已更新 ✨', 'bot');
           const { reason, ...cd } = parsed[0];
           cardData = cd;
           presentCard(cd);
         } else {
           addMsg(displayReply || '卡片已更新 ✨', 'bot');
+          addWbRpMsg(displayReply || '卡片已更新 ✨', 'bot');
         }
         updateStepsFromResponse(reply, displayReply, cardData);
       } catch(e) {
@@ -3034,9 +3164,8 @@
       // highlight sidebar workbench
       document.querySelectorAll('.sidebar-nav-item').forEach(b => b.classList.remove('active'));
       document.getElementById('navWorkbench').classList.add('active');
-      // show floating chat
-      const fc = document.getElementById('wb-chat-float');
-      fc.classList.add('active');
+      // keep floating chat hidden (right panel replaces it)
+      // const fc = document.getElementById('wb-chat-float');
       if (loading) {
         setWbLoading(true);
         renderWbAnalysisSkeleton();
@@ -3055,7 +3184,35 @@
 
     function hideWorkbench() {
       document.getElementById('workbench-view').classList.remove('active');
-      document.getElementById('wb-chat-float').classList.remove('active');
+    }
+
+    // ─── WB RIGHT PANEL CHAT ────────────────────────────────────
+    function sendWbRpMessage() {
+      const input = document.getElementById('wb-rp-input');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      input.style.height = '';
+      document.getElementById('chatInput').value = text;
+      addWbRpMsg(text, 'user');
+      sendMessage();
+    }
+
+    function addWbRpMsg(text, type) {
+      const container = document.getElementById('wb-rp-messages');
+      if (!container) return;
+      const div = document.createElement('div');
+      div.className = 'wb-rp-msg ' + type;
+      div.innerHTML = '<div class="wb-rp-bubble">' + text + '</div>';
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function handleWbRpKey(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendWbRpMessage();
+      }
     }
 
     function setWbLoading(loading) {
