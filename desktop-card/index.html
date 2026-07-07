@@ -2533,9 +2533,13 @@
       if (_wbViewEl && _wbViewEl.classList.contains('active')) {
         renderWbVariants(variants);
         renderWbAnalysis(variants[0]);
-        // Push first variant to history immediately
+        // Push first variant to history immediately (skip applyPreset to avoid overwriting compare view)
         const { reason: _r, ...firstCard } = variants[0];
-        pushVersion({ ...firstCard, label: (firstCard.header || firstCard.value || '新卡片') + ' (A)' }, 'A');
+        const _savedPending = pendingVariants;
+        versions.push({ data: firstCard, time: new Date(), variant: 'A' });
+        activeVersionIdx = versions.length - 1;
+        renderSidebarHistory();
+        currentCardData = firstCard;
       }
     }
 
@@ -2846,8 +2850,8 @@
         inner2.appendChild(scaled);
       }
 
-      // Update workbench card if workbench is active
-      if (document.getElementById('workbench-view').classList.contains('active')) {
+      // Update workbench card if workbench is active (skip if in compare mode)
+      if (document.getElementById('workbench-view').classList.contains('active') && !pendingVariants) {
         renderWbCard(data);
         renderWbAnalysis(data);
       }
