@@ -45,34 +45,7 @@ export async function onRequestPost({ request, env }) {
     });
     const data = await res.json();
     if (!res.ok) return new Response(JSON.stringify({ ok: false, error: data.error?.message || 'API error' }), { status: 500, headers });
-    let text = data.content?.[0]?.text || '';
-
-    // 确定性兑底：首次请求只返回了单方案 → 强制追加方案B
-    const isFirstRequest = !messages.some(m => m.role === 'assistant');
-    const blockCount = (text.match(/```card-update/g) || []).length;
-    if (isFirstRequest && blockCount === 1) {
-      try {
-        const res2 = await fetch(`${CRS_BASE}/messages`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${CRS_KEY}`,
-            'anthropic-version': '2023-06-01',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'claude-sonnet-4-6', max_tokens: 1024, system: SYSTEM_PROMPT,
-            messages: [...messages, { role: 'assistant', content: text },
-              { role: 'user', content: '这是方案A。现在只输出方案B：用一个不同的布局（如A是big则B用triple，反之亦然），补充A舍弃的信息或换视觉处理，输出一个```card-update块（含reason字段），不要其它分析文字。' }],
-          }),
-        });
-        const data2 = await res2.json();
-        if (res2.ok) {
-          const text2 = data2.content?.[0]?.text || '';
-          if (text2.includes('```card-update')) text = text + '\n\n' + text2;
-        }
-      } catch {}
-    }
-
+    const text = data.content?.[0]?.text || '';
     return new Response(JSON.stringify({ ok: true, text }), { headers });
   } catch (e) {
     return new Response(JSON.stringify({ ok: false, error: e.message }), { status: 500, headers });
