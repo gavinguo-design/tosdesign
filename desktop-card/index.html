@@ -1450,7 +1450,10 @@
       display: none;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 1.5rem;
+      width: 100%;
+      height: 100%;
     }
     #wb-card-stage.visible { display: flex; }
 
@@ -1661,19 +1664,20 @@
       overflow: hidden;
     }
     .wb-rp-header {
-      padding: 16px;
-      border-bottom: 1px solid rgba(0,0,0,0.08);
+      padding: 20px 16px 12px;
       flex-shrink: 0;
     }
     .wb-rp-title {
-      font-size: 14px;
-      font-weight: 500;
+      font-size: 15px;
+      font-weight: 600;
       color: #1a1a1a;
+      line-height: 1.3;
     }
     .wb-rp-sub {
       font-size: 12px;
       color: #999;
-      margin-top: 3px;
+      margin-top: 4px;
+      line-height: 1.4;
     }
     .wb-rp-messages {
       flex: 1;
@@ -1708,7 +1712,7 @@
       border-bottom-left-radius: 4px;
     }
     .wb-rp-input-area {
-      padding: 12px;
+      padding: 12px 12px 8px;
       flex-shrink: 0;
     }
     .wb-rp-input-wrap {
@@ -1772,6 +1776,7 @@
       font-size: 11px;
       color: #bbb;
       margin-top: 6px;
+      padding-bottom: 10px;
     }
 
     /* ─── FLOATING CHAT (workbench) ─── */
