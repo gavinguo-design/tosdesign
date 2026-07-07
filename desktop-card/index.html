@@ -2069,6 +2069,13 @@
       document.getElementById('cardPreviewWrapper').classList.add('hidden');
       document.getElementById('phonePreviewWrapper').classList.remove('visible');
       updateFigmaBtnVisibility();
+      // Workbench: overlay covers right panel, compare cards are hidden behind it.
+      // Show first variant in wb-card area so user sees something; chat remains available to iterate.
+      const _wbViewEl = document.getElementById('workbench-view');
+      if (_wbViewEl && _wbViewEl.classList.contains('active')) {
+        renderWbCard(variants[0]);
+        renderWbAnalysis(variants[0]);
+      }
     }
 
     function pickVariant(i) {
