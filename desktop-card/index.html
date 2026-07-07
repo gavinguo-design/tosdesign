@@ -2528,10 +2528,14 @@
       document.getElementById('phonePreviewWrapper').classList.remove('visible');
       updateFigmaBtnVisibility();
       // Workbench: show both variants A/B side by side for selection
+      // Also push variant A to history immediately so session is recorded
       const _wbViewEl = document.getElementById('workbench-view');
       if (_wbViewEl && _wbViewEl.classList.contains('active')) {
         renderWbVariants(variants);
         renderWbAnalysis(variants[0]);
+        // Push first variant to history immediately
+        const { reason: _r, ...firstCard } = variants[0];
+        pushVersion({ ...firstCard, label: (firstCard.header || firstCard.value || '新卡片') + ' (A)' }, 'A');
       }
     }
 
@@ -3607,9 +3611,11 @@
         const idx = i;
         btn.onclick = () => {
           pickVariant(idx);
-          // reset stage to single card
+          // reset stage layout to single card
           stage.style.flexDirection = '';
           stage.style.gap = '';
+          stage.style.alignItems = '';
+          stage.style.justifyContent = '';
         };
         card.onclick = btn.onclick;
         wrapper.appendChild(lbl);
