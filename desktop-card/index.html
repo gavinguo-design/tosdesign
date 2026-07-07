@@ -2914,6 +2914,13 @@
       const wi = document.getElementById('welcomeInput');
       const text = wi.value.trim();
       if (!text) return;
+      // 未登录先弹登录框
+      const token = localStorage.getItem('tos_token');
+      if (!token) {
+        document.getElementById('loginOverlay').classList.remove('hidden');
+        showLogin();
+        return;
+      }
       document.getElementById('chatInput').value = text;
       // Switch to workbench immediately (loading state), then send
       showWorkbench(true);
