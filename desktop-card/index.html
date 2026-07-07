@@ -1716,7 +1716,7 @@
     <div id="workbench-view">
       <!-- Top preview area (60%) -->
       <div id="wb-preview">
-        <div id="wb-loading">
+        <div id="wb-loading" style="display:none">
           <div class="wb-spinner"></div>
           <div class="wb-loading-text">AI 正在为你创作...</div>
         </div>
@@ -2559,6 +2559,18 @@
         if (!data.ok) {
           addMsg('出错了：' + (data.error || '请重试'), 'bot');
           ['analyze','tone','layout','color'].forEach(s => updateStep(s, 'error', null));
+          // 关掉工作台 loading，显示错误提示
+          if (document.getElementById('workbench-view').classList.contains('active')) {
+            setWbLoading(false);
+            const wbErr = document.getElementById('wb-loading');
+            if (wbErr) {
+              wbErr.style.display = 'flex';
+              const spinner = wbErr.querySelector('.wb-spinner');
+              if (spinner) spinner.style.display = 'none';
+              const txt = wbErr.querySelector('.wb-loading-text');
+              if (txt) txt.textContent = (data.error === '未登录') ? '请先登录后再创作 →' : ('出错了：' + (data.error || '请重试'));
+            }
+          }
           return;
         }
 
@@ -3015,9 +3027,9 @@
         renderWbAnalysis(currentCardData);
       } else {
         setWbLoading(false);
-        document.getElementById('wb-loading').style.display = 'flex';
-        document.querySelector('.wb-loading-text').textContent = '先创作一个卡片吧';
-        document.querySelector('.wb-spinner').style.display = 'none';
+        // 没有卡片数据时显示空态提示，不展示 spinner
+        const emptyHint = document.getElementById('wb-empty-hint');
+        if (emptyHint) emptyHint.style.display = 'flex';
       }
       syncWbChat();
     }
