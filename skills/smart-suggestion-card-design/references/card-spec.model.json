@@ -1,0 +1,256 @@
+{
+  "version": "0.3",
+  "source": {
+    "figmaFileKey": "dExByEvVpg4t3Ylirc0CI1",
+    "figmaNodeId": "290:4074",
+    "name": "17.0智慧建议卡片规范"
+  },
+  "cardBase": {
+    "size": {
+      "width": 138,
+      "height": [138, 139]
+    },
+    "padding": {
+      "top": 14,
+      "right": 14,
+      "bottom": 14,
+      "left": 14
+    },
+    "contentWidth": 110,
+    "cornerRadius": 20,
+    "layoutBoardBackgroundRadius": 24,
+    "allowedLayouts": ["singleText", "twoText", "threeText", "largeText"]
+  },
+  "layouts": {
+    "singleText": {
+      "nameZh": "单文本",
+      "useWhen": "Only one primary message is needed.",
+      "textRules": {
+        "maxLines": 4,
+        "fontSize": 16,
+        "fontWeight": "SemiBold",
+        "minFontSize": 14,
+        "textOpacity": 0.9
+      },
+      "alignment": ["topLeft", "bottomLeft"],
+      "visualRule": "Icon or decorative visual may sit on the opposite diagonal."
+    },
+    "twoText": {
+      "nameZh": "双文本",
+      "useWhen": "A title plus short supporting context or reason is needed.",
+      "textRules": {
+        "titleMaxLines": 2,
+        "subtitleMaxLines": 2,
+        "titleFontSize": 16,
+        "titleFontWeight": "SemiBold",
+        "subtitleFontSize": 12,
+        "subtitleFontWeight": "Medium",
+        "titleOpacity": 0.9,
+        "subtitleOpacity": 0.6,
+        "subtitleLineHeight": {
+          "unit": "PERCENT",
+          "value": 135
+        },
+        "titleY": 14,
+        "subtitleY": "titleY + renderedTitleHeight + 2",
+        "singleLineTitleHeightReference": 23,
+        "twoLineTitleHeightReference": 38,
+        "titleMinFontSize": 14,
+        "subtitleMinFontSize": 10,
+        "subtitleSingleLineHeightReference": 16,
+        "subtitleTwoLineHeightReference": 32
+      },
+      "alignment": ["topLeft", "bottomLeft"]
+    },
+    "threeText": {
+      "nameZh": "三文本",
+      "useWhen": "A small header, prominent label/value, and auxiliary line are needed.",
+      "textRules": {
+        "headerMaxLines": 1,
+        "labelMaxLines": 1,
+        "subtextMaxLines": 1,
+        "headerFontSize": 12,
+        "headerFontWeight": "Medium",
+        "labelFontSize": 20,
+        "labelFontWeight": "SemiBold",
+        "subtextFontSize": 10,
+        "subtextFontWeight": "Medium",
+        "headerOpacity": 0.9,
+        "labelOpacity": 0.9,
+        "subtextOpacity": 0.6,
+        "topY": {
+          "header": 14,
+          "label": 30,
+          "subtext": 56
+        },
+        "bottomY": {
+          "header": 70,
+          "label": 86,
+          "subtext": 112
+        }
+      },
+      "alignment": ["topLeft", "bottomLeft"]
+    },
+    "largeText": {
+      "nameZh": "大字体文本",
+      "useWhen": "A number, time, threshold, temperature, amount, or key status should be the hero.",
+      "textRules": {
+        "headerMaxLines": 1,
+        "dataMaxLines": 1,
+        "headerFontSize": 12,
+        "headerFontWeight": "Medium",
+        "dataFontSize": 40,
+        "dataFontWeight": "Medium",
+        "unitFontSize": 12,
+        "unitFontWeight": "SemiBold",
+        "unitGapFromNumber": 2,
+        "unitY": 55,
+        "unitHeight": 14,
+        "unitAnnotationFontSize": 10,
+        "unitAlignment": "lower optical edge of the large number; do not vertically center the unit",
+        "subtextFontSize": 10,
+        "subtextFontWeight": "Medium",
+        "topY": {
+          "header": 14,
+          "data": 28,
+          "unitBaselineArea": 55,
+          "subtextLine1": 98,
+          "subtextLine2": 112
+        },
+        "bottomY": {
+          "data": 62,
+          "header": 110
+        }
+      },
+      "alignment": ["topLeft", "bottomLeft"]
+    }
+  },
+  "fixedBaseSpec": {
+    "markdown": "base-pixel-spec.md",
+    "json": "base-pixel-spec.json",
+    "rule": "Load and obey the base pixel spec before making or reviewing card designs. PRD and tone classification may not change base pixels."
+  },
+  "compositionRules": {
+    "strictTypography": "After tone classification, choose one of the four layouts and obey that layout's typography exactly: font size, font weight, opacity, max line count, and number of text levels.",
+    "textBoxAlignment": "All card text boxes use vertical alignment Middle. Line height is AUTO except double-text subtitles, which use 135% per the source typography board.",
+    "noExtraMicrocopy": "Do not add extra helper text, timestamps, labels, captions, or decorative small type unless the chosen layout explicitly allows that text level and the PRD requires it.",
+    "noUnspecifiedIcons": "Do not invent warning punctuation, exclamation icons, badge symbols, or decorative status marks that are not present in the spec pattern. Header icons are allowed only where the spec allows text-with-icon and should be filled icons matching the header size.",
+    "iconAndIllustrationLayering": "Icons and illustrations must not cover text. Header icons sit before the header text per the text-with-icon examples. Decorative illustrations that overlap the text zone must be placed behind all text as background layers with restrained opacity.",
+    "largeNumberUnits": "Do not combine number and unit into one large text node. For large-text cards, split the value and unit: the number uses the large data style, while the unit uses the small unit style, currently 10dp Semibold at 90% opacity. Keep the unit about 2dp from the number and align it to the number's lower optical edge.",
+    "spacing": {
+      "outerPadding": 14,
+      "defaultTitleToSubtitleGap": 2,
+      "singleTextTopY": 14,
+      "twoTextTitleY": 14,
+      "threeTextTopY": [14, 30, 56],
+      "largeTextTopY": [14, 28, 98, 112]
+    }
+  },
+  "toneAxes": {
+    "visualAttraction": {
+      "axis": "VA",
+      "levels": {
+        "VA1": "克制：纯白色、轻色彩、小图标等",
+        "VA2": "明确：轻渐变、局部插画、品牌色点缀等",
+        "VA3": "强吸引：大面渐变、大插画、强品牌色等"
+      }
+    },
+    "informationSalience": {
+      "axis": "IS",
+      "levels": {
+        "IS1": "低显著：只展示内容，无明确状态或原因",
+        "IS2": "中显著：有上下文原因、有轻行动建议说明",
+        "IS3": "高显著：有明确数字、时间、阈值、风险等"
+      }
+    },
+    "actionAuthority": {
+      "axis": "AA",
+      "levels": {
+        "AA1": "无行动：只浏览、整卡点击、无按钮",
+        "AA2": "弱行动：Learn more/View/Try，可忽略",
+        "AA3": "强行动：确认/立即处理这类高价值操作"
+      }
+    }
+  },
+  "toneFamilies": {
+    "classificationOrder": [
+      "visualInformation",
+      "operationGuidance",
+      "visualDrivenClick"
+    ],
+    "visualInformation": {
+      "nameZh": "视觉 × 信息",
+      "userPerception": "只看不用点",
+      "subtypes": ["informationStatus", "ambientInformation"],
+      "decisionRule": "Use this first when the PRD card's main value is status, time, amount, threshold, weather, traffic, power, connectivity, countdown, or other information to be understood at a glance.",
+      "visualRule": "Do not use large-area filled background just because information is important. Prefer white or very light material cards, semantic color accents, small charts/icons, and controlled local illustrations. Visuals support information instead of dominating the card."
+    },
+    "visualDrivenClick": {
+      "nameZh": "视觉驱动点击",
+      "distribution": ["VA3", "IS1", "AA1"],
+      "userPerception": "看了感兴趣可以点",
+      "useFor": ["功能推荐", "服务推荐", "内容消费", "趣味探索"],
+      "direction": "More immersive or branded visuals, low pressure, weak or no button."
+    },
+    "informationStatus": {
+      "nameZh": "凸显信息状态",
+      "distribution": ["VA2", "IS3", "AA1"],
+      "userPerception": "只看不用点",
+      "useFor": ["状态提醒", "天气", "交通", "电力恢复", "指标信息"],
+      "direction": "Information efficiency first; state color and key value are prominent.",
+      "surfaceRule": "Use white/light card surfaces. Avoid large-area full-card brand/semantic color fills. Use semantic color in data, mini charts, icon chips, progress marks, small accents, or local background patches."
+    },
+    "operationGuidance": {
+      "nameZh": "明确操作引导",
+      "distribution": ["VA1", "IS2", "AA3"],
+      "userPerception": "你需要这个功能",
+      "useFor": ["省电", "取件码", "待办", "恢复通话", "需要用户确认或立即处理的任务"],
+      "direction": "Direct operation with restrained visuals and clear CTA/button."
+    },
+    "ambientInformation": {
+      "nameZh": "凸显场景氛围",
+      "distribution": ["VA3", "IS2", "AA1"],
+      "userPerception": "视觉也传递信息，相辅相成，更沉浸",
+      "useFor": ["天气", "节日", "重要日", "旅行地点", "场景化服务"],
+      "direction": "Visual atmosphere carries part of the information while text stays compact."
+    }
+  },
+  "colorRules": {
+    "themeColor": "If AI Suggestions is strongly associated with an app, prefer the app theme color.",
+    "semanticWarning": "Use warning color carefully. Avoid red unless the scenario truly requires high urgency.",
+    "informationStatusSurface": "For 凸显信息状态, semantic color is an accent, not a full-card background. Keep the card surface calm and let status color appear in the key number, chart, icon, or small local area.",
+    "gradient": {
+      "maxStops": 2,
+      "hueSpan": "Use close or adjacent hues; avoid high-contrast complementary jumps.",
+      "saturation": "Reduce large-area brand colors in saturation and brightness."
+    },
+    "textGradient": {
+      "maxOccurrencesPerCard": 1,
+      "direction": "leftToRight",
+      "useWhen": "For emotional expression or emphasis text; keep title solid if present."
+    }
+  },
+  "actions": {
+    "longPill": {
+      "height": 30,
+      "width": 110,
+      "useWhen": "Long copy or clear execution action."
+    },
+    "shortPill": {
+      "height": 30,
+      "useWhen": "Short verb, delay, confirm, lightweight handling."
+    },
+    "iconButton": {
+      "heightRange": [24, 36],
+      "useWhen": "Play, toggle, state switch, or immediate action with clear icon semantics."
+    }
+  },
+  "bleedAndOverlay": {
+    "bleed": {
+      "allowedSides": ["top", "left", "right"],
+      "range": 12,
+      "bottom": "Use cautiously because it may overlap title text."
+    },
+    "overlayTypes": ["blackWhiteGradient", "sampledColorOverlay", "blurOverlay"]
+  }
+}
