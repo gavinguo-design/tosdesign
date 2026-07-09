@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>全局搜索答案卡 · TOS Design</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #111114;
+      --surface: rgba(255,255,255,0.06);
+      --surface2: rgba(255,255,255,0.10);
+      --surface3: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.10);
+      --border2: rgba(255,255,255,0.06);
+      --accent: #7C5CFC;
+      --accent2: #4ecca3;
+      --text: #f0f0f5;
+      --text2: rgba(240,240,245,0.65);
+      --muted: rgba(240,240,245,0.45);
+      --muted2: rgba(240,240,245,0.25);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      flex-direction: row;
+    }
+
+    /* ─── LOGIN OVERLAY ─── */
+    #loginOverlay {
+      position: fixed; inset: 0; z-index: 999;
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(20px);
+      display: flex; align-items: center; justify-content: center;
+    }
+    #loginOverlay.hidden { display: none; }
+    .login-box {
+      background: rgba(30,30,38,0.95);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 2rem 2.2rem;
+      width: 320px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    }
+    .login-logo { font-size: 2rem; text-align: center; margin-bottom: 0.4rem; }
+    .login-title { text-align: center; font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 0.2rem; }
+    .login-sub { text-align: center; font-size: 0.75rem; color: var(--muted); margin-bottom: 1.5rem; }
+    .login-field { margin-bottom: 0.9rem; }
+    .login-field label { display: block; font-size: 0.72rem; color: var(--muted); margin-bottom: 0.3rem; }
+    .login-field input {
+      width: 100%;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 0.55rem 0.8rem;
+      color: #fff; font-size: 0.9rem;
+      outline: none; transition: border 0.2s;
+    }
+    .login-field input:focus { border-color: rgba(124,92,252,0.6); }
+    .login-btn {
+      width: 100%; padding: 0.65rem;
+      background: var(--accent); border: none; border-radius: 10px;
+      color: #fff; font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; margin-top: 0.3rem;
+      transition: opacity 0.2s;
+    }
+    .login-btn:hover { opacity: 0.85; }
+    .login-err { color: #ff6b6b; font-size: 0.75rem; text-align: center; margin-top: 0.6rem; min-height: 1em; }
+    .login-switch { text-align: center; font-size: 0.75rem; color: var(--muted); margin-top: 0.9rem; }
+    .login-switch a { color: var(--accent); cursor: pointer; text-decoration: none; }
+
+    /* ─── SIDEBAR ─── */
+    .sidebar {
+      width: 200px; flex-shrink: 0;
+      height: 100vh;
+      background: rgba(255,255,255,0.03);
+      border-right: 1px solid var(--border2);
+      display: flex; flex-direction: column;
+      overflow: hidden; z-index: 30;
+    }
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 16px 14px 14px;
+      border-bottom: 1px solid var(--border2); flex-shrink: 0;
+    }
+    .sidebar-logo-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: #7C5CFC; display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0;
+    }
+    .sidebar-logo-icon svg { width: 18px; height: 18px; }
+    .sidebar-logo-text {
+      flex: 1; display: flex; flex-direction: column; line-height: 1.2;
+    }
+    .sidebar-logo-text span { font-size: 13px; font-weight: 700; color: #7C5CFC; letter-spacing: 0.06em; text-transform: uppercase; }
+    .sidebar-nav { padding: 6px 8px 6px; flex-shrink: 0; border-bottom: 1px solid var(--border2); }
+    .sidebar-nav-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 9px 12px; border-radius: 999px;
+      cursor: pointer; color: var(--text2); font-size: 14px;
+      transition: background 0.15s; border: 1px solid transparent;
+      background: transparent; width: 100%; text-align: left;
+      font-family: inherit; line-height: 1.3; text-decoration: none;
+    }
+    .sidebar-nav-item:hover { background: var(--surface); }
+    .sidebar-nav-item.active {
+      background: var(--surface2); border-radius: 999px;
+      border: 1px solid var(--border);
+      color: #fff; font-weight: 500;
+    }
+    .sidebar-nav-item svg { flex-shrink: 0; margin-top: 1px; }
+    .sidebar-nav-item-body { display: flex; flex-direction: column; gap: 1px; }
+    .sidebar-nav-item-sub { font-size: 11px; color: var(--muted); font-weight: 400; }
+    .sidebar-section-label { font-size: 12px; color: var(--muted); padding: 10px 14px 4px; flex-shrink: 0; }
+    .sidebar-history {
+      flex: 1; overflow-y: auto; padding: 0.2rem 0.5rem 0.5rem;
+      display: flex; flex-direction: column; gap: 0.12rem;
+    }
+    .sidebar-history::-webkit-scrollbar { width: 3px; }
+    .sidebar-history::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+    .history-item {
+      display: flex; flex-direction: column; gap: 0.18rem;
+      padding: 0.5rem 0.65rem; border-radius: 0.55rem;
+      cursor: pointer; transition: background 0.15s;
+      border: 1px solid transparent;
+    }
+    .history-item:hover { background: var(--surface); border-color: var(--border2); }
+    .history-item.active { background: var(--surface2); border-color: var(--border); }
+    .history-item-title { font-size: 0.75rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+    .history-item-time { font-size: 0.62rem; color: var(--muted); }
+    .sidebar-footer {
+      flex-shrink: 0; border-top: 1px solid var(--border2);
+      padding: 0.75rem 0.85rem 1rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .sidebar-avatar {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--accent); display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .sidebar-username { font-size: 0.78rem; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sidebar-logout { font-size: 0.7rem; color: var(--muted); cursor: pointer; margin-left: auto; flex-shrink: 0; }
+    .sidebar-logout:hover { color: #ff6b6b; }
+
+    /* ─── MAIN AREA ─── */
+    .main { flex: 1; display: flex; overflow: hidden; }
+
+    /* ─── PHONE PREVIEW (left) ─── */
+    .phone-area {
+      width: 420px; flex-shrink: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 24px 20px;
+      background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(60,40,120,0.25), transparent),
+                  radial-gradient(ellipse 50% 50% at 80% 80%, rgba(20,80,60,0.15), transparent),
+                  #0d0d12;
+      border-right: 1px solid var(--border2);
+      position: relative;
+    }
+
+    .phone-frame {
+      width: 320px;
+      height: 692px;
+      border-radius: 48px;
+      background: #000;
+      box-shadow:
+        0 0 0 2px rgba(255,255,255,0.12),
+        0 0 0 4px rgba(0,0,0,0.8),
+        0 40px 100px rgba(0,0,0,0.6),
+        0 8px 24px rgba(0,0,0,0.5);
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    /* Phone wallpaper */
+    .phone-wallpaper {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 60% 20%, rgba(80,40,160,0.7), transparent),
+        radial-gradient(ellipse 60% 60% at 20% 80%, rgba(20,60,100,0.5), transparent),
+        radial-gradient(ellipse 50% 40% at 80% 70%, rgba(60,20,80,0.4), transparent),
+        linear-gradient(180deg, #1a0d2e 0%, #0d1a2e 40%, #0a1218 100%);
+      z-index: 0;
+    }
+
+    /* Status bar */
+    .phone-statusbar {
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 48px; z-index: 10;
+      display: flex; align-items: flex-end; justify-content: space-between;
+      padding: 0 28px 8px;
+      font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85);
+    }
+    .phone-statusbar-time { font-size: 15px; font-weight: 700; }
+    .phone-statusbar-icons { display: flex; align-items: center; gap: 5px; font-size: 12px; }
+
+    /* Dynamic island */
+    .phone-island {
+      position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+      width: 110px; height: 30px; background: #000;
+      border-radius: 20px; z-index: 11;
+    }
+
+    /* Phone screen content */
+    .phone-screen {
+      position: absolute; inset: 0; z-index: 5;
+      display: flex; flex-direction: column;
+      padding-top: 56px;
+      overflow-y: auto;
+    }
+    .phone-screen::-webkit-scrollbar { display: none; }
+
+    /* Search bar at top of phone */
+    .phone-searchbar {
+      margin: 8px 14px 0;
+      height: 40px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 14px;
+      backdrop-filter: blur(20px);
+      display: flex; align-items: center; gap: 8px;
+      padding: 0 14px;
+      font-size: 14px; color: rgba(255,255,255,0.85);
+      flex-shrink: 0;
+    }
+    .phone-searchbar-icon { opacity: 0.6; font-size: 13px; }
+    .phone-searchbar-text { flex: 1; font-size: 14px; color: rgba(255,255,255,0.9); }
+    .phone-searchbar-cursor {
+      width: 2px; height: 16px; background: #fff; border-radius: 1px;
+      animation: blink 1s ease infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* Card area in phone */
+    .phone-cards-area {
+      flex: 1; padding: 12px 14px 80px;
+      display: flex; flex-direction: column; gap: 0;
+    }
+
+    .phone-section-title {
+      font-size: 12px; font-weight: 400;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 6px; margin-top: 4px;
+      padding-left: 2px;
+      letter-spacing: 0.02em;
+    }
+
+    /* OS17 Glass Card */
+    .os17-card {
+      width: 100%;
+      border-radius: 24px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow:
+        inset 0 0 0 0.5px rgba(255,255,255,0.10),
+        inset 0 1px 8px rgba(255,255,255,0.08),
+        0 4px 20px rgba(0,0,0,0.3);
+      padding: 10px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Card gradient border overlay (LINEAR_DODGE) */
+    .os17-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: inherit;
+      border: 1px solid transparent;
+      background: linear-gradient(180deg,
+        rgba(255,255,255,0.20) 0%,
+        rgba(255,255,255,0.05) 25%,
+        rgba(255,255,255,0.05) 75%,
+        rgba(255,255,255,0.20) 100%
+      ) border-box;
+      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: destination-out;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .os17-card-gap { margin-bottom: 10px; }
+
+    /* Widget base */
+    .widget {
+      border-radius: 18px;
+      padding: 12px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .widget:last-child { margin-bottom: 0; }
+
+    /* text-single */
+    .widget-text-single {
+      min-height: 46px;
+      display: flex; align-items: center;
+    }
+    .widget-text-single .ws-text {
+      font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.90);
+      line-height: 1.4;
+    }
+
+    /* text-title */
+    .widget-text-title { min-height: 78px; }
+    .widget-text-title .wt-title {
+      font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.92);
+      margin-bottom: 4px; line-height: 1.3;
+    }
+    .widget-text-title .wt-sub {
+      font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.60);
+      line-height: 1.5;
+    }
+
+    /* text-large */
+    .widget-text-large {
+      min-height: 52px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .widget-text-large .wl-value {
+      font-size: 24px; font-weight: 700; color: rgba(255,255,255,0.95);
+      line-height: 1.1; letter-spacing: -0.02em;
+    }
+    .widget-text-large .wl-label {
+      font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.55);
+      margin-top: 3px;
+    }
+
+    /* jump-single, jump-dual, jump-button */
+    .widget-jump {
+      min-height: 66px; max-height: 66px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .wj-icon {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: rgba(255,255,255,0.12);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .wj-body { flex: 1; min-width: 0; }
+    .wj-title {
+      font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.92);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .wj-sub {
+      font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.55);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+    .wj-arrow {
+      font-size: 14px; color: rgba(255,255,255,0.35);
+      flex-shrink: 0; margin-left: 4px;
+    }
+    .wj-btn {
+      flex-shrink: 0;
+      padding: 0 14px; height: 30px; line-height: 30px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
+      font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.85);
+      cursor: pointer; white-space: nowrap;
+    }
+
+    /* switch */
+    .widget-switch {
+      min-height: 58px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .ws-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: rgba(255,255,255,0.10);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .ws-label {
+      flex: 1; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.90);
+    }
+    .ws-toggle {
+      width: 44px; height: 26px; border-radius: 13px;
+      background: rgba(255,255,255,0.15);
+      position: relative; flex-shrink: 0; cursor: pointer;
+      transition: background 0.25s;
+    }
+    .ws-toggle.on { background: #30d158; }
+    .ws-toggle::after {
+      content: '';
+      position: absolute; top: 3px; left: 3px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      transition: transform 0.25s;
+    }
+    .ws-toggle.on::after { transform: translateX(18px); }
+
+    /* list */
+    .widget-list { min-height: 170px; }
+    .wlist-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .wlist-item:last-child { border-bottom: none; }
+    .wlist-icon { font-size: 18px; flex-shrink: 0; width: 24px; text-align: center; }
+    .wlist-body { flex: 1; min-width: 0; }
+    .wlist-title { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.88); }
+    .wlist-sub { font-size: 11px; color: rgba(255,255,255,0.50); margin-top: 1px; }
+
+    /* Empty phone state */
+    .phone-empty {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 12px; padding: 40px 20px;
+    }
+    .phone-empty-icon { font-size: 40px; opacity: 0.3; }
+    .phone-empty-text { font-size: 13px; color: rgba(255,255,255,0.3); text-align: center; line-height: 1.5; }
+
+    /* OS Liquid Search Bar at bottom */
+    .phone-liquid-bar {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 76px; z-index: 10;
+      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+      display: flex; align-items: center; justify-content: center;
+      padding-bottom: 10px;
+    }
+    .phone-liquid-pill {
+      width: 220px; height: 46px;
+      background: rgba(255,255,255,0.13);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 23px;
+      backdrop-filter: blur(20px);
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    .pill-icon { font-size: 16px; opacity: 0.7; }
+    .pill-text { flex: 1; font-size: 14px; color: rgba(255,255,255,0.6); }
+    .pill-mic { font-size: 16px; opacity: 0.6; }
+
+    /* Phone label */
+    .phone-label {
+      margin-top: 14px;
+      font-size: 12px; color: rgba(255,255,255,0.2);
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+
+    /* ─── RIGHT CHAT PANEL ─── */
+    .chat-area {
+      flex: 1; display: flex; flex-direction: column;
+      min-width: 0;
+      background: var(--bg);
+    }
+
+    .chat-topbar {
+      height: 52px; flex-shrink: 0;
+      border-bottom: 1px solid var(--border2);
+      display: flex; align-items: center; gap: 12px;
+      padding: 0 20px;
+      background: rgba(255,255,255,0.02);
+    }
+    .topbar-back {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; color: var(--muted); text-decoration: none;
+      padding: 4px 8px; border-radius: 6px; transition: all 0.15s;
+    }
+    .topbar-back:hover { color: var(--text); background: var(--surface); }
+    .topbar-title { font-size: 14px; font-weight: 600; color: var(--text); }
+    .topbar-badge {
+      font-size: 10px; font-weight: 700;
+      padding: 2px 7px; border-radius: 999px;
+      background: rgba(124,92,252,0.25);
+      color: #a78bfa;
+      border: 1px solid rgba(124,92,252,0.35);
+      letter-spacing: 0.04em;
+    }
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+    .scene-badge {
+      font-size: 11px; padding: 3px 10px; border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted); background: var(--surface3);
+    }
+    .scene-badge.info { border-color: rgba(96,165,250,0.4); color: #93c5fd; background: rgba(96,165,250,0.08); }
+    .scene-badge.action { border-color: rgba(74,222,128,0.4); color: #86efac; background: rgba(74,222,128,0.08); }
+    .scene-badge.control { border-color: rgba(251,191,36,0.4); color: #fde68a; background: rgba(251,191,36,0.08); }
+
+    /* Chat messages */
+    .chat-messages {
+      flex: 1; overflow-y: auto;
+      padding: 20px; display: flex; flex-direction: column; gap: 16px;
+      min-height: 0;
+    }
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+    .msg { display: flex; flex-direction: column; gap: 4px; }
+    .msg.user { align-items: flex-end; }
+    .msg.bot { align-items: flex-start; }
+    .msg-bubble {
+      max-width: 85%; padding: 10px 14px;
+      border-radius: 16px; font-size: 13.5px; line-height: 1.6;
+    }
+    .msg.user .msg-bubble {
+      background: var(--accent); color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .msg.bot .msg-bubble {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border2);
+      border-bottom-left-radius: 4px;
+      white-space: pre-wrap;
+    }
+    .msg-time { font-size: 10.5px; color: var(--muted); padding: 0 4px; }
+
+    /* Card layout preview badge in chat */
+    .card-generated-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; padding: 4px 10px; border-radius: 8px;
+      background: rgba(124,92,252,0.15); color: #a78bfa;
+      border: 1px solid rgba(124,92,252,0.25); margin-top: 6px;
+    }
+
+    /* Typing indicator */
+    .typing { display: flex; gap: 3px; align-items: center; padding: 4px 0; }
+    .typing span {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--muted);
+      animation: typingDot 1.2s ease infinite;
+    }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingDot {
+      0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+      30% { opacity: 1; transform: translateY(-3px); }
+    }
+
+    /* Suggestions */
+    .suggestions {
+      padding: 0 20px 10px;
+      display: flex; flex-wrap: wrap; gap: 6px; flex-shrink: 0;
+    }
+    .suggestion-chip {
+      font-size: 12px; padding: 5px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface3); color: var(--text2);
+      cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    }
+    .suggestion-chip:hover {
+      border-color: rgba(124,92,252,0.4); color: #a78bfa;
+      background: rgba(124,92,252,0.08);
+    }
+
+    /* Chat input */
+    .chat-input-area {
+      padding: 12px 20px 16px; flex-shrink: 0;
+      border-top: 1px solid var(--border2);
+    }
+    .chat-input-wrap {
+      display: flex; align-items: flex-end; gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px; padding: 8px 10px;
+      transition: border-color 0.2s;
+    }
+    .chat-input-wrap:focus-within { border-color: rgba(124,92,252,0.5); }
+    .chat-input {
+      flex: 1; background: transparent; border: none; outline: none;
+      color: var(--text); font-size: 13.5px; resize: none;
+      max-height: 100px; font-family: inherit; line-height: 1.5;
+    }
+    .chat-input::placeholder { color: var(--muted); }
+    .send-btn {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--accent); border: none; color: #fff;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0; transition: opacity 0.15s;
+    }
+    .send-btn:hover { opacity: 0.85; }
+    .send-btn:disabled { opacity: 0.4; cursor: default; }
+
+    /* Spec tooltip */
+    .spec-strip {
+      padding: 8px 20px; flex-shrink: 0;
+      display: flex; gap: 12px; flex-wrap: wrap;
+      border-top: 1px solid var(--border2);
+      background: rgba(255,255,255,0.01);
+    }
+    .spec-item {
+      font-size: 10.5px; color: var(--muted);
+      display: flex; align-items: center; gap: 4px;
+    }
+    .spec-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: rgba(124,92,252,0.5); flex-shrink: 0;
+    }
+
+    /* Welcome state */
+    .welcome-state {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 24px; padding: 40px 40px;
+      text-align: center;
+    }
+    .welcome-state.hidden { display: none; }
+    .welcome-icon { font-size: 48px; }
+    .welcome-title { font-size: 22px; font-weight: 600; color: var(--text); letter-spacing: -0.02em; }
+    .welcome-title span { color: var(--accent); }
+    .welcome-sub { font-size: 14px; color: var(--muted); line-height: 1.6; max-width: 360px; }
+    .welcome-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .welcome-chip {
+      font-size: 13px; padding: 8px 16px; border-radius: 999px;
+      border: 1px solid var(--border); background: var(--surface3);
+      color: var(--text2); cursor: pointer; transition: all 0.15s;
+    }
+    .welcome-chip:hover {
+      border-color: rgba(124,92,252,0.4); color: #a78bfa;
+      background: rgba(124,92,252,0.08);
+    }
+
+    /* Scene indicators */
+    .scene-info { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    .scene-pill {
+      font-size: 12px; padding: 6px 14px; border-radius: 999px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .scene-pill.info { background: rgba(96,165,250,0.1); color: #93c5fd; border: 1px solid rgba(96,165,250,0.25); }
+    .scene-pill.action { background: rgba(74,222,128,0.1); color: #86efac; border: 1px solid rgba(74,222,128,0.25); }
+    .scene-pill.control { background: rgba(251,191,36,0.1); color: #fde68a; border: 1px solid rgba(251,191,36,0.25); }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN OVERLAY -->
+<div id="loginOverlay">
+  <div class="login-box">
+    <div class="login-logo">🔍</div>
+    <div class="login-title">TOS Design</div>
+    <div class="login-sub">OS17 全局搜索答案卡设计工具</div>
+    <div id="loginForm">
+      <div class="login-field"><label>邮箱</label><input type="email" id="loginEmail" placeholder="your@email.com" /></div>
+      <div class="login-field"><label>密码</label><input type="password" id="loginPassword" placeholder="至少6位" /></div>
+      <button class="login-btn" onclick="doLogin()">登录</button>
+      <div class="login-err" id="loginErr"></div>
+      <div class="login-switch">还没有账号？<a onclick="showRegister()">立即注册</a></div>
+    </div>
+    <div id="registerForm" style="display:none">
+      <div class="login-field"><label>姓名</label><input type="text" id="regName" placeholder="你的名字" /></div>
+      <div class="login-field"><label>邮箱</label><input type="email" id="regEmail" placeholder="your@email.com" /></div>
+      <div class="login-field"><label>密码</label><input type="password" id="regPassword" placeholder="至少6位" /></div>
+      <button class="login-btn" onclick="doRegister()">注册</button>
+      <div class="login-err" id="registerErr"></div>
+      <div class="login-switch">已有账号？<a onclick="showLogin()">返回登录</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <span class="sidebar-logo-icon">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 5C16 5 17.5 10.5 16 13C14.5 10.5 16 5 16 5Z" fill="white" opacity="0.9"/>
+        <path d="M16 27C16 27 14.5 21.5 16 19C17.5 21.5 16 27 16 27Z" fill="white" opacity="0.9"/>
+        <path d="M5 16C5 16 10.5 14.5 13 16C10.5 17.5 5 16 5 16Z" fill="white" opacity="0.9"/>
+        <path d="M27 16C27 16 21.5 17.5 19 16C21.5 14.5 27 16 27 16Z" fill="white" opacity="0.9"/>
+        <circle cx="16" cy="16" r="3.5" fill="white"/>
+      </svg>
+    </span>
+    <div class="sidebar-logo-text">
+      <span>TOS</span>
+      <span>DESIGN</span>
+    </div>
+  </div>
+
+  <div class="sidebar-nav">
+    <a href="../index.html" class="sidebar-nav-item">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 9l7-6 7 6"/><path d="M4 7.5V15h4v-4h2v4h4V7.5"/>
+      </svg>
+      <div class="sidebar-nav-item-body">工具首页</div>
+    </a>
+    <button class="sidebar-nav-item active">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="8" cy="8" r="5"/><path d="M13 13l3 3"/>
+      </svg>
+      <div class="sidebar-nav-item-body">
+        全局搜索
+        <span class="sidebar-nav-item-sub">答案卡设计</span>
+      </div>
+    </button>
+    <a href="../desktop-card/index.html" class="sidebar-nav-item">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="4" width="14" height="10" rx="2"/><path d="M6 14v2M12 14v2M5 16h8"/>
+      </svg>
+      <div class="sidebar-nav-item-body">
+        桌面卡片
+        <span class="sidebar-nav-item-sub">Widget 设计</span>
+      </div>
+    </a>
+  </div>
+
+  <div class="sidebar-section-label">场景示例</div>
+  <div class="sidebar-history" id="scenesHistory">
+    <!-- Populated by JS -->
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-avatar" id="sidebarAvatar">U</div>
+    <span class="sidebar-username" id="sidebarUsername">未登录</span>
+    <span class="sidebar-logout" onclick="doLogout()" id="sidebarLogout" style="display:none">退出</span>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- PHONE AREA -->
+  <div class="phone-area">
+    <div class="phone-frame">
+      <div class="phone-wallpaper"></div>
+      <div class="phone-island"></div>
+      <div class="phone-statusbar">
+        <span class="phone-statusbar-time" id="phoneTime">9:41</span>
+        <div class="phone-statusbar-icons">
+          <span>📶</span><span>🔋</span>
+        </div>
+      </div>
+
+      <div class="phone-screen">
+        <!-- Search bar -->
+        <div class="phone-searchbar">
+          <span class="phone-searchbar-icon">🔍</span>
+          <span class="phone-searchbar-text" id="phoneQueryText">搜索任何内容…</span>
+          <span class="phone-searchbar-cursor" id="phoneCursor" style="display:none"></span>
+        </div>
+
+        <!-- Cards area -->
+        <div class="phone-cards-area" id="phoneCardsArea">
+          <!-- Empty state -->
+          <div class="phone-empty" id="phoneEmpty">
+            <div class="phone-empty-icon">✦</div>
+            <div class="phone-empty-text">在右侧描述一个搜索场景<br>AI 将生成对应的答案卡</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OS Liquid Search Bar -->
+      <div class="phone-liquid-bar">
+        <div class="phone-liquid-pill">
+          <span class="pill-icon">🔍</span>
+          <span class="pill-text">搜索或输入网址</span>
+          <span class="pill-mic">🎙️</span>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label">360 × 800 dp</div>
+  </div>
+
+  <!-- CHAT AREA -->
+  <div class="chat-area">
+    <div class="chat-topbar">
+      <a href="../index.html" class="topbar-back">
+        ← 返回
+      </a>
+      <span style="color:var(--border2)">|</span>
+      <span class="topbar-title">全局搜索答案卡</span>
+      <span class="topbar-badge">OS17</span>
+      <div class="topbar-right">
+        <span class="scene-badge" id="sceneBadge">场景未知</span>
+      </div>
+    </div>
+
+    <!-- Welcome / Chat messages -->
+    <div class="welcome-state" id="welcomeState">
+      <div class="welcome-icon">🔍</div>
+      <div class="welcome-title">OS17 <span>答案卡</span>设计</div>
+      <div class="welcome-sub">描述一个搜索场景，AI 将生成符合 OS17 规范的全局搜索答案卡。支持信息获取、操作执行、状态控制三种类型。</div>
+      <div class="scene-info">
+        <div class="scene-pill info">📊 信息获取</div>
+        <div class="scene-pill action">⚡ 操作执行</div>
+        <div class="scene-pill control">🎛️ 状态控制</div>
+      </div>
+      <div class="welcome-chips" id="welcomeChips">
+        <div class="welcome-chip" onclick="sendChip('查询上海今天的天气')">🌤️ 查天气</div>
+        <div class="welcome-chip" onclick="sendChip('搜索"打开 Wi-Fi"')">📶 开 Wi-Fi</div>
+        <div class="welcome-chip" onclick="sendChip('搜索明天的航班 RY9108')">✈️ 查航班</div>
+        <div class="welcome-chip" onclick="sendChip('搜索"设置闹钟 7点"')">⏰ 设闹钟</div>
+        <div class="welcome-chip" onclick="sendChip('搜索"今日步数"')">🏃 查步数</div>
+        <div class="welcome-chip" onclick="sendChip('搜索"播放周杰伦"')">🎵 放音乐</div>
+      </div>
+    </div>
+
+    <div class="chat-messages" id="chatMessages" style="display:none"></div>
+
+    <div class="suggestions" id="suggestions" style="display:none">
+      <div class="suggestion-chip" onclick="sendChip('换一个方案')">🔄 换方案</div>
+      <div class="suggestion-chip" onclick="sendChip('调整为信息获取场景')">📊 改成 info</div>
+      <div class="suggestion-chip" onclick="sendChip('增加一个 widget')">➕ 加 widget</div>
+      <div class="suggestion-chip" onclick="sendChip('简化设计，只留核心信息')">✂️ 简化</div>
+    </div>
+
+    <div class="spec-strip">
+      <div class="spec-item"><span class="spec-dot"></span>卡宽 308dp · 圆角 24dp</div>
+      <div class="spec-item"><span class="spec-dot"></span>Widget 间距 10dp · 最多 3 个</div>
+      <div class="spec-item"><span class="spec-dot"></span>Glass fill 5% · Stroke 10%</div>
+    </div>
+
+    <div class="chat-input-area">
+      <div class="chat-input-wrap">
+        <textarea
+          class="chat-input" id="chatInput"
+          placeholder="描述一个搜索场景，如「搜索今天上海天气」…"
+          rows="1"
+          onkeydown="handleKey(event)"
+          oninput="autoResize(this)"
+        ></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">↑</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── AUTH ───
+const TOKEN_SECRET = 'tosdesign-secret-2024';
+const API_BASE = '/api';
+let authToken = localStorage.getItem('tos_token') || null;
+let currentUser = JSON.parse(localStorage.getItem('tos_user') || 'null');
+
+async function verifyTokenLocal(token) {
+  if (!token) return false;
+  const parts = token.split('.');
+  if (parts.length !== 2) return false;
+  const [payload, sigHex] = parts;
+  try {
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey('raw', enc.encode(TOKEN_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const sig = await crypto.subtle.sign('HMAC', key, enc.encode(payload));
+    const expected = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
+    return expected === sigHex;
+  } catch { return false; }
+}
+
+async function checkAuth() {
+  if (authToken && await verifyTokenLocal(authToken)) {
+    document.getElementById('loginOverlay').classList.add('hidden');
+    updateUserUI();
+  } else {
+    authToken = null; currentUser = null;
+    localStorage.removeItem('tos_token'); localStorage.removeItem('tos_user');
+    document.getElementById('loginOverlay').classList.remove('hidden');
+  }
+}
+
+async function makeToken(payload) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(TOKEN_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(payload));
+  return payload + '.' + Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pwd = document.getElementById('loginPassword').value;
+  const err = document.getElementById('loginErr');
+  if (!email || !pwd) { err.textContent = '请填写邮箱和密码'; return; }
+  const users = JSON.parse(localStorage.getItem('tos_users') || '{}');
+  if (!users[email]) { err.textContent = '账号不存在，请先注册'; return; }
+  if (users[email].pwd !== btoa(pwd)) { err.textContent = '密码错误'; return; }
+  const payload = JSON.stringify({ email, name: users[email].name, exp: Date.now() + 7 * 86400000 });
+  const token = await makeToken(btoa(payload));
+  authToken = token; currentUser = { email, name: users[email].name };
+  localStorage.setItem('tos_token', token);
+  localStorage.setItem('tos_user', JSON.stringify(currentUser));
+  document.getElementById('loginOverlay').classList.add('hidden');
+  updateUserUI();
+}
+
+async function doRegister() {
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pwd = document.getElementById('regPassword').value;
+  const err = document.getElementById('registerErr');
+  if (!name || !email || !pwd) { err.textContent = '请填写所有字段'; return; }
+  if (pwd.length < 6) { err.textContent = '密码至少6位'; return; }
+  const users = JSON.parse(localStorage.getItem('tos_users') || '{}');
+  if (users[email]) { err.textContent = '邮箱已注册'; return; }
+  users[email] = { name, pwd: btoa(pwd) };
+  localStorage.setItem('tos_users', JSON.stringify(users));
+  const payload = JSON.stringify({ email, name, exp: Date.now() + 7 * 86400000 });
+  const token = await makeToken(btoa(payload));
+  authToken = token; currentUser = { email, name };
+  localStorage.setItem('tos_token', token);
+  localStorage.setItem('tos_user', JSON.stringify(currentUser));
+  document.getElementById('loginOverlay').classList.add('hidden');
+  updateUserUI();
+}
+
+function doLogout() {
+  authToken = null; currentUser = null;
+  localStorage.removeItem('tos_token'); localStorage.removeItem('tos_user');
+  document.getElementById('loginOverlay').classList.remove('hidden');
+  document.getElementById('sidebarLogout').style.display = 'none';
+}
+
+function showRegister() {
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('registerForm').style.display = 'block';
+}
+function showLogin() {
+  document.getElementById('loginForm').style.display = 'block';
+  document.getElementById('registerForm').style.display = 'none';
+}
+
+function updateUserUI() {
+  if (!currentUser) return;
+  const initial = (currentUser.name || currentUser.email || 'U')[0].toUpperCase();
+  document.getElementById('sidebarAvatar').textContent = initial;
+  document.getElementById('sidebarUsername').textContent = currentUser.name || currentUser.email;
+  document.getElementById('sidebarLogout').style.display = 'inline';
+}
+
+// ─── PHONE CLOCK ───
+function updatePhoneClock() {
+  const now = new Date();
+  const h = now.getHours(), m = now.getMinutes();
+  document.getElementById('phoneTime').textContent = `${h}:${m.toString().padStart(2,'0')}`;
+}
+updatePhoneClock();
+setInterval(updatePhoneClock, 1000);
+
+// ─── CHAT ───
+const conversationHistory = [];
+let isLoading = false;
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function sendChip(text) {
+  document.getElementById('chatInput').value = text;
+  sendMessage();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text || isLoading) return;
+  input.value = ''; input.style.height = 'auto';
+
+  // Show chat area
+  document.getElementById('welcomeState').classList.add('hidden');
+  document.getElementById('chatMessages').style.display = 'flex';
+  document.getElementById('suggestions').style.display = 'flex';
+
+  // Update phone search bar
+  document.getElementById('phoneQueryText').textContent = text;
+  document.getElementById('phoneCursor').style.display = 'inline-block';
+
+  addMsg('user', text);
+  conversationHistory.push({ role: 'user', content: text });
+
+  // Loading
+  isLoading = true;
+  document.getElementById('sendBtn').disabled = true;
+  const typingId = addTyping();
+
+  try {
+    const res = await fetch(`${API_BASE}/chat-search`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+      body: JSON.stringify({ messages: conversationHistory }),
+    });
+    const data = await res.json();
+    removeTyping(typingId);
+
+    if (!data.ok) {
+      addMsg('bot', `⚠️ ${data.error || '请求失败'}`);
+    } else {
+      const reply = data.text;
+      conversationHistory.push({ role: 'assistant', content: reply });
+
+      // Parse card-layout block
+      const layoutMatch = reply.match(/```card-layout\s*([\s\S]*?)```/);
+      const cleanText = reply.replace(/```card-layout[\s\S]*?```/g, '').trim();
+
+      addMsg('bot', cleanText || '已生成答案卡设计方案', layoutMatch ? true : false);
+
+      if (layoutMatch) {
+        try {
+          const layout = JSON.parse(layoutMatch[1]);
+          renderPhoneCards(layout);
+          updateSceneBadge(layout.scene);
+          addSceneToHistory(text, layout.scene);
+        } catch(e) {
+          console.warn('JSON parse error:', e);
+        }
+      }
+    }
+  } catch(e) {
+    removeTyping(typingId);
+    addMsg('bot', `⚠️ 网络错误：${e.message}`);
+  }
+
+  isLoading = false;
+  document.getElementById('sendBtn').disabled = false;
+  document.getElementById('phoneCursor').style.display = 'none';
+}
+
+function addMsg(role, text, hasCard = false) {
+  const container = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  bubble.textContent = text;
+
+  if (hasCard) {
+    const badge = document.createElement('div');
+    badge.className = 'card-generated-badge';
+    badge.innerHTML = '✦ 答案卡已生成 · 查看左侧预览';
+    bubble.appendChild(badge);
+  }
+
+  const time = document.createElement('div');
+  time.className = 'msg-time';
+  const now = new Date();
+  time.textContent = `${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
+
+  div.appendChild(bubble);
+  div.appendChild(time);
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
+}
+
+let typingCounter = 0;
+function addTyping() {
+  const id = ++typingCounter;
+  const container = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.id = `typing-${id}`;
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  bubble.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+  div.appendChild(bubble);
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return id;
+}
+
+function removeTyping(id) {
+  const el = document.getElementById(`typing-${id}`);
+  if (el) el.remove();
+}
+
+// ─── SCENE BADGE ───
+function updateSceneBadge(scene) {
+  const badge = document.getElementById('sceneBadge');
+  const labels = { info: '📊 信息获取', action: '⚡ 操作执行', control: '🎛️ 状态控制' };
+  badge.textContent = labels[scene] || '场景未知';
+  badge.className = `scene-badge ${scene || ''}`;
+}
+
+// ─── HISTORY ───
+const sceneHistory = [];
+function addSceneToHistory(query, scene) {
+  const item = { query: query.slice(0, 18), scene, time: new Date().toLocaleTimeString('zh', { hour: '2-digit', minute: '2-digit' }) };
+  sceneHistory.unshift(item);
+  renderSceneHistory();
+}
+function renderSceneHistory() {
+  const container = document.getElementById('scenesHistory');
+  container.innerHTML = sceneHistory.slice(0, 12).map((s, i) => `
+    <div class="history-item ${i === 0 ? 'active' : ''}" onclick="void(0)">
+      <div class="history-item-title">${s.query}</div>
+      <div class="history-item-time">${s.scene} · ${s.time}</div>
+    </div>
+  `).join('');
+}
+
+// ─── PHONE CARD RENDERER ───
+function renderPhoneCards(layout) {
+  const area = document.getElementById('phoneCardsArea');
+  area.innerHTML = '';
+
+  if (!layout.cards || !layout.cards.length) return;
+
+  // Section title
+  const section = document.createElement('div');
+  section.className = 'phone-section-title';
+  section.textContent = '最佳答案';
+  area.appendChild(section);
+
+  layout.cards.forEach((card, ci) => {
+    const cardEl = document.createElement('div');
+    cardEl.className = 'os17-card';
+
+    (card.widgets || []).forEach((widget, wi) => {
+      const wEl = renderWidget(widget);
+      if (wEl) cardEl.appendChild(wEl);
+    });
+
+    area.appendChild(cardEl);
+  });
+}
+
+function renderWidget(w) {
+  const type = w.type || 'text-single';
+  let el;
+
+  switch(type) {
+    case 'text-single': {
+      el = document.createElement('div');
+      el.className = 'widget widget-text-single';
+      el.innerHTML = `<div class="ws-text">${esc(w.title || w.value || '')}</div>`;
+      break;
+    }
+    case 'text-title': {
+      el = document.createElement('div');
+      el.className = 'widget widget-text-title';
+      el.innerHTML = `
+        <div class="wt-title">${esc(w.title || '')}</div>
+        <div class="wt-sub">${esc(w.subtitle || '')}</div>
+      `;
+      break;
+    }
+    case 'text-large': {
+      el = document.createElement('div');
+      el.className = 'widget widget-text-large';
+      el.innerHTML = `
+        <div class="wl-value">${esc(w.value || '')}</div>
+        <div class="wl-label">${esc(w.label || w.subtitle || '')}</div>
+      `;
+      break;
+    }
+    case 'jump-single': {
+      el = document.createElement('div');
+      el.className = 'widget widget-jump';
+      el.innerHTML = `
+        <div class="wj-icon">${esc(w.icon || '📱')}</div>
+        <div class="wj-body"><div class="wj-title">${esc(w.title || '')}</div></div>
+        <span class="wj-arrow">›</span>
+      `;
+      break;
+    }
+    case 'jump-dual': {
+      el = document.createElement('div');
+      el.className = 'widget widget-jump';
+      el.innerHTML = `
+        <div class="wj-icon">${esc(w.icon || '📱')}</div>
+        <div class="wj-body">
+          <div class="wj-title">${esc(w.title || '')}</div>
+          ${w.subtitle ? `<div class="wj-sub">${esc(w.subtitle)}</div>` : ''}
+        </div>
+        <span class="wj-arrow">›</span>
+      `;
+      break;
+    }
+    case 'jump-button': {
+      el = document.createElement('div');
+      el.className = 'widget widget-jump';
+      el.innerHTML = `
+        <div class="wj-icon">${esc(w.icon || '📱')}</div>
+        <div class="wj-body"><div class="wj-title">${esc(w.title || '')}</div></div>
+        <button class="wj-btn">${esc(w.action || '打开')}</button>
+      `;
+      break;
+    }
+    case 'switch': {
+      const isOn = (w.value || '').toLowerCase() === 'on';
+      el = document.createElement('div');
+      el.className = 'widget widget-switch';
+      el.innerHTML = `
+        <div class="ws-icon">${esc(w.icon || '⚙️')}</div>
+        <div class="ws-label">${esc(w.title || '')}</div>
+        <div class="ws-toggle ${isOn ? 'on' : ''}" onclick="this.classList.toggle('on')"></div>
+      `;
+      break;
+    }
+    case 'list': {
+      el = document.createElement('div');
+      el.className = 'widget widget-list';
+      const items = w.items || [];
+      el.innerHTML = items.map(item => `
+        <div class="wlist-item">
+          <div class="wlist-icon">${esc(item.icon || '•')}</div>
+          <div class="wlist-body">
+            <div class="wlist-title">${esc(item.title || '')}</div>
+            ${item.subtitle ? `<div class="wlist-sub">${esc(item.subtitle)}</div>` : ''}
+          </div>
+        </div>
+      `).join('');
+      break;
+    }
+    default: {
+      el = document.createElement('div');
+      el.className = 'widget widget-text-single';
+      el.innerHTML = `<div class="ws-text">${esc(w.title || w.value || JSON.stringify(w))}</div>`;
+    }
+  }
+
+  return el;
+}
+
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── INIT ───
+checkAuth();
+</script>
+</body>
+</html>
