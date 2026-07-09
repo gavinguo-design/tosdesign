@@ -3087,21 +3087,11 @@
         }
 
         if (parsed.length >= 2) {
-          const best = parsed[parsed.length - 1];
-          addMsg((displayReply || '卡片已更新 ✨') + toneBlockHtml, 'bot');
-          addWbRpMsg(displayReply || '卡片已更新 ✨', 'bot');
-          const { reason, ...cd } = best;
-          cardData = cd;
-          if (cd.illustPrompt && !cd.bgImage) {
-            try {
-              const url = await fetchIllustration(cd.illustPrompt);
-              const illustrated = await applyIllustration(cd, url);
-              cardData = illustrated;
-              presentCard(illustrated);
-            } catch(e) { console.warn('illustrate failed', e); presentCard(cd); }
-          } else {
-            presentCard(cd);
-          }
+          addMsg((displayReply || '我出了两个方案') + toneBlockHtml + '<br>👆 在预览区选择你喜欢的方案', 'bot');
+          const variants = parsed.slice(0, 2);
+          cardData = parsed[0];
+          try { await illustrateVariants(variants); } catch(e) { console.warn('illustrate failed', e); }
+          showCompare(variants);
         } else if (parsed.length === 1) {
           addMsg((displayReply || '卡片已更新 ✨') + toneBlockHtml, 'bot');
           addWbRpMsg(displayReply || '卡片已更新 ✨', 'bot');
