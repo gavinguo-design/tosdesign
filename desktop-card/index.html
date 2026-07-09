@@ -3087,11 +3087,21 @@
         }
 
         if (parsed.length >= 2) {
-          addMsg((displayReply || '我出了两个方案') + toneBlockHtml + '<br>👆 在预览区选择你喜欢的方案', 'bot');
-          const variants = parsed.slice(0, 2);
-          cardData = parsed[0];
-          try { await illustrateVariants(variants); } catch(e) { console.warn('illustrate failed', e); }
-          showCompare(variants);
+          const best = parsed[parsed.length - 1];
+          addMsg((displayReply || '卡片已更新 ✨') + toneBlockHtml, 'bot');
+          addWbRpMsg(displayReply || '卡片已更新 ✨', 'bot');
+          const { reason, ...cd } = best;
+          cardData = cd;
+          if (cd.illustPrompt && !cd.bgImage) {
+            try {
+              const url = await fetchIllustration(cd.illustPrompt);
+              const illustrated = await applyIllustration(cd, url);
+              cardData = illustrated;
+              presentCard(illustrated);
+            } catch(e) { console.warn('illustrate failed', e); presentCard(cd); }
+          } else {
+            presentCard(cd);
+          }
         } else if (parsed.length === 1) {
           addMsg((displayReply || '卡片已更新 ✨') + toneBlockHtml, 'bot');
           addWbRpMsg(displayReply || '卡片已更新 ✨', 'bot');
@@ -3185,14 +3195,26 @@
       const need = variants.filter(v => v.illustPrompt && !v.bgImage).length;
       if (!need) return variants;
       updateStep('illust', 'running', '🎨 即梦为两个方案并行生成插图中（约10秒）…');
+      let successCount = 0, failCount = 0;
       await Promise.all(variants.map(async (data, i) => {
         if (!data.illustPrompt || data.bgImage) return;
         try {
           const url = await fetchIllustration(data.illustPrompt);
           variants[i] = await applyIllustration(data, url);
-        } catch(e) {}
+          successCount++;
+        } catch(e) {
+          failCount++;
+          console.warn('illustrate variant', i, 'failed:', e);
+        }
       }));
-      updateStep('illust', 'done', '✓ 方案插图已生成');
+      const illustBtnHtml = '<button class="step-adjust-btn" style="margin-top:6px" onclick="generateIllustration(this)">🎨 重新生成插图</button>';
+      if (failCount === 0) {
+        updateStep('illust', 'done', `✓ ${successCount} 个方案插图已生成`);
+      } else if (successCount > 0) {
+        updateStep('illust', 'done', `⚠️ ${successCount} 个成功，${failCount} 个失败（已用渐变色兜底）<br>${illustBtnHtml}`);
+      } else {
+        updateStep('illust', 'error', `插图生成失败（即梦 Seedream 接口错误），已使用渐变色背景<br>${illustBtnHtml}`);
+      }
       return variants;
     }
 
