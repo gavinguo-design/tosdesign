@@ -461,7 +461,7 @@
       letter-spacing: 0.06em; text-transform: uppercase;
     }
 
-    /* ─── RIGHT CHAT PANEL ─── */
+    /* ─── RIGHT RESULT PANEL ─── */
     .chat-area {
       flex: 1; display: flex; flex-direction: column;
       min-width: 0;
@@ -486,10 +486,8 @@
     .topbar-badge {
       font-size: 10px; font-weight: 700;
       padding: 2px 7px; border-radius: 999px;
-      background: rgba(124,92,252,0.12);
-      color: var(--accent);
-      border: 1px solid rgba(124,92,252,0.25);
-      letter-spacing: 0.04em;
+      background: rgba(124,92,252,0.12); color: var(--accent);
+      border: 1px solid rgba(124,92,252,0.25); letter-spacing: 0.04em;
     }
     .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
     .scene-badge {
@@ -501,95 +499,202 @@
     .scene-badge.action { border-color: rgba(34,197,94,0.35); color: #16a34a; background: rgba(34,197,94,0.08); }
     .scene-badge.control { border-color: rgba(245,158,11,0.35); color: #d97706; background: rgba(245,158,11,0.08); }
 
-    /* Chat messages */
-    .chat-messages {
-      flex: 1; overflow-y: auto;
-      padding: 20px; display: flex; flex-direction: column; gap: 16px;
-      min-height: 0;
+    /* Result body — scrollable middle */
+    .result-body {
+      flex: 1; overflow-y: auto; min-height: 0;
     }
-    .chat-messages::-webkit-scrollbar { width: 3px; }
-    .chat-messages::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 2px; }
+    .result-body::-webkit-scrollbar { width: 3px; }
+    .result-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 2px; }
 
-    .msg { display: flex; flex-direction: column; gap: 4px; }
-    .msg.user { align-items: flex-end; }
-    .msg.bot { align-items: flex-start; }
-    .msg-bubble {
-      max-width: 85%; padding: 10px 14px;
-      border-radius: 16px; font-size: 13px; line-height: 1.6;
+    /* Welcome state */
+    .welcome-state {
+      height: 100%; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 22px; padding: 40px; text-align: center;
     }
-    .msg.user .msg-bubble {
-      background: var(--accent); color: #fff;
-      border-bottom-right-radius: 4px;
+    .welcome-state.hidden { display: none; }
+    .welcome-icon { font-size: 44px; opacity: 0.55; }
+    .welcome-title { font-size: 22px; font-weight: 300; color: var(--text); letter-spacing: -0.02em; }
+    .welcome-title span { color: var(--accent); font-weight: 500; }
+    .welcome-sub { font-size: 13.5px; color: var(--muted); line-height: 1.6; max-width: 340px; }
+    .welcome-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .welcome-chip {
+      font-size: 13px; padding: 7px 16px; border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.08); background: rgba(255,255,255,0.85);
+      color: var(--muted); cursor: pointer; transition: all 0.15s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
     }
-    .msg.bot .msg-bubble {
+    .welcome-chip:hover { border-color: rgba(124,92,252,0.35); color: var(--accent); background: rgba(124,92,252,0.07); }
+    .scene-info { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .scene-pill {
+      font-size: 12px; padding: 5px 13px; border-radius: 999px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .scene-pill.info { background: rgba(96,165,250,0.1); color: #3b82f6; border: 1px solid rgba(96,165,250,0.22); }
+    .scene-pill.action { background: rgba(34,197,94,0.1); color: #16a34a; border: 1px solid rgba(34,197,94,0.22); }
+    .scene-pill.control { background: rgba(245,158,11,0.1); color: #d97706; border: 1px solid rgba(245,158,11,0.22); }
+
+    /* Loading state */
+    .loading-state {
+      display: none; height: 100%;
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 14px;
+    }
+    .loading-state.active { display: flex; }
+    .loading-spinner {
+      width: 36px; height: 36px;
+      border: 2.5px solid rgba(124,92,252,0.15);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 13px; color: var(--muted); }
+
+    /* Result panel */
+    .result-panel {
+      display: none; padding: 20px;
+      flex-direction: column; gap: 12px;
+    }
+    .result-panel.active { display: flex; }
+
+    /* Query echo */
+    .result-query {
+      font-size: 11px; color: var(--muted);
+      display: flex; align-items: center; gap: 6px;
+      margin-bottom: 2px;
+    }
+    .result-query-text {
+      font-size: 13px; font-weight: 600; color: var(--text);
+      background: rgba(255,255,255,0.9); border: 1px solid rgba(0,0,0,0.07);
+      border-radius: 999px; padding: 4px 14px;
+      display: inline-block;
+    }
+
+    /* Section blocks */
+    .res-block {
       background: rgba(255,255,255,0.9);
-      color: var(--text);
       border: 1px solid rgba(0,0,0,0.07);
-      border-bottom-left-radius: 4px;
-      white-space: pre-wrap;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.04);
     }
-    .msg-time { font-size: 10.5px; color: var(--muted2); padding: 0 4px; }
+    .res-block-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 11px 14px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      background: rgba(255,255,255,0.6);
+    }
+    .res-block-title {
+      font-size: 11px; font-weight: 700; color: var(--muted);
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .res-block-body { padding: 12px 14px; }
 
-    /* Card layout preview badge in chat */
-    .card-generated-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-size: 11px; padding: 4px 10px; border-radius: 8px;
+    /* Scene type */
+    .scene-type-row {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .scene-type-badge {
+      font-size: 12px; font-weight: 700; padding: 4px 12px;
+      border-radius: 999px; white-space: nowrap;
+    }
+    .scene-type-badge.info { background: rgba(96,165,250,0.12); color: #3b82f6; border: 1px solid rgba(96,165,250,0.3); }
+    .scene-type-badge.action { background: rgba(34,197,94,0.12); color: #16a34a; border: 1px solid rgba(34,197,94,0.3); }
+    .scene-type-badge.control { background: rgba(245,158,11,0.12); color: #d97706; border: 1px solid rgba(245,158,11,0.3); }
+    .scene-type-reason { font-size: 12.5px; color: var(--text2); line-height: 1.5; }
+
+    /* Widget rows */
+    .widget-row {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    .widget-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .widget-row:first-child { padding-top: 0; }
+    .widget-idx {
+      width: 20px; height: 20px; border-radius: 6px;
       background: rgba(124,92,252,0.1); color: var(--accent);
-      border: 1px solid rgba(124,92,252,0.2); margin-top: 6px;
+      font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .widget-info { flex: 1; min-width: 0; }
+    .widget-name {
+      font-size: 13px; font-weight: 600; color: var(--text);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .widget-type-tag {
+      font-size: 10px; padding: 1px 6px; border-radius: 4px;
+      background: rgba(0,0,0,0.05); color: var(--muted);
+      font-family: monospace; font-weight: 400;
+    }
+    .widget-desc { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.45; }
+    .widget-key {
+      font-size: 10px; font-family: monospace; color: var(--muted2);
+      margin-top: 4px; word-break: break-all;
     }
 
-    /* Typing indicator */
-    .typing { display: flex; gap: 3px; align-items: center; padding: 4px 0; }
-    .typing span {
-      width: 5px; height: 5px; border-radius: 50%;
-      background: var(--muted);
-      animation: typingDot 1.2s ease infinite;
+    /* Spec quick-ref */
+    .spec-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
     }
-    .typing span:nth-child(2) { animation-delay: 0.2s; }
-    .typing span:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes typingDot {
-      0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
-      30% { opacity: 1; transform: translateY(-3px); }
+    .spec-cell {
+      background: rgba(0,0,0,0.025); border-radius: 7px;
+      padding: 7px 10px;
     }
+    .spec-cell-label { font-size: 10px; color: var(--muted2); letter-spacing: 0.05em; text-transform: uppercase; }
+    .spec-cell-val { font-size: 13px; font-weight: 600; color: var(--text); margin-top: 1px; }
 
-    /* Suggestions */
-    .suggestions {
-      padding: 0 20px 10px;
-      display: flex; flex-wrap: wrap; gap: 6px; flex-shrink: 0;
+    /* Checklist */
+    .check-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 5px 0; font-size: 12px; color: var(--text2);
+      border-bottom: 1px solid rgba(0,0,0,0.04);
     }
-    .suggestion-chip {
-      font-size: 12px; padding: 5px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(0,0,0,0.08);
-      background: rgba(255,255,255,0.8); color: var(--muted);
-      cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    .check-item:last-child { border-bottom: none; }
+    .check-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      flex-shrink: 0;
     }
-    .suggestion-chip:hover {
-      border-color: rgba(124,92,252,0.35); color: var(--accent);
-      background: rgba(124,92,252,0.08);
-    }
+    .check-dot.ok { background: #22c55e; }
+    .check-dot.warn { background: #f59e0b; }
 
-    /* Chat input */
+    /* Re-prompt chips */
+    .reprompt-chips {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      padding: 8px 14px 12px;
+    }
+    .reprompt-chip {
+      font-size: 12px; padding: 5px 12px; border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.08); background: rgba(255,255,255,0.85);
+      color: var(--muted); cursor: pointer; transition: all 0.15s;
+    }
+    .reprompt-chip:hover { border-color: rgba(124,92,252,0.35); color: var(--accent); background: rgba(124,92,252,0.07); }
+
+    /* Input */
     .chat-input-area {
-      padding: 12px 20px 16px; flex-shrink: 0;
+      padding: 10px 16px 14px; flex-shrink: 0;
       border-top: 1px solid rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.6);
     }
     .chat-input-wrap {
-      display: flex; align-items: flex-end; gap: 8px;
-      background: rgba(255,255,255,0.8);
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.9);
       border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 14px; padding: 8px 10px;
+      border-radius: 999px; padding: 8px 8px 8px 18px;
       transition: border-color 0.2s;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.05);
     }
     .chat-input-wrap:focus-within { border-color: rgba(124,92,252,0.4); }
     .chat-input {
       flex: 1; background: transparent; border: none; outline: none;
       color: var(--text); font-size: 13.5px; resize: none;
-      max-height: 100px; font-family: inherit; line-height: 1.5;
+      max-height: 60px; font-family: inherit; line-height: 1.4;
     }
     .chat-input::placeholder { color: var(--muted2); }
     .send-btn {
-      width: 32px; height: 32px; border-radius: 8px;
+      width: 32px; height: 32px; border-radius: 50%;
       background: var(--accent); border: none; color: #fff;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
       font-size: 14px; flex-shrink: 0; transition: opacity 0.15s;
@@ -597,54 +702,12 @@
     .send-btn:hover { opacity: 0.85; }
     .send-btn:disabled { opacity: 0.4; cursor: default; }
 
-    /* Spec tooltip */
-    .spec-strip {
-      padding: 8px 20px; flex-shrink: 0;
-      display: flex; gap: 12px; flex-wrap: wrap;
-      border-top: 1px solid rgba(0,0,0,0.05);
-      background: rgba(255,255,255,0.5);
-    }
-    .spec-item {
-      font-size: 10.5px; color: var(--muted);
-      display: flex; align-items: center; gap: 4px;
-    }
-    .spec-dot {
-      width: 5px; height: 5px; border-radius: 50%;
-      background: rgba(124,92,252,0.5); flex-shrink: 0;
-    }
-
-    /* Welcome state */
-    .welcome-state {
-      flex: 1; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 24px; padding: 40px;
-      text-align: center;
-    }
-    .welcome-state.hidden { display: none; }
-    .welcome-icon { font-size: 48px; }
-    .welcome-title { font-size: 22px; font-weight: 300; color: var(--text); letter-spacing: -0.02em; }
-    .welcome-title span { color: var(--accent); }
-    .welcome-sub { font-size: 14px; color: var(--muted); line-height: 1.6; max-width: 360px; }
-    .welcome-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-    .welcome-chip {
-      font-size: 13px; padding: 7px 15px; border-radius: 999px;
-      border: 1px solid rgba(0,0,0,0.08); background: rgba(255,255,255,0.8);
-      color: var(--muted); cursor: pointer; transition: all 0.15s;
-    }
-    .welcome-chip:hover {
-      border-color: rgba(124,92,252,0.35); color: var(--accent);
-      background: rgba(124,92,252,0.08);
-    }
-
-    /* Scene indicators */
-    .scene-info { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
-    .scene-pill {
-      font-size: 12px; padding: 6px 14px; border-radius: 999px;
-      display: flex; align-items: center; gap: 6px;
-    }
-    .scene-pill.info { background: rgba(96,165,250,0.1); color: #3b82f6; border: 1px solid rgba(96,165,250,0.25); }
-    .scene-pill.action { background: rgba(34,197,94,0.1); color: #16a34a; border: 1px solid rgba(34,197,94,0.25); }
-    .scene-pill.control { background: rgba(245,158,11,0.1); color: #d97706; border: 1px solid rgba(245,158,11,0.25); }
+    /* Typing */
+    .typing { display: flex; gap: 3px; align-items: center; }
+    .typing span { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); animation: typingDot 1.2s ease infinite; }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingDot { 0%,60%,100%{opacity:0.3;transform:translateY(0)} 30%{opacity:1;transform:translateY(-3px)} }
   </style>
 </head>
 <body>
@@ -767,13 +830,11 @@
     <div class="phone-label">360 × 800 dp</div>
   </div>
 
-  <!-- CHAT AREA -->
+  <!-- RESULT AREA -->
   <div class="chat-area">
     <div class="chat-topbar">
-      <a href="../index.html" class="topbar-back">
-        ← 返回
-      </a>
-      <span style="color:var(--border2)">|</span>
+      <a href="../index.html" class="topbar-back">← 返回</a>
+      <span style="color:rgba(0,0,0,0.12)">|</span>
       <span class="topbar-title">全局搜索答案卡</span>
       <span class="topbar-badge">OS17</span>
       <div class="topbar-right">
@@ -781,46 +842,81 @@
       </div>
     </div>
 
-    <!-- Welcome / Chat messages -->
-    <div class="welcome-state" id="welcomeState">
-      <div class="welcome-icon">🔍</div>
-      <div class="welcome-title">OS17 <span>答案卡</span>设计</div>
-      <div class="welcome-sub">描述一个搜索场景，AI 将生成符合 OS17 规范的全局搜索答案卡。支持信息获取、操作执行、状态控制三种类型。</div>
-      <div class="scene-info">
-        <div class="scene-pill info">📊 信息获取</div>
-        <div class="scene-pill action">⚡ 操作执行</div>
-        <div class="scene-pill control">🎛️ 状态控制</div>
+    <!-- Result body -->
+    <div class="result-body" id="resultBody">
+
+      <!-- Welcome -->
+      <div class="welcome-state" id="welcomeState">
+        <div class="welcome-icon">🔍</div>
+        <div class="welcome-title">OS17 <span>答案卡</span>设计</div>
+        <div class="welcome-sub">描述一个搜索场景，AI 生成符合 OS17 规范的答案卡。左边手机实时预览，右边展示完整设计方案。</div>
+        <div class="scene-info">
+          <div class="scene-pill info">📊 信息获取</div>
+          <div class="scene-pill action">⚡ 操作执行</div>
+          <div class="scene-pill control">🎛️ 状态控制</div>
+        </div>
+        <div class="welcome-chips">
+          <div class="welcome-chip" onclick="sendChip('查询上海今天的天气')">🌤️ 查天气</div>
+          <div class="welcome-chip" onclick="sendChip('搜索「打开 Wi-Fi」')">📶 开 Wi-Fi</div>
+          <div class="welcome-chip" onclick="sendChip('搜索明天的航班 RY9108')">✈️ 查航班</div>
+          <div class="welcome-chip" onclick="sendChip('搜索「设置闹钟 7点」')">⏰ 设闹钟</div>
+          <div class="welcome-chip" onclick="sendChip('搜索「今日步数」')">🏃 查步数</div>
+          <div class="welcome-chip" onclick="sendChip('搜索「播放周杰伦」')">🎵 放音乐</div>
+        </div>
       </div>
-      <div class="welcome-chips" id="welcomeChips">
-        <div class="welcome-chip" onclick="sendChip('查询上海今天的天气')">🌤️ 查天气</div>
-        <div class="welcome-chip" onclick="sendChip('搜索"打开 Wi-Fi"')">📶 开 Wi-Fi</div>
-        <div class="welcome-chip" onclick="sendChip('搜索明天的航班 RY9108')">✈️ 查航班</div>
-        <div class="welcome-chip" onclick="sendChip('搜索"设置闹钟 7点"')">⏰ 设闹钟</div>
-        <div class="welcome-chip" onclick="sendChip('搜索"今日步数"')">🏃 查步数</div>
-        <div class="welcome-chip" onclick="sendChip('搜索"播放周杰伦"')">🎵 放音乐</div>
+
+      <!-- Loading -->
+      <div class="loading-state" id="loadingState">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loadingText">正在分析场景…</div>
       </div>
-    </div>
 
-    <div class="chat-messages" id="chatMessages" style="display:none"></div>
+      <!-- Result -->
+      <div class="result-panel" id="resultPanel">
+        <div>
+          <div class="result-query">你输入的场景</div>
+          <div class="result-query-text" id="resultQueryText"></div>
+        </div>
+        <div class="res-block">
+          <div class="res-block-header"><div class="res-block-title">🎨 场景类型</div></div>
+          <div class="res-block-body">
+            <div class="scene-type-row">
+              <span class="scene-type-badge" id="resultSceneTag">信息获取</span>
+              <span class="scene-type-reason" id="resultSceneReason"></span>
+            </div>
+          </div>
+        </div>
+        <div class="res-block">
+          <div class="res-block-header"><div class="res-block-title">🧩 Widget 方案</div></div>
+          <div class="res-block-body" id="resultWidgets"></div>
+        </div>
+        <div class="res-block">
+          <div class="res-block-header"><div class="res-block-title">📐 规范快查</div></div>
+          <div class="res-block-body">
+            <div class="spec-grid">
+              <div class="spec-cell"><div class="spec-cell-label">卡宽</div><div class="spec-cell-val">308dp</div></div>
+              <div class="spec-cell"><div class="spec-cell-label">卡圆角</div><div class="spec-cell-val">24dp · 60%</div></div>
+              <div class="spec-cell"><div class="spec-cell-label">Widget 间距</div><div class="spec-cell-val">10dp</div></div>
+              <div class="spec-cell"><div class="spec-cell-label">最多 Widget</div><div class="spec-cell-val">3 个</div></div>
+              <div class="spec-cell"><div class="spec-cell-label">Glass fill</div><div class="spec-cell-val">white 5%</div></div>
+              <div class="spec-cell"><div class="spec-cell-label">Stroke</div><div class="spec-cell-val">white 10%</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="res-block">
+          <div class="res-block-header"><div class="res-block-title">✅ 验收清单</div></div>
+          <div class="res-block-body" id="resultChecklist"></div>
+        </div>
+        <div class="reprompt-chips" id="repromptChips"></div>
+      </div>
 
-    <div class="suggestions" id="suggestions" style="display:none">
-      <div class="suggestion-chip" onclick="sendChip('换一个方案')">🔄 换方案</div>
-      <div class="suggestion-chip" onclick="sendChip('调整为信息获取场景')">📊 改成 info</div>
-      <div class="suggestion-chip" onclick="sendChip('增加一个 widget')">➕ 加 widget</div>
-      <div class="suggestion-chip" onclick="sendChip('简化设计，只留核心信息')">✂️ 简化</div>
-    </div>
-
-    <div class="spec-strip">
-      <div class="spec-item"><span class="spec-dot"></span>卡宽 308dp · 圆角 24dp</div>
-      <div class="spec-item"><span class="spec-dot"></span>Widget 间距 10dp · 最多 3 个</div>
-      <div class="spec-item"><span class="spec-dot"></span>Glass fill 5% · Stroke 10%</div>
     </div>
 
     <div class="chat-input-area">
       <div class="chat-input-wrap">
         <textarea
           class="chat-input" id="chatInput"
-          placeholder="描述一个搜索场景，如「搜索今天上海天气」…"
+          placeholder="描述搜索场景，如「搜索今天上海天气」…"
           rows="1"
           onkeydown="handleKey(event)"
           oninput="autoResize(this)"
@@ -940,13 +1036,13 @@ function updatePhoneClock() {
 updatePhoneClock();
 setInterval(updatePhoneClock, 1000);
 
-// ─── CHAT ───
+// ─── CORE ───
 const conversationHistory = [];
 let isLoading = false;
 
 function autoResize(el) {
   el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+  el.style.height = Math.min(el.scrollHeight, 80) + 'px';
 }
 
 function handleKey(e) {
@@ -958,28 +1054,30 @@ function sendChip(text) {
   sendMessage();
 }
 
+function showState(state) {
+  // state: 'welcome' | 'loading' | 'result'
+  document.getElementById('welcomeState').style.display = state === 'welcome' ? 'flex' : 'none';
+  document.getElementById('loadingState').classList.toggle('active', state === 'loading');
+  document.getElementById('resultPanel').classList.toggle('active', state === 'result');
+}
+
 async function sendMessage() {
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
   if (!text || isLoading) return;
   input.value = ''; input.style.height = 'auto';
 
-  // Show chat area
-  document.getElementById('welcomeState').classList.add('hidden');
-  document.getElementById('chatMessages').style.display = 'flex';
-  document.getElementById('suggestions').style.display = 'flex';
-
   // Update phone search bar
   document.getElementById('phoneQueryText').textContent = text;
   document.getElementById('phoneCursor').style.display = 'inline-block';
 
-  addMsg('user', text);
   conversationHistory.push({ role: 'user', content: text });
 
-  // Loading
+  // Show loading
+  showState('loading');
+  document.getElementById('loadingText').textContent = '正在分析场景…';
   isLoading = true;
   document.getElementById('sendBtn').disabled = true;
-  const typingId = addTyping();
 
   try {
     const res = await fetch(`${API_BASE}/chat-search`, {
@@ -988,34 +1086,34 @@ async function sendMessage() {
       body: JSON.stringify({ messages: conversationHistory }),
     });
     const data = await res.json();
-    removeTyping(typingId);
 
     if (!data.ok) {
-      addMsg('bot', `⚠️ ${data.error || '请求失败'}`);
+      showState('welcome');
+      alert('⚠️ ' + (data.error || '请求失败'));
     } else {
       const reply = data.text;
       conversationHistory.push({ role: 'assistant', content: reply });
 
-      // Parse card-layout block
       const layoutMatch = reply.match(/```card-layout\s*([\s\S]*?)```/);
-      const cleanText = reply.replace(/```card-layout[\s\S]*?```/g, '').trim();
-
-      addMsg('bot', cleanText || '已生成答案卡设计方案', layoutMatch ? true : false);
-
       if (layoutMatch) {
         try {
           const layout = JSON.parse(layoutMatch[1]);
           renderPhoneCards(layout);
+          renderResult(text, layout);
           updateSceneBadge(layout.scene);
           addSceneToHistory(text, layout.scene);
         } catch(e) {
           console.warn('JSON parse error:', e);
+          showState('welcome');
         }
+      } else {
+        // No structured layout — show welcome again
+        showState('welcome');
       }
     }
   } catch(e) {
-    removeTyping(typingId);
-    addMsg('bot', `⚠️ 网络错误：${e.message}`);
+    showState('welcome');
+    alert('⚠️ 网络错误：' + e.message);
   }
 
   isLoading = false;
@@ -1023,52 +1121,88 @@ async function sendMessage() {
   document.getElementById('phoneCursor').style.display = 'none';
 }
 
-function addMsg(role, text, hasCard = false) {
-  const container = document.getElementById('chatMessages');
-  const div = document.createElement('div');
-  div.className = `msg ${role}`;
-  const bubble = document.createElement('div');
-  bubble.className = 'msg-bubble';
-  bubble.textContent = text;
+// Render the right-panel result from layout JSON
+function renderResult(query, layout) {
+  // Query echo
+  document.getElementById('resultQueryText').textContent = query;
 
-  if (hasCard) {
-    const badge = document.createElement('div');
-    badge.className = 'card-generated-badge';
-    badge.innerHTML = '✦ 答案卡已生成 · 查看左侧预览';
-    bubble.appendChild(badge);
-  }
+  // Scene type
+  const sceneLabels = { info: '📊 信息获取', action: '⚡ 操作执行', control: '🎛️ 状态控制' };
+  const sceneTag = document.getElementById('resultSceneTag');
+  sceneTag.textContent = sceneLabels[layout.scene] || layout.scene || '信息获取';
+  sceneTag.className = 'scene-type-badge ' + (layout.scene || 'info');
+  document.getElementById('resultSceneReason').textContent = layout.scene_reason || '';
 
-  const time = document.createElement('div');
-  time.className = 'msg-time';
-  const now = new Date();
-  time.textContent = `${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
+  // Widgets
+  const widgetsEl = document.getElementById('resultWidgets');
+  widgetsEl.innerHTML = '';
+  const allWidgets = (layout.cards || []).flatMap(c => c.widgets || []);
+  const widgetTypeNames = {
+    'text-single': '文本 / 单文本',
+    'text-title': '文本 / title+辅助文本',
+    'text-large': '文本 / 大标题+button',
+    'jump-single': '跳转 / 单文本',
+    'jump-dual': '跳转 / 双文本',
+    'jump-button': '跳转 / 带按钮',
+    'switch': '开关',
+    'list': '列表',
+  };
+  const componentKeys = {
+    'text-single': 'd8ab3556c5bb8e57cf26e3414b7cac3e8f7ac6e4',
+    'text-title': '767f40cae2a6babe0772bae3635f49aa355c7323',
+    'text-large': '145c6ae3305498513adbbcdd5e0b02279086e39e',
+    'jump-single': 'c067a6b9e3d840b090a844b66341f50069b60d31',
+    'jump-dual': '2343eab411bfee33e7417d8c33b5f0980448821f',
+    'jump-button': '5b1a740bb7de7fd620f136517099671519c24441',
+    'switch': 'f71a5e707dfe977c6f17b60f44ea46f2c2ab22ea',
+    'list': 'cabf2d0babd8333deccc5bfa919b1f8ac46a129a',
+  };
+  allWidgets.forEach((w, i) => {
+    const row = document.createElement('div');
+    row.className = 'widget-row';
+    const typeName = widgetTypeNames[w.type] || w.type;
+    const key = componentKeys[w.type] || '';
+    const desc = w.title ? `「${w.title}${w.subtitle ? ' · ' + w.subtitle : ''}」` : (w.value || '');
+    row.innerHTML = `
+      <div class="widget-idx">${i + 1}</div>
+      <div class="widget-info">
+        <div class="widget-name">
+          ${esc(desc || typeName)}
+          <span class="widget-type-tag">${esc(w.type || '')}</span>
+        </div>
+        <div class="widget-desc">${esc(typeName)}</div>
+        ${key ? `<div class="widget-key">key: ${key}</div>` : ''}
+      </div>
+    `;
+    widgetsEl.appendChild(row);
+  });
 
-  div.appendChild(bubble);
-  div.appendChild(time);
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
-  return div;
-}
+  // Checklist
+  const checkEl = document.getElementById('resultChecklist');
+  const checks = [
+    { ok: allWidgets.length <= 3, text: `Widget 数量 ${allWidgets.length}/3` },
+    { ok: true, text: '卡宽 308dp，左右页边距 26dp' },
+    { ok: true, text: '卡圆角 24dp，Widget 圆角 18dp' },
+    { ok: true, text: 'Glass fill white 5% + BG 描边渐变层' },
+    { ok: allWidgets.length > 0, text: '已选择 OS17 组件变体' },
+  ];
+  checkEl.innerHTML = checks.map(c => `
+    <div class="check-item">
+      <div class="check-dot ${c.ok ? 'ok' : 'warn'}"></div>
+      ${esc(c.text)}
+    </div>
+  `).join('');
 
-let typingCounter = 0;
-function addTyping() {
-  const id = ++typingCounter;
-  const container = document.getElementById('chatMessages');
-  const div = document.createElement('div');
-  div.className = 'msg bot';
-  div.id = `typing-${id}`;
-  const bubble = document.createElement('div');
-  bubble.className = 'msg-bubble';
-  bubble.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
-  div.appendChild(bubble);
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
-  return id;
-}
+  // Re-prompt chips
+  document.getElementById('repromptChips').innerHTML = [
+    ['🔄 换一个方案', '换一个方案'],
+    ['➕ 加一个 widget', '增加一个 widget'],
+    ['✂️ 简化', '简化设计，只留核心信息'],
+    ['📊 改成信息获取', '调整为信息获取场景'],
+  ].map(([label, q]) => `<div class="reprompt-chip" onclick="sendChip('${q}')">${label}</div>`).join('');
 
-function removeTyping(id) {
-  const el = document.getElementById(`typing-${id}`);
-  if (el) el.remove();
+  showState('result');
+  document.getElementById('resultBody').scrollTop = 0;
 }
 
 // ─── SCENE BADGE ───
