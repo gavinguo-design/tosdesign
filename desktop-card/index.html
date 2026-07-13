@@ -3818,10 +3818,13 @@
 
     function renderWbCard(data) {
       setWbLoading(false);
-      // Clear variant comparison cards if any
+      // Clear variant comparison cards if any (keep wb-card intact)
       const stage = document.getElementById('wb-card-stage');
       if (stage) {
-        stage.innerHTML = '';
+        // Remove all children except wb-card
+        Array.from(stage.children).forEach(child => {
+          if (child.id !== 'wb-card') child.remove();
+        });
         stage.style.cssText = ''; // reset inline styles from renderWbVariants
       }
       const dark = data.dark || false;
