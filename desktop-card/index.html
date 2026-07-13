@@ -3818,6 +3818,12 @@
 
     function renderWbCard(data) {
       setWbLoading(false);
+      // Clear variant comparison cards if any
+      const stage = document.getElementById('wb-card-stage');
+      if (stage) {
+        stage.innerHTML = '';
+        stage.style.cssText = ''; // reset inline styles from renderWbVariants
+      }
       const dark = data.dark || false;
       let bg = data.bg || (dark ? '#1c1c1e' : '#ffffff');
       if (data.bgImage) {
