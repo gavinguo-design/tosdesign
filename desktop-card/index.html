@@ -1445,7 +1445,66 @@
       display: flex;
       flex-direction: row;
       overflow: hidden;
+      gap: 0;
     }
+
+    /* Left panel - moved from bottom */
+    #wb-left-panel {
+      width: 280px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid rgba(0,0,0,0.07);
+      background: rgba(255,255,255,0.5);
+      overflow: hidden;
+    }
+    #wb-left-tabs {
+      display: flex;
+      flex-direction: column;
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      background: rgba(255,255,255,0.7);
+      padding: 8px;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .wb-left-tab {
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.15s;
+      text-align: left;
+      background: transparent;
+      border: 1px solid transparent;
+    }
+    .wb-left-tab:hover {
+      background: rgba(0,0,0,0.04);
+      color: var(--text);
+    }
+    .wb-left-tab.active {
+      background: #fff;
+      color: var(--text);
+      font-weight: 600;
+      border-color: rgba(0,0,0,0.08);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    #wb-left-content {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    #wb-left-content::-webkit-scrollbar { width: 4px; }
+    #wb-left-content::-webkit-scrollbar-thumb {
+      background: rgba(0,0,0,0.15);
+      border-radius: 2px;
+    }
+    .wb-left-panel-inner {
+      display: none;
+      padding: 12px;
+    }
+    .wb-left-panel-inner.active { display: block; }
 
     #wb-preview {
       flex: 1;
@@ -1531,17 +1590,9 @@
     /* Bottom analysis strip (kept for JS references) */
     #wb-analysis { display: none; }
 
-    /* ─── WB BOTTOM CARD ─── */
+    /* ─── WB BOTTOM CARD (hidden, replaced by left panel) ─── */
     #wb-bottom-card {
-      height: 200px;
-      flex-shrink: 0;
-      background: rgba(255,255,255,0.9);
-      backdrop-filter: blur(20px);
-      border-radius: 14px;
-      box-shadow: 0 2px 16px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
+      display: none !important;
     }
     /* ─── WB DEBUG PANEL (hidden, kept for JS refs) ─── */
     #wb-debug { display: none !important; }
@@ -2177,8 +2228,64 @@
           </button>
         </div>
       </div>
-      <!-- Top card: preview + right chat panel -->
+      <!-- Top card: left panel + preview + right chat panel -->
       <div id="wb-top-card">
+        <!-- Left analysis panel -->
+        <div id="wb-left-panel">
+          <div id="wb-left-tabs">
+            <div class="wb-left-tab active" data-panel="tone" onclick="switchWbLeftTab('tone')"><span>🎭</span> 调性分析</div>
+            <div class="wb-left-tab" data-panel="color" onclick="switchWbLeftTab('color')"><span>🎨</span> 配色方案</div>
+            <div class="wb-left-tab" data-panel="font" onclick="switchWbLeftTab('font')"><span>🔤</span> 字体排版</div>
+            <div class="wb-left-tab" data-panel="suggest" onclick="switchWbLeftTab('suggest')"><span>💡</span> 设计建议</div>
+            <div class="wb-left-tab" data-panel="spec" onclick="switchWbLeftTab('spec')"><span>📐</span> 规范快查</div>
+          </div>
+          <div id="wb-left-content">
+            <div id="wb-panel-tone-left" class="wb-left-panel-inner active">
+              <div id="wb-tone-content-left"><span class="wb-bottom-empty">等待 AI 分析...</span></div>
+            </div>
+            <div id="wb-panel-color-left" class="wb-left-panel-inner">
+              <div id="wb-color-content-left"><span class="wb-bottom-empty">等待卡片生成...</span></div>
+            </div>
+            <div id="wb-panel-font-left" class="wb-left-panel-inner">
+              <div id="wb-font-content-left"><span class="wb-bottom-empty">等待卡片生成...</span></div>
+            </div>
+            <div id="wb-panel-suggest-left" class="wb-left-panel-inner">
+              <div id="wb-suggest-content-left"><span class="wb-bottom-empty">等待 AI 建议...</span></div>
+            </div>
+            <div id="wb-panel-spec-left" class="wb-left-panel-inner">
+              <div id="wb-spec-content-left" class="wb-scroll">
+                <div class="csp-block">
+                  <div class="csp-header">🎨 场景类型</div>
+                  <div class="csp-body csp-scene-row">
+                    <span class="csp-badge" id="wbSpecSceneLeft">—</span>
+                    <span class="csp-reason" id="wbSpecReasonLeft"></span>
+                  </div>
+                </div>
+                <div class="csp-block">
+                  <div class="csp-header">🧩 卡片方案</div>
+                  <div class="csp-body" id="wbSpecWidgetsLeft"></div>
+                </div>
+                <div class="csp-block">
+                  <div class="csp-header">📐 规范快查</div>
+                  <div class="csp-body">
+                    <div class="csp-spec-grid">
+                      <div class="csp-spec-cell"><div class="csp-spec-label">卡片尺寸</div><div class="csp-spec-val">138×138dp</div></div>
+                      <div class="csp-spec-cell"><div class="csp-spec-label">圆角</div><div class="csp-spec-val" id="wbSpecRadiusLeft">20dp</div></div>
+                      <div class="csp-spec-cell"><div class="csp-spec-label">内边距</div><div class="csp-spec-val">10dp</div></div>
+                      <div class="csp-spec-cell"><div class="csp-spec-label">布局</div><div class="csp-spec-val" id="wbSpecLayoutLeft">—</div></div>
+                      <div class="csp-spec-cell"><div class="csp-spec-label">主题</div><div class="csp-spec-val" id="wbSpecThemeLeft">浅色</div></div>
+                      <div class="csp-spec-cell"><div class="csp-spec-label">字体</div><div class="csp-spec-val">SF Pro</div></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="csp-block">
+                  <div class="csp-header">✅ 验收清单</div>
+                  <div class="csp-body" id="wbSpecChecklistLeft"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         <!-- Left preview area -->
         <div id="wb-preview">
           <div class="wb-preview-handle">
@@ -3896,11 +4003,13 @@
       // 场景类型
       const sceneMap = { info: '📊 信息展示', action: '⚡ 操作执行', control: '🎛️ 状态控制', weather: '🌤️ 天气', transport: '✈️ 出行', health: '🏃 健康', media: '🎵 媒体' };
       const scene = data.scene || 'info';
-      document.getElementById('wbSpecScene').textContent = sceneMap[scene] || scene;
-      document.getElementById('wbSpecReason').textContent = data.reason || '';
+      const sceneEl = document.getElementById('wbSpecSceneLeft');
+      const reasonEl = document.getElementById('wbSpecReasonLeft');
+      if (sceneEl) sceneEl.textContent = sceneMap[scene] || scene;
+      if (reasonEl) reasonEl.textContent = data.reason || '';
 
       // 卡片方案
-      const widgetsEl = document.getElementById('wbSpecWidgets');
+      const widgetsEl = document.getElementById('wbSpecWidgetsLeft');
       widgetsEl.innerHTML = '';
       const fields = [];
       if (data.header || data.title) fields.push({ name: data.header || data.title, sub: '主标题' });
@@ -3916,12 +4025,15 @@
       });
 
       // 规范快查动态字段
-      document.getElementById('wbSpecLayout').textContent = LAYOUT_LABELS[data.layout] || data.layout || '—';
-      document.getElementById('wbSpecTheme').textContent = data.bgImage ? '插图背景' : (data.dark ? '深色' : '浅色');
-      document.getElementById('wbSpecRadius').textContent = data.layout === 'big' ? '20dp' : '18dp';
+      const layoutEl = document.getElementById('wbSpecLayoutLeft');
+      const themeEl = document.getElementById('wbSpecThemeLeft');
+      const radiusEl = document.getElementById('wbSpecRadiusLeft');
+      if (layoutEl) layoutEl.textContent = LAYOUT_LABELS[data.layout] || data.layout || '—';
+      if (themeEl) themeEl.textContent = data.bgImage ? '插图背景' : (data.dark ? '深色' : '浅色');
+      if (radiusEl) radiusEl.textContent = data.layout === 'big' ? '20dp' : '18dp';
 
       // 验收清单
-      const checkEl = document.getElementById('wbSpecChecklist');
+      const checkEl = document.getElementById('wbSpecChecklistLeft');
       const checks = [
         { ok: !!(data.header || data.title), text: '已设置主标题' },
         { ok: !!(data.value || data.subtitle), text: '已设置内容数据' },
@@ -4024,18 +4136,24 @@
       }
     }
 
-    /* ─── WB BOTTOM CARD FUNCTIONS ─── */
-    function switchWbBottomTab(panel) {
-      document.querySelectorAll('.wb-bottom-tab').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.wb-bottom-panel').forEach(el => el.classList.remove('active'));
-      const tab = document.querySelector('[data-panel="' + panel + '"]');
+    /* ─── WB LEFT PANEL FUNCTIONS ─── */
+    function switchWbLeftTab(panel) {
+      document.querySelectorAll('.wb-left-tab').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.wb-left-panel-inner').forEach(el => el.classList.remove('active'));
+      const tab = document.querySelector('.wb-left-tab[data-panel="' + panel + '"]');
       if (tab) tab.classList.add('active');
-      const content = document.getElementById('wb-panel-' + panel);
+      const content = document.getElementById('wb-panel-' + panel + '-left');
       if (content) content.classList.add('active');
     }
 
+    /* ─── WB BOTTOM CARD FUNCTIONS (legacy, kept for compatibility) ─── */
+    function switchWbBottomTab(panel) {
+      // Now delegates to left panel
+      switchWbLeftTab(panel);
+    }
+
     function renderWbTone(toneRows) {
-      const el = document.getElementById('wb-tone-content');
+      const el = document.getElementById('wb-tone-content-left');
       if (!el || !toneRows || !toneRows.length) return;
       const AXIS_NAMES = { VA: '视觉吸引力', IS: '信息显著性', AA: '行动权威性' };
       el.innerHTML = toneRows.map(r =>
@@ -4048,7 +4166,7 @@
     }
 
     function renderWbColor(data) {
-      const el = document.getElementById('wb-color-content');
+      const el = document.getElementById('wb-color-content-left');
       if (!el || !data) return;
       const colors = [data.bg || '#ffffff', data.accentColor || '#7C5CFC'].filter(Boolean);
       const labels = ['背景色', '强调色'];
@@ -4061,7 +4179,7 @@
     }
 
     function renderWbFont(data) {
-      const el = document.getElementById('wb-font-content');
+      const el = document.getElementById('wb-font-content-left');
       if (!el || !data) return;
       el.innerHTML = `<div style="font-size:12px;color:#333;line-height:2">
         <div><span style="color:#999;font-family:monospace">layout</span>  ${data.layout || '—'}</div>
@@ -4072,7 +4190,7 @@
     }
 
     function renderWbSuggest(text) {
-      const el = document.getElementById('wb-suggest-content');
+      const el = document.getElementById('wb-suggest-content-left');
       if (!el) return;
       if (!text || !text.trim()) {
         el.innerHTML = '<span class="wb-bottom-empty">等待 AI 建议...</span>';
