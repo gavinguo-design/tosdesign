@@ -2226,6 +2226,7 @@
           <div class="wb-bottom-tab" data-panel="color" onclick="switchWbBottomTab('color')">配色方案</div>
           <div class="wb-bottom-tab" data-panel="font" onclick="switchWbBottomTab('font')">字体排版</div>
           <div class="wb-bottom-tab" data-panel="suggest" onclick="switchWbBottomTab('suggest')">设计建议</div>
+          <div class="wb-bottom-tab" data-panel="spec" onclick="switchWbBottomTab('spec')">规范快查</div>
         </div>
         <div id="wb-bottom-content">
           <div id="wb-panel-tone" class="wb-bottom-panel active">
@@ -2239,6 +2240,38 @@
           </div>
           <div id="wb-panel-suggest" class="wb-bottom-panel">
             <div id="wb-suggest-content"><span class="wb-bottom-empty">等待 AI 建议...</span></div>
+          </div>
+          <div id="wb-panel-spec" class="wb-bottom-panel">
+            <div id="wb-spec-content" class="wb-scroll">
+              <div class="csp-block">
+                <div class="csp-header">🎨 场景类型</div>
+                <div class="csp-body csp-scene-row">
+                  <span class="csp-badge" id="wbSpecScene">—</span>
+                  <span class="csp-reason" id="wbSpecReason"></span>
+                </div>
+              </div>
+              <div class="csp-block">
+                <div class="csp-header">🧩 卡片方案</div>
+                <div class="csp-body" id="wbSpecWidgets"></div>
+              </div>
+              <div class="csp-block">
+                <div class="csp-header">📐 规范快查</div>
+                <div class="csp-body">
+                  <div class="csp-spec-grid">
+                    <div class="csp-spec-cell"><div class="csp-spec-label">卡片尺寸</div><div class="csp-spec-val">138×138dp</div></div>
+                    <div class="csp-spec-cell"><div class="csp-spec-label">圆角</div><div class="csp-spec-val" id="wbSpecRadius">20dp</div></div>
+                    <div class="csp-spec-cell"><div class="csp-spec-label">内边距</div><div class="csp-spec-val">10dp</div></div>
+                    <div class="csp-spec-cell"><div class="csp-spec-label">布局</div><div class="csp-spec-val" id="wbSpecLayout">—</div></div>
+                    <div class="csp-spec-cell"><div class="csp-spec-label">主题</div><div class="csp-spec-val" id="wbSpecTheme">浅色</div></div>
+                    <div class="csp-spec-cell"><div class="csp-spec-label">字体</div><div class="csp-spec-val">SF Pro</div></div>
+                  </div>
+                </div>
+              </div>
+              <div class="csp-block">
+                <div class="csp-header">✅ 验收清单</div>
+                <div class="csp-body" id="wbSpecChecklist"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -2671,6 +2704,7 @@
       if (_wbViewEl && _wbViewEl.classList.contains('active')) {
         renderWbVariants(variants);
         renderWbAnalysis(variants[0]);
+        renderWbSpec(variants[0]);
         // Push first variant to history immediately (skip applyPreset to avoid overwriting compare view)
         const { reason: _r, ...firstCard } = variants[0];
         const _savedPending = pendingVariants;
@@ -2992,6 +3026,7 @@
       if (document.getElementById('workbench-view').classList.contains('active') && !pendingVariants) {
         renderWbCard(data);
         renderWbAnalysis(data);
+        renderWbSpec(data);
       }
 
       // Phone widget
@@ -3667,6 +3702,7 @@
         setWbLoading(false);
         renderWbCard(currentCardData);
         renderWbAnalysis(currentCardData);
+        renderWbSpec(currentCardData);
       } else {
         setWbLoading(false);
         // 没有卡片数据时显示空态提示，不展示 spinner
@@ -3844,6 +3880,47 @@
       div.className = 'wb-acard';
       div.innerHTML = `<div class="wb-acard-title">${title}</div><div class="wb-acard-body">${bodyHtml}</div>`;
       return div;
+    }
+
+    function renderWbSpec(data) {
+      if (!data) return;
+      // 场景类型
+      const sceneMap = { info: '📊 信息展示', action: '⚡ 操作执行', control: '🎛️ 状态控制', weather: '🌤️ 天气', transport: '✈️ 出行', health: '🏃 健康', media: '🎵 媒体' };
+      const scene = data.scene || 'info';
+      document.getElementById('wbSpecScene').textContent = sceneMap[scene] || scene;
+      document.getElementById('wbSpecReason').textContent = data.reason || '';
+
+      // 卡片方案
+      const widgetsEl = document.getElementById('wbSpecWidgets');
+      widgetsEl.innerHTML = '';
+      const fields = [];
+      if (data.header || data.title) fields.push({ name: data.header || data.title, sub: '主标题' });
+      if (data.value) fields.push({ name: data.value, sub: '核心数据' });
+      if (data.subtitle) fields.push({ name: data.subtitle, sub: '副文本' });
+      if (data.button) fields.push({ name: data.button, sub: '行动按钮' });
+      if (fields.length === 0) fields.push({ name: LAYOUT_LABELS[data.layout] || data.layout || '卡片', sub: '布局' });
+      fields.forEach((f, i) => {
+        const row = document.createElement('div');
+        row.className = 'csp-widget-row';
+        row.innerHTML = `<div class="csp-widget-idx">${i + 1}</div><div class="csp-widget-info"><div class="csp-widget-name">${f.name}</div><div class="csp-widget-sub">${f.sub}</div></div>`;
+        widgetsEl.appendChild(row);
+      });
+
+      // 规范快查动态字段
+      document.getElementById('wbSpecLayout').textContent = LAYOUT_LABELS[data.layout] || data.layout || '—';
+      document.getElementById('wbSpecTheme').textContent = data.bgImage ? '插图背景' : (data.dark ? '深色' : '浅色');
+      document.getElementById('wbSpecRadius').textContent = data.layout === 'big' ? '20dp' : '18dp';
+
+      // 验收清单
+      const checkEl = document.getElementById('wbSpecChecklist');
+      const checks = [
+        { ok: !!(data.header || data.title), text: '已设置主标题' },
+        { ok: !!(data.value || data.subtitle), text: '已设置内容数据' },
+        { ok: !!data.layout, text: '布局类型已确定：' + (LAYOUT_LABELS[data.layout] || data.layout || '未知') },
+        { ok: !!data.bg || !!data.bgImage, text: '已设置背景色 / 插图' },
+        { ok: true, text: '卡片尺寸 138×138dp ✓' },
+      ];
+      checkEl.innerHTML = checks.map(c => `<div class="csp-check-item"><div class="csp-dot ${c.ok ? 'ok' : 'warn'}"></div>${c.text}</div>`).join('');
     }
 
     function renderWbAnalysisSkeleton() {
