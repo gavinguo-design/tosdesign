@@ -554,6 +554,67 @@
       align-items: center;
       gap: 1.5rem;
     }
+
+    /* ─── SPEC PANEL (below card) ─── */
+    .card-spec-panel {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      width: 276px;
+      padding-bottom: 8px;
+    }
+    .card-spec-panel.visible { display: flex; }
+    .csp-block {
+      background: rgba(255,255,255,0.88);
+      border: 1px solid rgba(0,0,0,0.07);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .csp-header {
+      display: flex; align-items: center;
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      font-size: 10px; font-weight: 700;
+      color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .csp-body { padding: 10px 12px; }
+    .csp-scene-row { display: flex; align-items: center; gap: 8px; }
+    .csp-badge {
+      font-size: 11px; font-weight: 700; padding: 3px 10px;
+      border-radius: 999px; white-space: nowrap;
+      background: rgba(124,92,252,0.1); color: #7C5CFC;
+      border: 1px solid rgba(124,92,252,0.25);
+    }
+    .csp-reason { font-size: 11px; color: var(--muted); line-height: 1.4; }
+    .csp-widget-row {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 7px 0; border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    .csp-widget-row:first-child { padding-top: 0; }
+    .csp-widget-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .csp-widget-idx {
+      width: 18px; height: 18px; border-radius: 5px;
+      background: rgba(124,92,252,0.1); color: #7C5CFC;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .csp-widget-info { flex: 1; min-width: 0; }
+    .csp-widget-name { font-size: 12px; font-weight: 600; color: var(--text); }
+    .csp-widget-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .csp-spec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .csp-spec-cell { background: rgba(0,0,0,0.025); border-radius: 6px; padding: 6px 8px; }
+    .csp-spec-label { font-size: 9px; color: var(--muted2); letter-spacing: 0.05em; text-transform: uppercase; }
+    .csp-spec-val { font-size: 12px; font-weight: 600; color: var(--text); margin-top: 1px; }
+    .csp-check-item {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 0; font-size: 11px; color: var(--text2);
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+    }
+    .csp-check-item:last-child { border-bottom: none; }
+    .csp-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .csp-dot.ok { background: #22c55e; }
+    .csp-dot.warn { background: #f59e0b; }
     .card-scale-label {
       font-size: 0.65rem;
       color: var(--muted);
@@ -2343,6 +2404,38 @@
           <div class="figma-link-box" id="figmaLinkBox"></div>
         </div>
 
+        <!-- SPEC PANEL -->
+        <div class="card-spec-panel" id="cardSpecPanel">
+          <div class="csp-block">
+            <div class="csp-header">🎨 场景类型</div>
+            <div class="csp-body csp-scene-row">
+              <span class="csp-badge" id="cspSceneBadge">—</span>
+              <span class="csp-reason" id="cspSceneReason"></span>
+            </div>
+          </div>
+          <div class="csp-block">
+            <div class="csp-header">🧩 卡片方案</div>
+            <div class="csp-body" id="cspWidgets"></div>
+          </div>
+          <div class="csp-block">
+            <div class="csp-header">📐 规范快查</div>
+            <div class="csp-body">
+              <div class="csp-spec-grid">
+                <div class="csp-spec-cell"><div class="csp-spec-label">卡片尺寸</div><div class="csp-spec-val">138×138dp</div></div>
+                <div class="csp-spec-cell"><div class="csp-spec-label">圆角</div><div class="csp-spec-val" id="cspRadius">20dp</div></div>
+                <div class="csp-spec-cell"><div class="csp-spec-label">内边距</div><div class="csp-spec-val">10dp</div></div>
+                <div class="csp-spec-cell"><div class="csp-spec-label">布局</div><div class="csp-spec-val" id="cspLayout">—</div></div>
+                <div class="csp-spec-cell"><div class="csp-spec-label">主题</div><div class="csp-spec-val" id="cspTheme">浅色</div></div>
+                <div class="csp-spec-cell"><div class="csp-spec-label">字体</div><div class="csp-spec-val">SF Pro</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="csp-block">
+            <div class="csp-header">✅ 验收清单</div>
+            <div class="csp-body" id="cspChecklist"></div>
+          </div>
+        </div>
+
         <!-- PHONE MOCKUP MODE -->
         <div class="phone-preview-wrapper" id="phonePreviewWrapper">
           <div class="phone-mockup">
@@ -2432,6 +2525,51 @@
       renderSidebarHistory();
       applyPreset({ ...data, dark: data.bgImage ? data.dark : (currentTheme === 'dark') });
       updateFigmaBtnVisibility();
+      renderSpecPanel(data);
+    }
+
+    function renderSpecPanel(data) {
+      const panel = document.getElementById('cardSpecPanel');
+      if (!panel) return;
+      panel.classList.add('visible');
+
+      // 场景类型
+      const sceneMap = { info: '📊 信息展示', action: '⚡ 操作执行', control: '🎛️ 状态控制', weather: '🌤️ 天气', transport: '✈️ 出行', health: '🏃 健康', media: '🎵 媒体' };
+      const scene = data.scene || 'info';
+      document.getElementById('cspSceneBadge').textContent = sceneMap[scene] || scene;
+      document.getElementById('cspSceneReason').textContent = data.reason || '';
+
+      // 卡片方案
+      const widgetsEl = document.getElementById('cspWidgets');
+      widgetsEl.innerHTML = '';
+      const fields = [];
+      if (data.header || data.title) fields.push({ name: data.header || data.title, sub: '主标题' });
+      if (data.value) fields.push({ name: data.value, sub: '核心数据' });
+      if (data.subtitle) fields.push({ name: data.subtitle, sub: '副文本' });
+      if (data.button) fields.push({ name: data.button, sub: '行动按钮' });
+      if (fields.length === 0) fields.push({ name: LAYOUT_LABELS[data.layout] || data.layout || '卡片', sub: '布局' });
+      fields.forEach((f, i) => {
+        const row = document.createElement('div');
+        row.className = 'csp-widget-row';
+        row.innerHTML = `<div class="csp-widget-idx">${i + 1}</div><div class="csp-widget-info"><div class="csp-widget-name">${esc(f.name)}</div><div class="csp-widget-sub">${esc(f.sub)}</div></div>`;
+        widgetsEl.appendChild(row);
+      });
+
+      // 规范快查动态字段
+      document.getElementById('cspLayout').textContent = LAYOUT_LABELS[data.layout] || data.layout || '—';
+      document.getElementById('cspTheme').textContent = data.bgImage ? '插图背景' : (data.dark ? '深色' : '浅色');
+      document.getElementById('cspRadius').textContent = data.layout === 'big' ? '20dp' : '18dp';
+
+      // 验收清单
+      const checkEl = document.getElementById('cspChecklist');
+      const checks = [
+        { ok: !!(data.header || data.title), text: '已设置主标题' },
+        { ok: !!(data.value || data.subtitle), text: '已设置内容数据' },
+        { ok: !!data.layout, text: '布局类型已确定：' + (LAYOUT_LABELS[data.layout] || data.layout || '未知') },
+        { ok: !!data.bg || !!data.bgImage, text: '已设置背景色 / 插图' },
+        { ok: true, text: '卡片尺寸 138×138dp ✓' },
+      ];
+      checkEl.innerHTML = checks.map(c => `<div class="csp-check-item"><div class="csp-dot ${c.ok ? 'ok' : 'warn'}"></div>${esc(c.text)}</div>`).join('');
     }
 
     function selectVersion(i) {
