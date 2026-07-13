@@ -3946,13 +3946,18 @@
       const inner = document.getElementById('wb-card-inner');
       if (card && inner) {
         card.style.background = bg;
+        card.style.display = ''; // ensure visible
         inner.innerHTML = '';
         const scaled = document.createElement('div');
         scaled.style.cssText = 'width:138px;height:138px;position:relative;transform:scale(2);transform-origin:top left;';
         scaled.appendChild(buildCardInner(data));
         inner.appendChild(scaled);
       }
-      document.getElementById('wb-card-stage').classList.add('visible');
+      const stage = document.getElementById('wb-card-stage');
+      if (stage) {
+        stage.classList.add('visible');
+        stage.style.display = 'flex'; // force display
+      }
       updateWbDebugDataModel();
       // update wb-data-json alias
       const jsonEl = document.getElementById('wb-data-json');
@@ -4117,6 +4122,61 @@
         syncWbChat();
       }
     }
+
+    /* ─── PREVIEW RESIZE (drag handles) ─── */
+    (function initPreviewResize() {
+      const preview = document.getElementById('wb-preview');
+      if (!preview) return;
+      const handles = preview.querySelectorAll('.wb-preview-handle');
+      if (!handles || handles.length === 0) return;
+      
+      handles.forEach((handle, idx) => {
+        let isDragging = false;
+        let startX = 0;
+        let startWidth = 0;
+        const isRightHandle = idx === 1; // assume first handle is left, second is right
+
+        handle.addEventListener('mousedown', (e) => {
+          isDragging = true;
+          startX = e.clientX;
+          startWidth = preview.offsetWidth;
+          document.body.style.cursor = 'col-resize';
+          document.body.style.userSelect = 'none';
+          e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+          if (!isDragging) return;
+          const delta = e.clientX - startX;
+          const newWidth = isRightHandle ? startWidth + delta : startWidth - delta;
+          // Clamp width between 300px and window width - 700px (leave room for sidebars)
+          const minWidth = 300;
+          const maxWidth = window.innerWidth - 700;
+          const clampedWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
+          preview.style.flex = 'none';
+          preview.style.width = clampedWidth + 'px';
+          // Scale card to fit
+          const cardStage = document.getElementById('wb-card-stage');
+          const availableWidth = clampedWidth - 100; // padding
+          const scale = Math.max(1, Math.min(3, availableWidth / 276)); // scale between 1x and 3x
+          if (cardStage) {
+            const card = document.getElementById('wb-card');
+            if (card) {
+              card.style.transform = `scale(${scale})`;
+              card.style.transformOrigin = 'center center';
+            }
+          }
+        });
+
+        document.addEventListener('mouseup', () => {
+          if (isDragging) {
+            isDragging = false;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+          }
+        });
+      });
+    })();
 
     function sendWbMessage() {
       const wbInput = document.getElementById('wb-chat-input');
