@@ -230,18 +230,18 @@
 
     /* Search bar at top of phone */
     .phone-searchbar {
-      margin: 8px 14px 0;
-      height: 40px;
+      margin: 0 14px 0;
+      height: 46px;
       background: rgba(255,255,255,0.22);
       border: 1.5px solid rgba(255,255,255,0.35);
-      border-radius: 20px;
+      border-radius: 23px;
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       display: flex; align-items: center; gap: 8px;
-      padding: 0 14px;
+      padding: 0 16px;
       font-size: 14px; color: rgba(255,255,255,0.95);
       flex-shrink: 0;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.25);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.25);
     }
     .phone-searchbar-icon { opacity: 0.6; font-size: 13px; }
     .phone-searchbar-text { flex: 1; font-size: 14px; color: rgba(255,255,255,0.9); }
@@ -440,21 +440,8 @@
       height: 76px; z-index: 10;
       background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
       display: flex; align-items: center; justify-content: center;
-      padding-bottom: 10px;
+      padding: 0 14px 10px;
     }
-    .phone-liquid-pill {
-      width: 220px; height: 46px;
-      background: rgba(255,255,255,0.13);
-      border: 1px solid rgba(255,255,255,0.18);
-      border-radius: 23px;
-      backdrop-filter: blur(20px);
-      display: flex; align-items: center; gap: 10px;
-      padding: 0 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    }
-    .pill-icon { font-size: 16px; opacity: 0.7; }
-    .pill-text { flex: 1; font-size: 14px; color: rgba(255,255,255,0.6); }
-    .pill-mic { font-size: 16px; opacity: 0.6; }
 
     /* Phone label */
     .phone-label {
@@ -803,13 +790,6 @@
       </div>
 
       <div class="phone-screen">
-        <!-- Search bar -->
-        <div class="phone-searchbar">
-          <span class="phone-searchbar-icon">🔍</span>
-          <span class="phone-searchbar-text" id="phoneQueryText">搜索任何内容…</span>
-          <span class="phone-searchbar-cursor" id="phoneCursor" style="display:none"></span>
-        </div>
-
         <!-- Cards area -->
         <div class="phone-cards-area" id="phoneCardsArea">
           <!-- Empty state -->
@@ -820,12 +800,12 @@
         </div>
       </div>
 
-      <!-- OS Liquid Search Bar -->
+      <!-- Bottom Search Bar -->
       <div class="phone-liquid-bar">
-        <div class="phone-liquid-pill">
-          <span class="pill-icon">🔍</span>
-          <span class="pill-text">搜索或输入网址</span>
-          <span class="pill-mic">🎙️</span>
+        <div class="phone-searchbar" style="flex:1">
+          <span class="phone-searchbar-icon">🔍</span>
+          <span class="phone-searchbar-text" id="phoneQueryText">搜索任何内容…</span>
+          <span class="phone-searchbar-cursor" id="phoneCursor" style="display:none"></span>
         </div>
       </div>
     </div>
