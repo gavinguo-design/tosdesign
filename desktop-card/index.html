@@ -2551,7 +2551,7 @@
       fields.forEach((f, i) => {
         const row = document.createElement('div');
         row.className = 'csp-widget-row';
-        row.innerHTML = `<div class="csp-widget-idx">${i + 1}</div><div class="csp-widget-info"><div class="csp-widget-name">${esc(f.name)}</div><div class="csp-widget-sub">${esc(f.sub)}</div></div>`;
+        row.innerHTML = `<div class="csp-widget-idx">${i + 1}</div><div class="csp-widget-info"><div class="csp-widget-name">${f.name}</div><div class="csp-widget-sub">${f.sub}</div></div>`;
         widgetsEl.appendChild(row);
       });
 
@@ -2569,7 +2569,7 @@
         { ok: !!data.bg || !!data.bgImage, text: '已设置背景色 / 插图' },
         { ok: true, text: '卡片尺寸 138×138dp ✓' },
       ];
-      checkEl.innerHTML = checks.map(c => `<div class="csp-check-item"><div class="csp-dot ${c.ok ? 'ok' : 'warn'}"></div>${esc(c.text)}</div>`).join('');
+      checkEl.innerHTML = checks.map(c => `<div class="csp-check-item"><div class="csp-dot ${c.ok ? 'ok' : 'warn'}"></div>${c.text}</div>`).join('');
     }
 
     function selectVersion(i) {
