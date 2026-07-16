@@ -1418,6 +1418,62 @@
       transition: all 0.15s;
     }
     .wb-tb-icon-btn:hover { background: #f5f5f7; }
+    /* ─── VIEW SWITCH TABS (卡片预览 / 代码预览) ─── */
+    .wb-view-tabs {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      background: rgba(0,0,0,0.06);
+      border-radius: 9px;
+      padding: 3px;
+    }
+    .wb-view-tab {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 14px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: #777;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .wb-view-tab:hover { color: #333; }
+    .wb-view-tab.active {
+      background: #fff;
+      color: #1a1a1a;
+      font-weight: 600;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    /* ─── CODE PREVIEW PANEL (placeholder, format TBD) ─── */
+    #wb-code-view {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: #1a1a1a;
+      border-right: 1px solid rgba(0,0,0,0.07);
+    }
+    .wb-code-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      color: rgba(255,255,255,0.4);
+    }
+    .wb-code-placeholder-icon {
+      font-family: monospace;
+      font-size: 28px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.25);
+    }
+    .wb-code-placeholder-text {
+      font-size: 13px;
+      color: rgba(255,255,255,0.45);
+    }
 
     /* ─── WB TOP CARD ─── */
     #wb-top-card {
@@ -2216,7 +2272,6 @@
       <!-- Top toolbar -->
       <div id="wb-toolbar">
         <span class="wb-tb-title">Workbench</span>
-        <span class="wb-tb-sub">Chat · edit · preview · debug</span>
         <div class="wb-tb-btns">
           <button class="wb-tb-btn primary" onclick="showWorkbench(true);setTimeout(()=>submitWelcomeWorkbench&&submitWelcomeWorkbench(),100)">生成卡片</button>
           <button class="wb-tb-btn">换个方案</button>
@@ -2224,14 +2279,10 @@
           <button class="wb-tb-btn">打开库</button>
         </div>
         <div class="wb-tb-right">
-          <button class="wb-tb-icon-btn">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-            代码
-          </button>
-          <button class="wb-tb-icon-btn">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            对话
-          </button>
+          <div class="wb-view-tabs" id="wbViewTabs">
+            <button class="wb-view-tab active" id="wbViewTabPreview" onclick="switchWbView('preview')">卡片预览</button>
+            <button class="wb-view-tab" id="wbViewTabCode" onclick="switchWbView('code')">代码预览</button>
+          </div>
         </div>
       </div>
       <!-- Top card: left panel + preview + right chat panel -->
@@ -2329,6 +2380,13 @@
           <div class="wb-preview-handle">
             <div class="wb-preview-handle-dot"></div>
             <div class="wb-preview-handle-dot"></div>
+          </div>
+        </div>
+        <!-- Code preview area (placeholder — content format TBD) -->
+        <div id="wb-code-view">
+          <div class="wb-code-placeholder">
+            <div class="wb-code-placeholder-icon">&lt;/&gt;</div>
+            <div class="wb-code-placeholder-text">代码预览即将上线</div>
           </div>
         </div>
         <!-- Right chat panel -->
@@ -4254,6 +4312,20 @@
         e.preventDefault();
         sendWbMessage();
       }
+    }
+
+    /* ─── WB VIEW SWITCH (卡片预览 / 代码预览 tab) ─── */
+    function switchWbView(view) {
+      const previewEl = document.getElementById('wb-preview');
+      const codeEl = document.getElementById('wb-code-view');
+      const tabPreview = document.getElementById('wbViewTabPreview');
+      const tabCode = document.getElementById('wbViewTabCode');
+      if (!previewEl || !codeEl) return;
+      const isCode = view === 'code';
+      previewEl.style.display = isCode ? 'none' : '';
+      codeEl.style.display = isCode ? 'flex' : 'none';
+      if (tabPreview) tabPreview.classList.toggle('active', !isCode);
+      if (tabCode) tabCode.classList.toggle('active', isCode);
     }
 
     /* ─── WB LEFT PANEL FUNCTIONS ─── */
