@@ -1150,22 +1150,7 @@
     .login-err { color: #ff6b6b; font-size: 0.75rem; text-align: center; margin-top: 0.6rem; min-height: 1em; }
     .login-switch { text-align: center; font-size: 0.75rem; color: var(--muted); margin-top: 0.9rem; }
     .login-switch a { color: var(--accent); cursor: pointer; text-decoration: none; }
-    .login-user-bar {
-      position: fixed; top: 14px; right: 16px; z-index: 50;
-      display: flex; align-items: center; gap: 8px;
-      background: rgba(20,20,26,0.7); border: 1px solid rgba(0,0,0,0.07);
-      border-radius: 20px; padding: 5px 12px 5px 8px;
-      backdrop-filter: blur(10px);
-    }
-    .login-user-bar.hidden { display: none; }
-    .login-avatar {
-      width: 24px; height: 24px; border-radius: 50%;
-      background: var(--accent); display: flex; align-items: center; justify-content: center;
-      font-size: 0.7rem; font-weight: 700; color: #fff;
-    }
-    .login-uname { font-size: 0.78rem; color: var(--text); }
-    .login-logout { font-size: 0.72rem; color: var(--muted); cursor: pointer; margin-left: 4px; }
-    .login-logout:hover { color: #ff6b6b; }
+    /* 顶部右上角账号入口(login-user-bar)已移除，账号信息统一在左侧边栏底部展示 */
     /* --- SIDEBAR --- */
     .sidebar {
       width: 200px; flex-shrink: 0;
@@ -2092,13 +2077,6 @@
         <div class="login-switch">已有账号？<a onclick="showLogin()"> 返回登录</a></div>
       </div>
     </div>
-  </div>
-
-  <!-- USER BAR -->
-  <div class="login-user-bar hidden" id="userBar">
-    <div class="login-avatar" id="userAvatar"></div>
-    <span class="login-uname" id="userName"></span>
-    <span class="login-logout" onclick="doLogout()">退出</span>
   </div>
 
   <!-- SIDEBAR -->
@@ -3668,10 +3646,7 @@
       }
     }
     function showUserBar(name) {
-      const bar = document.getElementById('userBar');
-      bar.classList.remove('hidden');
-      document.getElementById('userName').textContent = name;
-      document.getElementById('userAvatar').textContent = name[0].toUpperCase();
+      // 顶部 userBar 已移除，只更新左侧边栏账号信息
       const sba = document.getElementById('sidebarAvatar');
       const sbu = document.getElementById('sidebarUsername');
       if (sba) sba.textContent = name[0].toUpperCase();
@@ -3729,7 +3704,6 @@
     function doLogout() {
       localStorage.removeItem('tos_token');
       localStorage.removeItem('tos_name');
-      document.getElementById('userBar').classList.add('hidden');
       document.getElementById('loginOverlay').classList.remove('hidden');
       showLogin();
     }
