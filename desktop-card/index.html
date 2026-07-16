@@ -3075,8 +3075,11 @@
         if (data.action) {
           // Figma规范：big+按钮 无副文本槽位（header+DATA+Button）；副文本需求应选triple
         } else {
+          // Figma规范：两行副文本共存时固定 top:98/112（两行占满底部区域）。
+          // 只有一行 subtitle 时（如天气卡的 Sunny·Feels like）应贴底显示（top:112，与底部padding14对齐），图标固定在右下角不会冲突。
+          const onlyOneLine = data.subtitle && !data.subtitle2;
           if (data.subtitle) wrap.appendChild(mk(
-            `position:absolute;left:14px;top:98px;width:110px;height:12px;` +
+            `position:absolute;left:14px;top:${onlyOneLine ? 112 : 98}px;width:110px;height:12px;` +
             `font-size:${fitFontSize(data.subtitle, 10, 110)}px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;`,
             data.subtitle));
           if (data.subtitle2) wrap.appendChild(mk(
