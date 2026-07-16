@@ -2920,9 +2920,12 @@
     // ─── RENDER CARD ─────────────────────────────────────
     function str(v) {
       if (!v) return '';
-      if (typeof v === 'string') return v;
-      if (typeof v === 'object') return v.text || v.value || v.content || JSON.stringify(v);
-      return String(v);
+      let s;
+      if (typeof v === 'string') s = v;
+      else if (typeof v === 'object') s = v.text || v.value || v.content || JSON.stringify(v);
+      else s = String(v);
+      // 容错：AI 偶尔会输出合体度符 ℃，强制拆成 °C 分体字符（Figma 规范要求分体）
+      return s.replace(/℃/g, '°C');
     }
 
     // 按钮用色规范（Figma）：统一中性胶囊，黑8%底(浅色)/白15%底(深色)/白磨砂(渐变背景)
@@ -3013,9 +3016,11 @@
           `font-size:12px;font-weight:600;` + buttonStyle(data, dark),
           data.action));
       } else if (layout === 'triple') {
+        // Figma规范：无按钮时支持顶对齐（header14/value30/subtitle56）和底对齐（header70/value86/subtitle112，末行底部贴齐124=138-14）两种变体，由 data.alignBottom 控制
+        const triTop = data.alignBottom ? 70 : 14;
         const triHeadSize = fitFontSize(data.header || data.title, 12, data.headerIcon ? 92 : 110);
         const triHeader = mk(
-          `position:absolute;left:14px;top:14px;width:110px;height:14px;` +
+          `position:absolute;left:14px;top:${triTop}px;width:110px;height:14px;` +
           `font-size:${triHeadSize}px;font-weight:500;color:${tc};overflow:hidden;white-space:nowrap;display:flex;align-items:center;gap:4px;`,
           '');
         if (data.headerIcon) {
@@ -3029,11 +3034,11 @@
         triHeader.appendChild(ht);
         wrap.appendChild(triHeader);
         wrap.appendChild(mk(
-          `position:absolute;left:14px;top:30px;width:110px;height:24px;` +
+          `position:absolute;left:14px;top:${triTop + 16}px;width:110px;height:24px;` +
           `font-size:${fitFontSize(data.value, 20, 110)}px;font-weight:600;color:${(data.userColorOk&&data.accentColor)||tc};overflow:hidden;white-space:nowrap;`,
           data.value || ''));
         wrap.appendChild(mk(
-          `position:absolute;left:14px;top:56px;width:110px;height:12px;` +
+          `position:absolute;left:14px;top:${triTop + 42}px;width:110px;height:12px;` +
           `font-size:${fitFontSize(data.subtitle, 10, 110)}px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;`,
           data.subtitle || ''));
       } else if (layout === 'big') {
