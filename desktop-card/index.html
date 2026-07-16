@@ -1499,38 +1499,6 @@
       background: rgba(255,255,255,0.5);
       overflow: hidden;
     }
-    #wb-left-tabs {
-      display: flex;
-      flex-direction: column;
-      border-bottom: 1px solid rgba(0,0,0,0.07);
-      background: rgba(255,255,255,0.7);
-      padding: 8px;
-      gap: 4px;
-      flex-shrink: 0;
-    }
-    .wb-left-tab {
-      padding: 8px 12px;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--muted);
-      cursor: pointer;
-      border-radius: 8px;
-      transition: all 0.15s;
-      text-align: left;
-      background: transparent;
-      border: 1px solid transparent;
-    }
-    .wb-left-tab:hover {
-      background: rgba(0,0,0,0.04);
-      color: var(--text);
-    }
-    .wb-left-tab.active {
-      background: #fff;
-      color: var(--text);
-      font-weight: 600;
-      border-color: rgba(0,0,0,0.08);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-    }
     #wb-left-content {
       flex: 1;
       overflow-y: auto;
@@ -1561,9 +1529,35 @@
       font-weight: 700;
       color: var(--text);
       background: rgba(0,0,0,0.015);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
     }
+    .wb-left-card-header:hover { background: rgba(0,0,0,0.035); }
+    .wb-left-card.collapsed .wb-left-card-header { border-bottom: none; }
     .wb-left-card-icon { font-size: 13px; }
-    .wb-left-card-body { padding: 12px; }
+    .wb-left-card-title { flex: 1; }
+    .wb-left-card-arrow {
+      font-size: 10px;
+      color: var(--muted);
+      transition: transform 0.2s ease;
+      transform: rotate(0deg);
+      flex-shrink: 0;
+    }
+    .wb-left-card.collapsed .wb-left-card-arrow { transform: rotate(-90deg); }
+    .wb-left-card-body {
+      padding: 12px;
+      max-height: 2000px;
+      opacity: 1;
+      overflow: hidden;
+      transition: max-height 0.25s ease, opacity 0.2s ease, padding 0.25s ease;
+    }
+    .wb-left-card.collapsed .wb-left-card-body {
+      max-height: 0;
+      opacity: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
     /* legacy alias kept in case other code references it */
     .wb-left-panel-inner { display: block; }
     @keyframes wb-left-card-flash-kf {
@@ -2289,41 +2283,34 @@
       <div id="wb-top-card">
         <!-- Left analysis panel -->
         <div id="wb-left-panel">
-          <div id="wb-left-tabs">
-            <div class="wb-left-tab" data-panel="tone" onclick="switchWbLeftTab('tone')"><span>🎭</span> 调性分析</div>
-            <div class="wb-left-tab" data-panel="color" onclick="switchWbLeftTab('color')"><span>🎨</span> 配色方案</div>
-            <div class="wb-left-tab" data-panel="font" onclick="switchWbLeftTab('font')"><span>🔤</span> 字体排版</div>
-            <div class="wb-left-tab" data-panel="suggest" onclick="switchWbLeftTab('suggest')"><span>💡</span> 设计建议</div>
-            <div class="wb-left-tab" data-panel="spec" onclick="switchWbLeftTab('spec')"><span>📐</span> 规范快查</div>
-          </div>
           <div id="wb-left-content">
-            <!-- 5个维度：全部同时展示，各自一张独立卡片（不再是切换互斥显示） -->
+            <!-- 5个维度：全部同时展示，各自一张独立卡片，标题栏可点击折叠/展开 -->
             <div id="wb-panel-tone-left" class="wb-left-card">
-              <div class="wb-left-card-header"><span class="wb-left-card-icon">🎭</span> 调性分析</div>
+              <div class="wb-left-card-header" onclick="toggleWbLeftCard('tone')"><span class="wb-left-card-icon">🎭</span><span class="wb-left-card-title">调性分析</span><span class="wb-left-card-arrow">▼</span></div>
               <div class="wb-left-card-body">
                 <div id="wb-tone-content-left"><span class="wb-bottom-empty">等待 AI 分析...</span></div>
               </div>
             </div>
             <div id="wb-panel-color-left" class="wb-left-card">
-              <div class="wb-left-card-header"><span class="wb-left-card-icon">🎨</span> 配色方案</div>
+              <div class="wb-left-card-header" onclick="toggleWbLeftCard('color')"><span class="wb-left-card-icon">🎨</span><span class="wb-left-card-title">配色方案</span><span class="wb-left-card-arrow">▼</span></div>
               <div class="wb-left-card-body">
                 <div id="wb-color-content-left"><span class="wb-bottom-empty">等待卡片生成...</span></div>
               </div>
             </div>
             <div id="wb-panel-font-left" class="wb-left-card">
-              <div class="wb-left-card-header"><span class="wb-left-card-icon">🔤</span> 字体排版</div>
+              <div class="wb-left-card-header" onclick="toggleWbLeftCard('font')"><span class="wb-left-card-icon">🔤</span><span class="wb-left-card-title">字体排版</span><span class="wb-left-card-arrow">▼</span></div>
               <div class="wb-left-card-body">
                 <div id="wb-font-content-left"><span class="wb-bottom-empty">等待卡片生成...</span></div>
               </div>
             </div>
             <div id="wb-panel-suggest-left" class="wb-left-card">
-              <div class="wb-left-card-header"><span class="wb-left-card-icon">💡</span> 设计建议</div>
+              <div class="wb-left-card-header" onclick="toggleWbLeftCard('suggest')"><span class="wb-left-card-icon">💡</span><span class="wb-left-card-title">设计建议</span><span class="wb-left-card-arrow">▼</span></div>
               <div class="wb-left-card-body">
                 <div id="wb-suggest-content-left"><span class="wb-bottom-empty">等待 AI 建议...</span></div>
               </div>
             </div>
             <div id="wb-panel-spec-left" class="wb-left-card">
-              <div class="wb-left-card-header"><span class="wb-left-card-icon">📐</span> 规范快查</div>
+              <div class="wb-left-card-header" onclick="toggleWbLeftCard('spec')"><span class="wb-left-card-icon">📐</span><span class="wb-left-card-title">规范快查</span><span class="wb-left-card-arrow">▼</span></div>
               <div class="wb-left-card-body">
               <div id="wb-spec-content-left">
                 <div class="csp-block">
@@ -4329,24 +4316,23 @@
     }
 
     /* ─── WB LEFT PANEL FUNCTIONS ─── */
-    // 5个维度现在全部同时展示为独立卡片，不再互斥切换。
-    // 顶部导航 pill 保留作为“跳转定位”锚点：点击平滑滚动到对应卡片，并短暂高亮。
-    function switchWbLeftTab(panel) {
-      document.querySelectorAll('.wb-left-tab').forEach(el => el.classList.remove('active'));
-      const tab = document.querySelector('.wb-left-tab[data-panel="' + panel + '"]');
-      if (tab) tab.classList.add('active');
-      const content = document.getElementById('wb-panel-' + panel + '-left');
-      if (content) {
-        content.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        content.classList.add('wb-left-card-flash');
-        setTimeout(() => content.classList.remove('wb-left-card-flash'), 900);
-      }
+    // 5个维度全部同时展示为独立卡片（accordion），点击标题栏可展开/收起该卡片内容。
+    // 默认全部展开；不再有顶部导航 pill / 跳转锚点。
+    function toggleWbLeftCard(panel) {
+      const card = document.getElementById('wb-panel-' + panel + '-left');
+      if (card) card.classList.toggle('collapsed');
     }
 
-    /* ─── WB BOTTOM CARD FUNCTIONS (legacy, kept for compatibility) ─── */
+    // 展开指定卡片（不切换，仅确保可见），供其他代码路径调用时使用
+    function expandWbLeftCard(panel) {
+      const card = document.getElementById('wb-panel-' + panel + '-left');
+      if (card) card.classList.remove('collapsed');
+    }
+
+    /* ─── WB BOTTOM CARD FUNCTIONS (legacy, kept for compatibility; #wb-bottom-card is hidden) ─── */
     function switchWbBottomTab(panel) {
-      // Now delegates to left panel
-      switchWbLeftTab(panel);
+      // Now delegates to left panel: ensure the corresponding card is expanded
+      expandWbLeftCard(panel);
     }
 
     function renderWbTone(toneRows) {
