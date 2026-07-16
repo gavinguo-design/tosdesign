@@ -3445,6 +3445,11 @@
     }
 
     async function applyIllustration(cd, url) {
+      // 天气/自然/氛围类背景是饱和渐变色，设计上就是默认白字，不做亮度采样判断（避免上半部提亮被误判为亮底黑字）
+      const AMBIENT_SCENES = ['weather', 'nature', 'mood', 'travel', 'celebration', 'music'];
+      if (AMBIENT_SCENES.includes(cd.scene)) {
+        return { ...cd, bgImage: url, dark: true, heroIcon: false, icon: '' };
+      }
       const luma = await probeTextAreaLuma(url);
       // luma>150 亮底 → 黑字(dark:false)；否则白字(dark:true)；采样失败默认白字
       const dark = luma === null ? true : luma <= 168; // 中间调偏向白字+暗化保护层
