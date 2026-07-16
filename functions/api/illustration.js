@@ -34,13 +34,20 @@ export async function onRequestPost({ request }) {
   try { body = await request.json(); } catch {
     return new Response(JSON.stringify({ ok: false, error: 'Invalid JSON' }), { status: 400, headers: CORS });
   }
-  const { prompt } = body;
+  const { prompt, scene } = body;
   if (!prompt || typeof prompt !== 'string') {
     return new Response(JSON.stringify({ ok: false, error: 'prompt required' }), { status: 400, headers: CORS });
   }
 
-  // 卡片插图统一后缀：小组件语境、简洁、无文字
-  const fullPrompt = prompt + '，桌面小组件背景插图。构图硬性要求：画面左上方约2/3区域必须干净简洁（纯色或柔和渐变，无图形元素，用于叠加文字），主体图形元素只放在右下角区域，占画面不超过1/3。简洁现代扁平风格，无任何文字，色调统一';
+  // 天气/氛围类：全幅天空背景，无主体构图约束，软光晕散景
+  const AMBIENT_SCENES = ['weather', 'nature', 'mood', 'travel', 'celebration', 'music'];
+  const isAmbient = AMBIENT_SCENES.includes(scene);
+
+  const suffix = isAmbient
+    ? '，全幅桌面小组件背景。要求：全画面均匀铺满大气渐变色调，无明确主体，柔和散景光晕，轻微景深虚化，画面上半部分略浅方便叠加白色文字。简洁现代风格，无任何文字，色调统一'
+    : '，桌面小组件背景插图。构图硬性要求：画面左上方约2/3区域必须干净简洁（纯色或柔和渐变，无图形元素，用于叠加文字），主体图形元素只放在右下角区域，占画面不超过1/3。简洁现代扁平风格，无任何文字，色调统一';
+
+  const fullPrompt = prompt + suffix;
 
   try {
     const res = await fetch(ARK_URL, {
