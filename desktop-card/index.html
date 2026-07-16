@@ -1446,34 +1446,95 @@
       font-weight: 600;
       box-shadow: 0 1px 4px rgba(0,0,0,0.08);
     }
-    /* ─── CODE PREVIEW PANEL (placeholder, format TBD) ─── */
+    /* ─── CODE PREVIEW PANEL (AtomicView TPK JSON) ─── */
     #wb-code-view {
       flex: 1;
       min-width: 0;
       min-height: 0;
       display: none;
-      align-items: center;
-      justify-content: center;
-      background: #1a1a1a;
+      flex-direction: column;
+      background: #1e1e1e;
       border-right: 1px solid rgba(0,0,0,0.07);
+      overflow: hidden;
     }
-    .wb-code-placeholder {
+    .wb-code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      background: #252526;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      flex-shrink: 0;
+    }
+    .wb-code-header-title {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 0.02em;
+    }
+    .wb-code-header-badge {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(124,92,252,0.2);
+      color: #b8a4ff;
+      border: 1px solid rgba(124,92,252,0.35);
+    }
+    .wb-code-header-actions { display: flex; gap: 6px; }
+    .wb-code-copy-btn {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.8);
+      border: 1px solid rgba(255,255,255,0.12);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .wb-code-copy-btn:hover { background: rgba(255,255,255,0.16); }
+    .wb-code-copy-btn.copied { background: rgba(34,197,94,0.25); color: #86efac; border-color: rgba(34,197,94,0.4); }
+    .wb-code-body {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      padding: 14px 16px;
+    }
+    .wb-code-body::-webkit-scrollbar { width: 8px; height: 8px; }
+    .wb-code-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+    .wb-code-body::-webkit-scrollbar-track { background: transparent; }
+    #wb-code-json {
+      margin: 0;
+      font-family: ui-monospace, SFMono-Regular, 'JetBrains Mono', Menlo, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.55;
+      color: #d4d4d4;
+      white-space: pre;
+      tab-size: 2;
+    }
+    .wb-code-tok-key { color: #9cdcfe; }
+    .wb-code-tok-str { color: #ce9178; }
+    .wb-code-tok-num { color: #b5cea8; }
+    .wb-code-tok-bool { color: #569cd6; }
+    .wb-code-tok-null { color: #569cd6; }
+    .wb-code-tok-punct { color: #808080; }
+    .wb-code-empty {
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
+      height: 100%;
       gap: 10px;
-      color: rgba(255,255,255,0.4);
+      color: rgba(255,255,255,0.35);
     }
-    .wb-code-placeholder-icon {
+    .wb-code-empty-icon {
       font-family: monospace;
       font-size: 28px;
       font-weight: 700;
-      color: rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.2);
     }
-    .wb-code-placeholder-text {
-      font-size: 13px;
-      color: rgba(255,255,255,0.45);
-    }
+    .wb-code-empty-text { font-size: 13px; color: rgba(255,255,255,0.45); }
 
     /* ─── WB TOP CARD ─── */
     #wb-top-card {
@@ -2369,11 +2430,23 @@
             <div class="wb-preview-handle-dot"></div>
           </div>
         </div>
-        <!-- Code preview area (placeholder — content format TBD) -->
+        <!-- Code preview area: AtomicView TPK JSON serialization of current card -->
         <div id="wb-code-view">
-          <div class="wb-code-placeholder">
-            <div class="wb-code-placeholder-icon">&lt;/&gt;</div>
-            <div class="wb-code-placeholder-text">代码预览即将上线</div>
+          <div class="wb-code-header">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span class="wb-code-header-title">index.json</span>
+              <span class="wb-code-header-badge">AtomicView TPK</span>
+            </div>
+            <div class="wb-code-header-actions">
+              <button class="wb-code-copy-btn" id="wbCodeCopyBtn" onclick="copyWbCodeJson(this)">复制</button>
+            </div>
+          </div>
+          <div class="wb-code-body" id="wb-code-body">
+            <div class="wb-code-empty" id="wb-code-empty">
+              <div class="wb-code-empty-icon">&lt;/&gt;</div>
+              <div class="wb-code-empty-text">生成一张卡片后，这里会显示对应的 AtomicView TPK JSON</div>
+            </div>
+            <pre id="wb-code-json" style="display:none"></pre>
           </div>
         </div>
         <!-- Right chat panel -->
@@ -4069,6 +4142,8 @@
       if (jsonEl) jsonEl.textContent = JSON.stringify(data, null, 2);
       const tabDataModel = document.querySelector('[data-tab="datamodel"]');
       if (tabDataModel) tabDataModel.textContent = 'Data Model (1)';
+      // 同步刷新代码预览 tab（AtomicView TPK JSON）
+      updateWbCodeView(data);
     }
 
     function renderWbAnalysis(data) {
@@ -4313,6 +4388,411 @@
       codeEl.style.display = isCode ? 'flex' : 'none';
       if (tabPreview) tabPreview.classList.toggle('active', !isCode);
       if (tabCode) tabCode.classList.toggle('active', isCode);
+      // 切到代码 tab 时按当前卡片数据即时序列化一次
+      if (isCode) updateWbCodeView(currentCardData);
+    }
+
+    /* ─── ATOMICVIEW TPK JSON SERIALIZER ─── */
+    // 把当前 Web 卡片数据（title/subtitle/header/value/icon/action 等 + 4 种布局）
+    // 尽力映射到公司原生渲染引擎 AtomicView 的 TPK index.json 结构。
+    // 输出结构：{ ui: [...], layout: { pkg, <template-id>: ConstraintLayout }, data: {}, actions: {} }
+    // 注意：Web 侧的渐变背景 / 背景图 / 深浅色文字自适应等能力在 AtomicView 只有近似字段，
+    // 无法精准还原的会退化为纯色 + 注释字段 _note。
+    function cardDataToAtomicViewJSON(cardData) {
+      const empty = { ui: [], layout: { pkg: 'com.tos.desktop.widget' }, data: {}, actions: {} };
+      if (!cardData) return empty;
+      const data = cardData;
+      const layoutType = data.layout || 'dual';
+      const dark = !!data.dark;
+      const tc = dark ? '#E6FFFFFF' : '#E6000000'; // rgba(*,0.9) -> ARGB
+      const sc = dark ? '#99FFFFFF' : '#99000000'; // rgba(*,0.6)
+      const accent = (data.userColorOk && data.accentColor) ? data.accentColor : tc;
+
+      // 卡片容器背景色映射：渐变 / 背景图 → 只能取近似纯色 + _note 说明
+      const bg = data.bg || (dark ? '#1C1C1E' : '#FFFFFF');
+      const bgIsGradient = typeof bg === 'string' && bg.includes('gradient');
+      const bgIsImage = !!data.bgImage;
+      let containerBgColor = bg;
+      let bgNote = null;
+      if (bgIsGradient) {
+        // 提取渐变中第一个 hex 作为近似主色
+        const m = bg.match(/#[0-9a-fA-F]{3,8}/);
+        containerBgColor = m ? m[0] : (dark ? '#1C1C1E' : '#FFFFFF');
+        bgNote = 'Web 端为 CSS 渐变，AtomicView backgroundColor 仅支持纯色，此处取近似主色';
+      } else if (bgIsImage) {
+        containerBgColor = dark ? '#1C1C1E' : '#FFFFFF';
+        bgNote = 'Web 端为图片背景，AtomicView 需通过 background="@tpk/..." 引用 TPK 内素材';
+      }
+
+      const children = {};
+
+      const mkText = (id, text, opts) => {
+        const o = opts || {};
+        const node = {
+          type: 'TextView',
+          id,
+          layout_width: o.width || 'wrap_content',
+          layout_height: 'wrap_content',
+          text: String(text == null ? '' : text),
+          textSize: o.textSize,
+          textColor: o.textColor || tc,
+        };
+        if (o.textFontWeight) node.textFontWeight = String(o.textFontWeight);
+        if (o.maxLines) { node.maxLines = o.maxLines; node.ellipsize = 'end'; }
+        if (o.singleLine) { node.singleLine = true; node.ellipsize = 'end'; }
+        if (o.gravity) node.gravity = o.gravity;
+        // 约束
+        Object.assign(node, o.constraints || {});
+        // 边距
+        if (o.marginStart != null) node.layout_marginStart = o.marginStart + 'dp';
+        if (o.marginTop != null) node.layout_marginTop = o.marginTop + 'dp';
+        if (o.marginBottom != null) node.layout_marginBottom = o.marginBottom + 'dp';
+        if (o.marginEnd != null) node.layout_marginEnd = o.marginEnd + 'dp';
+        return node;
+      };
+
+      const constraintTopLeft = (topDp) => ({
+        layout_constraintStart_toStartOf: 'parent',
+        layout_constraintTop_toTopOf: 'parent',
+        layout_marginStart: '0dp',
+        layout_marginTop: (topDp || 0) + 'dp',
+      });
+
+      // ── 布局分支 ──────────────────────────────────────
+      if (layoutType === 'single') {
+        children.title = mkText('title', data.title, {
+          width: '110dp',
+          textSize: '16sp',
+          textFontWeight: 600,
+          textColor: tc,
+          maxLines: 4,
+          constraints: {
+            layout_constraintStart_toStartOf: 'parent',
+            layout_constraintTop_toTopOf: 'parent',
+          },
+        });
+      } else if (layoutType === 'dual') {
+        // Web 端是 flex column（title + subtitle 自然流动 2dp gap），此处近似为竖向链式约束
+        if (data.headerIcon) {
+          children.headerIcon = mkText('headerIcon', data.headerIcon, {
+            textSize: '16sp',
+            textColor: tc,
+            singleLine: true,
+            constraints: {
+              layout_constraintStart_toStartOf: 'parent',
+              layout_constraintTop_toTopOf: 'parent',
+            },
+          });
+          children.title = mkText('title', data.title, {
+            width: 'wrap_content',
+            textSize: '16sp',
+            textFontWeight: 600,
+            textColor: tc,
+            singleLine: true,
+            marginStart: 4,
+            constraints: {
+              layout_constraintStart_toEndOf: '@id/headerIcon',
+              layout_constraintTop_toTopOf: '@id/headerIcon',
+              layout_constraintBottom_toBottomOf: '@id/headerIcon',
+            },
+          });
+        } else {
+          children.title = mkText('title', data.title, {
+            width: '110dp',
+            textSize: '16sp',
+            textFontWeight: 600,
+            textColor: tc,
+            maxLines: 2,
+            constraints: {
+              layout_constraintStart_toStartOf: 'parent',
+              layout_constraintTop_toTopOf: 'parent',
+            },
+          });
+        }
+        children.subtitle = mkText('subtitle', data.subtitle || '', {
+          width: '110dp',
+          textSize: '12sp',
+          textFontWeight: 500,
+          textColor: sc,
+          maxLines: 2,
+          marginTop: 2,
+          constraints: {
+            layout_constraintStart_toStartOf: 'parent',
+            layout_constraintTop_toBottomOf: data.headerIcon ? '@id/headerIcon' : '@id/title',
+          },
+        });
+      } else if (layoutType === 'triple') {
+        const alignBottom = !!data.alignBottom;
+        const topDp = alignBottom ? 70 : 0;
+        if (data.headerIcon) {
+          children.headerIcon = mkText('headerIcon', data.headerIcon, {
+            textSize: '12sp',
+            textColor: tc,
+            singleLine: true,
+            constraints: {
+              layout_constraintStart_toStartOf: 'parent',
+              layout_constraintTop_toTopOf: 'parent',
+              layout_marginTop: topDp + 'dp',
+            },
+          });
+        }
+        children.header = mkText('header', data.header || data.title || '', {
+          textSize: '12sp',
+          textFontWeight: 500,
+          textColor: tc,
+          singleLine: true,
+          constraints: data.headerIcon ? {
+            layout_constraintStart_toEndOf: '@id/headerIcon',
+            layout_constraintTop_toTopOf: '@id/headerIcon',
+            layout_constraintBottom_toBottomOf: '@id/headerIcon',
+            layout_marginStart: '4dp',
+          } : {
+            layout_constraintStart_toStartOf: 'parent',
+            layout_constraintTop_toTopOf: 'parent',
+            layout_marginTop: topDp + 'dp',
+          },
+        });
+        children.value = mkText('value', data.value || '', {
+          width: '110dp',
+          textSize: '20sp',
+          textFontWeight: 600,
+          textColor: accent,
+          singleLine: true,
+          marginTop: 2,
+          constraints: {
+            layout_constraintStart_toStartOf: 'parent',
+            layout_constraintTop_toBottomOf: data.headerIcon ? '@id/headerIcon' : '@id/header',
+          },
+        });
+        children.subtitle = mkText('subtitle', data.subtitle || '', {
+          width: '110dp',
+          textSize: '10sp',
+          textFontWeight: 500,
+          textColor: sc,
+          singleLine: true,
+          marginTop: 4,
+          constraints: {
+            layout_constraintStart_toStartOf: 'parent',
+            layout_constraintTop_toBottomOf: '@id/value',
+          },
+        });
+      } else if (layoutType === 'big') {
+        if (data.headerIcon) {
+          children.headerIcon = mkText('headerIcon', data.headerIcon, {
+            textSize: '12sp',
+            textColor: tc,
+            singleLine: true,
+            constraints: {
+              layout_constraintStart_toStartOf: 'parent',
+              layout_constraintTop_toTopOf: 'parent',
+            },
+          });
+        }
+        children.header = mkText('header', data.header || data.title || '', {
+          textSize: '12sp',
+          textFontWeight: 500,
+          textColor: tc,
+          singleLine: true,
+          constraints: data.headerIcon ? {
+            layout_constraintStart_toEndOf: '@id/headerIcon',
+            layout_constraintTop_toTopOf: '@id/headerIcon',
+            layout_constraintBottom_toBottomOf: '@id/headerIcon',
+            layout_marginStart: '4dp',
+          } : {
+            layout_constraintStart_toStartOf: 'parent',
+            layout_constraintTop_toTopOf: 'parent',
+          },
+        });
+        children.value = mkText('value', data.value || '', {
+          textSize: '40sp',
+          textFontWeight: 500,
+          textColor: accent,
+          singleLine: true,
+          marginTop: 0,
+          constraints: {
+            layout_constraintStart_toStartOf: 'parent',
+            layout_constraintTop_toBottomOf: data.headerIcon ? '@id/headerIcon' : '@id/header',
+          },
+        });
+        if (data.unit) {
+          children.unit = mkText('unit', String(data.unit).slice(0, 4), {
+            textSize: '12sp',
+            textFontWeight: 600,
+            textColor: tc,
+            singleLine: true,
+            marginStart: 2,
+            marginBottom: 6,
+            constraints: {
+              layout_constraintStart_toEndOf: '@id/value',
+              layout_constraintBottom_toBottomOf: '@id/value',
+            },
+          });
+        }
+        // big + action 时 Web 端无副文本（Figma 规范）；无 action 时才渲染 subtitle
+        if (!data.action) {
+          if (data.subtitle) {
+            children.subtitle = mkText('subtitle', data.subtitle, {
+              width: '110dp',
+              textSize: '10sp',
+              textFontWeight: 500,
+              textColor: sc,
+              singleLine: true,
+              constraints: {
+                layout_constraintStart_toStartOf: 'parent',
+                layout_constraintBottom_toBottomOf: 'parent',
+                layout_marginBottom: (data.subtitle2 ? 12 : 0) + 'dp',
+              },
+            });
+          }
+          if (data.subtitle2) {
+            children.subtitle2 = mkText('subtitle2', data.subtitle2, {
+              width: '110dp',
+              textSize: '10sp',
+              textFontWeight: 500,
+              textColor: sc,
+              singleLine: true,
+              constraints: {
+                layout_constraintStart_toStartOf: 'parent',
+                layout_constraintBottom_toBottomOf: 'parent',
+              },
+            });
+          }
+        }
+      }
+
+      // ── 通用：右下角装饰 icon（Web 端 emoji，AtomicView 用 TextView + emoji 或 ImageView）
+      const iconStr = data.icon ? String(data.icon) : '';
+      if (iconStr) {
+        const heroIcon = !!data.heroIcon;
+        children.decoIcon = {
+          type: 'TextView',
+          id: 'decoIcon',
+          layout_width: heroIcon ? 'wrap_content' : '40dp',
+          layout_height: heroIcon ? 'wrap_content' : '40dp',
+          text: iconStr,
+          textSize: heroIcon ? '52sp' : '32sp',
+          textColor: tc,
+          alpha: heroIcon ? 0.95 : 0.14,
+          gravity: 'center',
+          singleLine: true,
+          layout_constraintEnd_toEndOf: 'parent',
+          layout_constraintBottom_toBottomOf: 'parent',
+          layout_marginEnd: (heroIcon ? 10 : 10) + 'dp',
+          layout_marginBottom: (heroIcon ? 8 : 10) + 'dp',
+          _note: 'Web 侧 emoji 装饰，如需图像可改为 ImageView + src="@tpk/assets/icons/xxx.png"',
+        };
+      }
+
+      // ── 行动按钮（dual/triple/big 通用；big+action 时无副文本；Figma 长/短按钮两档）
+      if (data.action) {
+        const wide = String(data.action).length > 4 || data.buttonWide;
+        const isGradient = bgIsGradient;
+        const btnBg = isGradient ? '#47FFFFFF' : (dark ? '#26FFFFFF' : '#14000000');
+        const btnFg = isGradient ? '#FFFFFFFF' : (dark ? '#E6FFFFFF' : '#CC000000');
+        children.actionBtn = {
+          type: 'Button',
+          id: 'actionBtn',
+          layout_width: (wide ? 110 : 74) + 'dp',
+          layout_height: '30dp',
+          text: String(data.action),
+          textSize: '12sp',
+          textFontWeight: '600',
+          textColor: btnFg,
+          backgroundColor: btnBg,
+          cornerRadius: '999dp',
+          gravity: 'center',
+          singleLine: true,
+          onClick: 'widget_action_click',
+          layout_constraintStart_toStartOf: 'parent',
+          layout_constraintBottom_toBottomOf: 'parent',
+        };
+      }
+
+      const templateId = 'widget-138-' + layoutType;
+      const container = {
+        type: 'ConstraintLayout',
+        id: templateId,
+        layout_width: '138dp',
+        layout_height: '138dp',
+        backgroundColor: containerBgColor,
+        cornerRadius: '20dp',
+        padding: '14dp',
+        children,
+      };
+      if (bgNote) container._backgroundNote = bgNote;
+
+      const result = {
+        ui: [{ type: 'card-atomic-render', 'template-id': '@layout.' + templateId }],
+        layout: {
+          pkg: 'com.tos.desktop.widget',
+          [templateId]: container,
+        },
+        data: {},
+        actions: data.action ? {
+          widget_action_click: {
+            type: 'activity',
+            action: 'android.intent.action.VIEW',
+          },
+        } : {},
+      };
+      return result;
+    }
+
+    // 简易 JSON 语法高亮（VSCode 深色主题近似色）
+    function highlightJson(jsonStr) {
+      const esc = jsonStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return esc.replace(
+        /("(?:\\.|[^"\\])*")\s*:|("(?:\\.|[^"\\])*")|\b(true|false)\b|\b(null)\b|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|([{}\[\],])/g,
+        (m, key, str, bool, nul, num, punct) => {
+          if (key)   return '<span class="wb-code-tok-key">' + key.slice(0, -1) + '</span><span class="wb-code-tok-punct">:</span>';
+          if (str)   return '<span class="wb-code-tok-str">' + str + '</span>';
+          if (bool)  return '<span class="wb-code-tok-bool">' + bool + '</span>';
+          if (nul)   return '<span class="wb-code-tok-null">' + nul + '</span>';
+          if (num)   return '<span class="wb-code-tok-num">' + num + '</span>';
+          if (punct) return '<span class="wb-code-tok-punct">' + punct + '</span>';
+          return m;
+        }
+      );
+    }
+
+    // 渲染当前卡片对应的 TPK JSON 到代码 tab；被 renderWbCard 与 switchWbView('code') 调用
+    function updateWbCodeView(cardData) {
+      const pre = document.getElementById('wb-code-json');
+      const empty = document.getElementById('wb-code-empty');
+      if (!pre || !empty) return;
+      if (!cardData) {
+        pre.style.display = 'none';
+        empty.style.display = '';
+        return;
+      }
+      const tpk = cardDataToAtomicViewJSON(cardData);
+      const jsonStr = JSON.stringify(tpk, null, 2);
+      pre.innerHTML = highlightJson(jsonStr);
+      pre.dataset.raw = jsonStr;
+      pre.style.display = '';
+      empty.style.display = 'none';
+    }
+
+    function copyWbCodeJson(btn) {
+      const pre = document.getElementById('wb-code-json');
+      const raw = pre && pre.dataset.raw;
+      if (!raw) return;
+      const done = () => {
+        if (!btn) return;
+        const old = btn.textContent;
+        btn.textContent = '已复制';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = old; btn.classList.remove('copied'); }, 1400);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(raw).then(done).catch(() => {
+          const ta = document.createElement('textarea'); ta.value = raw; document.body.appendChild(ta); ta.select();
+          try { document.execCommand('copy'); done(); } finally { ta.remove(); }
+        });
+      } else {
+        const ta = document.createElement('textarea'); ta.value = raw; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); done(); } finally { ta.remove(); }
+      }
     }
 
     /* ─── WB LEFT PANEL FUNCTIONS ─── */
