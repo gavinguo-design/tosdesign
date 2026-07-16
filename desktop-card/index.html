@@ -1508,12 +1508,14 @@
 
     #wb-preview {
       flex: 1;
+      min-width: 0;
       min-height: 0;
       display: flex;
       align-items: stretch;
       justify-content: center;
       position: relative;
       padding: 0;
+      overflow: hidden;
       background:
         radial-gradient(ellipse 60% 50% at 85% 15%, rgba(235,215,210,0.6), transparent),
         radial-gradient(ellipse 50% 50% at 10% 85%, rgba(235,235,210,0.5), transparent),
@@ -1811,13 +1813,14 @@
     .wb-bottom-panel { display: none; }
     .wb-bottom-panel.active { display: block; }
     /* tone rows */
-    .wb-tone-row { display:flex; align-items:center; gap:10px; padding:6px 0; border-bottom:1px solid rgba(0,0,0,0.05); }
-    .wb-tone-badge { font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; font-family:monospace; }
+    .wb-tone-row { display:flex; flex-direction:column; align-items:flex-start; gap:4px; padding:8px 0; border-bottom:1px solid rgba(0,0,0,0.05); }
+    .wb-tone-row-header { display:flex; align-items:center; gap:8px; }
+    .wb-tone-badge { font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; font-family:monospace; flex-shrink:0; }
     .wb-tone-badge.va { background:#f0ebff; color:#7C5CFC; }
     .wb-tone-badge.is { background:#e8f5ee; color:#22c55e; }
     .wb-tone-badge.aa { background:#fff4e5; color:#f59e0b; }
-    .wb-tone-name { font-size:12px; font-weight:600; color:#333; min-width:60px; }
-    .wb-tone-reason { font-size:12px; color:#666; flex:1; }
+    .wb-tone-name { font-size:12px; font-weight:600; color:#333; }
+    .wb-tone-reason { font-size:11px; color:#666; line-height:1.5; padding-left:2px; }
     .wb-bottom-empty { font-size:12px; color:#bbb; font-family:monospace; padding:8px 0; }
     .wb-rp-header {
       padding: 20px 16px 12px;
@@ -3877,6 +3880,19 @@
       stage.style.width = '100%';
       stage.style.height = '100%';
       stage.classList.add('visible');
+
+      // Responsive card size: fit two cards + gap + padding within available width
+      const previewEl = document.getElementById('wb-preview-card');
+      const availW = previewEl ? previewEl.offsetWidth : 600;
+      const availH = previewEl ? previewEl.offsetHeight : 500;
+      const gap = 32;
+      const paddingH = 48; // 24px each side
+      const paddingV = 120; // label + reason + btn below
+      const maxByWidth = Math.floor((availW - gap - paddingH) / 2);
+      const maxByHeight = Math.max(120, availH - paddingV);
+      const cardSize = Math.min(276, maxByWidth, maxByHeight);
+      const innerScale = cardSize / 138;
+
       variants.slice(0, 2).forEach((data, i) => {
         const label = ['A', 'B'][i];
         const dark = !!data.dark;
@@ -3887,19 +3903,19 @@
         lbl.textContent = '方案 ' + label;
         lbl.style.cssText = 'font-size:11px;font-weight:700;color:#888;letter-spacing:1px;text-transform:uppercase;';
         const card = document.createElement('div');
-        card.style.cssText = `width:276px;height:276px;border-radius:40px;overflow:hidden;background:${bg};box-shadow:0 16px 48px rgba(0,0,0,0.18),0 4px 12px rgba(0,0,0,0.1);cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;`;
+        card.style.cssText = `width:${cardSize}px;height:${cardSize}px;border-radius:${Math.round(cardSize * 0.145)}px;overflow:hidden;background:${bg};box-shadow:0 16px 48px rgba(0,0,0,0.18),0 4px 12px rgba(0,0,0,0.1);cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;`;
         card.onmouseenter = () => { card.style.transform='scale(1.03)'; card.style.boxShadow='0 24px 60px rgba(0,0,0,0.22),0 6px 16px rgba(0,0,0,0.12)'; };
         card.onmouseleave = () => { card.style.transform=''; card.style.boxShadow='0 16px 48px rgba(0,0,0,0.18),0 4px 12px rgba(0,0,0,0.1)'; };
         const inner = document.createElement('div');
-        inner.style.cssText = 'width:100%;height:100%;position:relative;';
+        inner.style.cssText = 'width:100%;height:100%;position:relative;overflow:hidden;';
         const scaled = document.createElement('div');
-        scaled.style.cssText = 'width:138px;height:138px;position:relative;transform:scale(2);transform-origin:top left;pointer-events:none;';
+        scaled.style.cssText = `width:138px;height:138px;position:relative;transform:scale(${innerScale});transform-origin:top left;pointer-events:none;`;
         scaled.appendChild(buildCardInner({ ...data, dark }));
         inner.appendChild(scaled);
         card.appendChild(inner);
         const reason = document.createElement('div');
         reason.textContent = data.reason || '';
-        reason.style.cssText = 'font-size:11px;color:#888;max-width:200px;text-align:center;line-height:1.4;';
+        reason.style.cssText = `font-size:11px;color:#888;max-width:${cardSize}px;text-align:center;line-height:1.4;`;
         const btn = document.createElement('button');
         btn.textContent = '选这个';
         btn.style.cssText = 'padding:6px 20px;border-radius:999px;border:1px solid rgba(0,0,0,0.12);background:#fff;color:#333;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.15s;box-shadow:0 1px 4px rgba(0,0,0,0.08);';
@@ -4217,9 +4233,11 @@
       const AXIS_NAMES = { VA: '视觉吸引力', IS: '信息显著性', AA: '行动权威性' };
       el.innerHTML = toneRows.map(r =>
         `<div class="wb-tone-row">
-          <span class="wb-tone-badge ${r.ax.toLowerCase()}">${r.ax}${r.level}</span>
-          <span class="wb-tone-name">${AXIS_NAMES[r.ax] || r.ax}</span>
-          <span class="wb-tone-reason">${r.reason}</span>
+          <div class="wb-tone-row-header">
+            <span class="wb-tone-badge ${r.ax.toLowerCase()}">${r.ax}${r.level}</span>
+            <span class="wb-tone-name">${AXIS_NAMES[r.ax] || r.ax}</span>
+          </div>
+          <div class="wb-tone-reason">${r.reason}</div>
         </div>`
       ).join('');
     }
