@@ -2979,9 +2979,12 @@
           `overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;`,
           data.title));
       } else if (layout === 'dual') {
+        // Figma 规范：dual 布局 header 与 subtitle 是自然流动关系（header 结束后仅 ~2px 间距），不是固定像素坐标：
+        // 标题 1 行时 subtitle 上移，标题 2 行时 subtitle 下移。用 flex column 容器实现动态跟随，不再用固定 top:57px。
+        const dualCol = document.createElement('div');
+        dualCol.style.cssText = `position:absolute;left:14px;top:14px;width:110px;display:flex;flex-direction:column;gap:2px;`;
         if (data.headerIcon) {
           const dh = mk(
-            `position:absolute;left:14px;top:14px;width:110px;height:19px;` +
             `font-size:16px;font-weight:600;line-height:19px;color:${tc};` +
             `overflow:hidden;white-space:nowrap;display:flex;align-items:center;gap:4px;`,
             '');
@@ -2992,19 +2995,18 @@
           const dt = document.createElement('span');
           dt.textContent = data.title;
           dh.appendChild(dt);
-          wrap.appendChild(dh);
+          dualCol.appendChild(dh);
         } else {
-          wrap.appendChild(mk(
-            `position:absolute;left:14px;top:14px;width:110px;` +
+          dualCol.appendChild(mk(
             `font-size:16px;font-weight:600;line-height:19px;color:${tc};` +
             `overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;`,
             data.title));
         }
-        wrap.appendChild(mk(
-          `position:absolute;left:14px;top:57px;width:110px;` +
+        dualCol.appendChild(mk(
           `font-size:12px;font-weight:500;line-height:16px;color:${sc};` +
           `overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;`,
           data.subtitle || ''));
+        wrap.appendChild(dualCol);
         if (data.action) wrap.appendChild(mk(
           `position:absolute;left:14px;bottom:14px;width:74px;height:30px;border-radius:999px;` +
           `display:flex;align-items:center;justify-content:center;` +
