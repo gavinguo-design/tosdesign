@@ -3871,7 +3871,10 @@
       setWbLoading(false);
       const stage = document.getElementById('wb-card-stage');
       if (!stage) return;
+      // Preserve #wb-card so renderWbCard can find it after selection
+      const existingCard = document.getElementById('wb-card');
       stage.innerHTML = '';
+      if (existingCard) { existingCard.style.display = 'none'; stage.appendChild(existingCard); }
       stage.style.display = 'flex';
       stage.style.flexDirection = 'row';
       stage.style.gap = '32px';
