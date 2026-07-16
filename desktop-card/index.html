@@ -3934,12 +3934,16 @@
         btn.onmouseleave = () => { btn.style.background='#fff'; btn.style.color='#333'; btn.style.borderColor='rgba(0,0,0,0.12)'; };
         const idx = i;
         btn.onclick = () => {
+          // Immediately clear all variant wrappers synchronously so the layout
+          // never sits in the broken comparison shape while illustration/pushVersion
+          // (which may be async) is still pending.
+          Array.from(stage.children).forEach(child => {
+            if (child.id !== 'wb-card') child.remove();
+          });
+          stage.style.cssText = '';
+          const existingCard2 = document.getElementById('wb-card');
+          if (existingCard2) existingCard2.style.display = '';
           pickVariant(idx);
-          // reset stage layout to single card
-          stage.style.flexDirection = '';
-          stage.style.gap = '';
-          stage.style.alignItems = '';
-          stage.style.justifyContent = '';
         };
         card.onclick = btn.onclick;
         wrapper.appendChild(lbl);
