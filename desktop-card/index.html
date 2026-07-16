@@ -1500,11 +1500,36 @@
       background: rgba(0,0,0,0.15);
       border-radius: 2px;
     }
-    .wb-left-panel-inner {
-      display: none;
-      padding: 12px;
+    /* 5 维度卡片：全部同时展示，纵向堆叠（不再是切换互斥显示） */
+    .wb-left-card {
+      margin: 10px 12px;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(0,0,0,0.07);
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,1);
+      overflow: hidden;
     }
-    .wb-left-panel-inner.active { display: block; }
+    .wb-left-card:first-child { margin-top: 12px; }
+    .wb-left-card-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      background: rgba(0,0,0,0.015);
+    }
+    .wb-left-card-icon { font-size: 13px; }
+    .wb-left-card-body { padding: 12px; }
+    /* legacy alias kept in case other code references it */
+    .wb-left-panel-inner { display: block; }
+    @keyframes wb-left-card-flash-kf {
+      0% { box-shadow: 0 0 0 2px rgba(124,92,252,0.5), 0 2px 8px rgba(0,0,0,0.05); }
+      100% { box-shadow: 0 2px 8px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,1); }
+    }
+    .wb-left-card-flash { animation: wb-left-card-flash-kf 0.9s ease-out; }
 
     #wb-preview {
       flex: 1;
@@ -2236,27 +2261,42 @@
         <!-- Left analysis panel -->
         <div id="wb-left-panel">
           <div id="wb-left-tabs">
-            <div class="wb-left-tab active" data-panel="tone" onclick="switchWbLeftTab('tone')"><span>🎭</span> 调性分析</div>
+            <div class="wb-left-tab" data-panel="tone" onclick="switchWbLeftTab('tone')"><span>🎭</span> 调性分析</div>
             <div class="wb-left-tab" data-panel="color" onclick="switchWbLeftTab('color')"><span>🎨</span> 配色方案</div>
             <div class="wb-left-tab" data-panel="font" onclick="switchWbLeftTab('font')"><span>🔤</span> 字体排版</div>
             <div class="wb-left-tab" data-panel="suggest" onclick="switchWbLeftTab('suggest')"><span>💡</span> 设计建议</div>
             <div class="wb-left-tab" data-panel="spec" onclick="switchWbLeftTab('spec')"><span>📐</span> 规范快查</div>
           </div>
           <div id="wb-left-content">
-            <div id="wb-panel-tone-left" class="wb-left-panel-inner active">
-              <div id="wb-tone-content-left"><span class="wb-bottom-empty">等待 AI 分析...</span></div>
+            <!-- 5个维度：全部同时展示，各自一张独立卡片（不再是切换互斥显示） -->
+            <div id="wb-panel-tone-left" class="wb-left-card">
+              <div class="wb-left-card-header"><span class="wb-left-card-icon">🎭</span> 调性分析</div>
+              <div class="wb-left-card-body">
+                <div id="wb-tone-content-left"><span class="wb-bottom-empty">等待 AI 分析...</span></div>
+              </div>
             </div>
-            <div id="wb-panel-color-left" class="wb-left-panel-inner">
-              <div id="wb-color-content-left"><span class="wb-bottom-empty">等待卡片生成...</span></div>
+            <div id="wb-panel-color-left" class="wb-left-card">
+              <div class="wb-left-card-header"><span class="wb-left-card-icon">🎨</span> 配色方案</div>
+              <div class="wb-left-card-body">
+                <div id="wb-color-content-left"><span class="wb-bottom-empty">等待卡片生成...</span></div>
+              </div>
             </div>
-            <div id="wb-panel-font-left" class="wb-left-panel-inner">
-              <div id="wb-font-content-left"><span class="wb-bottom-empty">等待卡片生成...</span></div>
+            <div id="wb-panel-font-left" class="wb-left-card">
+              <div class="wb-left-card-header"><span class="wb-left-card-icon">🔤</span> 字体排版</div>
+              <div class="wb-left-card-body">
+                <div id="wb-font-content-left"><span class="wb-bottom-empty">等待卡片生成...</span></div>
+              </div>
             </div>
-            <div id="wb-panel-suggest-left" class="wb-left-panel-inner">
-              <div id="wb-suggest-content-left"><span class="wb-bottom-empty">等待 AI 建议...</span></div>
+            <div id="wb-panel-suggest-left" class="wb-left-card">
+              <div class="wb-left-card-header"><span class="wb-left-card-icon">💡</span> 设计建议</div>
+              <div class="wb-left-card-body">
+                <div id="wb-suggest-content-left"><span class="wb-bottom-empty">等待 AI 建议...</span></div>
+              </div>
             </div>
-            <div id="wb-panel-spec-left" class="wb-left-panel-inner">
-              <div id="wb-spec-content-left" class="wb-scroll">
+            <div id="wb-panel-spec-left" class="wb-left-card">
+              <div class="wb-left-card-header"><span class="wb-left-card-icon">📐</span> 规范快查</div>
+              <div class="wb-left-card-body">
+              <div id="wb-spec-content-left">
                 <div class="csp-block">
                   <div class="csp-header">🎨 场景类型</div>
                   <div class="csp-body csp-scene-row">
@@ -2285,6 +2325,7 @@
                   <div class="csp-header">✅ 验收清单</div>
                   <div class="csp-body" id="wbSpecChecklistLeft"></div>
                 </div>
+              </div>
               </div>
             </div>
           </div>
@@ -4242,13 +4283,18 @@
     }
 
     /* ─── WB LEFT PANEL FUNCTIONS ─── */
+    // 5个维度现在全部同时展示为独立卡片，不再互斥切换。
+    // 顶部导航 pill 保留作为“跳转定位”锚点：点击平滑滚动到对应卡片，并短暂高亮。
     function switchWbLeftTab(panel) {
       document.querySelectorAll('.wb-left-tab').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.wb-left-panel-inner').forEach(el => el.classList.remove('active'));
       const tab = document.querySelector('.wb-left-tab[data-panel="' + panel + '"]');
       if (tab) tab.classList.add('active');
       const content = document.getElementById('wb-panel-' + panel + '-left');
-      if (content) content.classList.add('active');
+      if (content) {
+        content.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        content.classList.add('wb-left-card-flash');
+        setTimeout(() => content.classList.remove('wb-left-card-flash'), 900);
+      }
     }
 
     /* ─── WB BOTTOM CARD FUNCTIONS (legacy, kept for compatibility) ─── */
