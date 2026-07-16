@@ -3881,14 +3881,22 @@
       stage.style.height = '100%';
       stage.classList.add('visible');
 
-      // Responsive card size: fit two cards + gap + padding within available width
+      // Responsive card size: derive available preview width from stable parent,
+      // so the right chat panel is never squeezed.
+      const topCard = document.getElementById('wb-top-card');
+      const leftPanel = document.getElementById('wb-left-panel');
+      const rightPanel = document.getElementById('wb-right-panel');
       const previewEl = document.getElementById('wb-preview-card');
-      const availW = previewEl ? previewEl.offsetWidth : 600;
+      const topW = topCard ? topCard.offsetWidth : 900;
+      const leftW = leftPanel ? leftPanel.offsetWidth : 280;
+      const rightW = rightPanel ? rightPanel.offsetWidth : 320;
+      const handleW = 36; // two resize handles
+      const previewW = Math.max(200, topW - leftW - rightW - handleW);
       const availH = previewEl ? previewEl.offsetHeight : 500;
       const gap = 32;
-      const paddingH = 48; // 24px each side
-      const paddingV = 120; // label + reason + btn below
-      const maxByWidth = Math.floor((availW - gap - paddingH) / 2);
+      const paddingH = 48;
+      const paddingV = 120;
+      const maxByWidth = Math.floor((previewW - gap - paddingH) / 2);
       const maxByHeight = Math.max(120, availH - paddingV);
       const cardSize = Math.min(276, maxByWidth, maxByHeight);
       const innerScale = cardSize / 138;
