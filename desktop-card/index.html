@@ -4445,12 +4445,16 @@
     function switchWbView(view) {
       const previewEl = document.getElementById('wb-preview');
       const codeEl = document.getElementById('wb-code-view');
+      const leftPanelEl = document.getElementById('wb-left-panel');
       const tabPreview = document.getElementById('wbViewTabPreview');
       const tabCode = document.getElementById('wbViewTabCode');
       if (!previewEl || !codeEl) return;
       const isCode = view === 'code';
       previewEl.style.display = isCode ? 'none' : '';
       codeEl.style.display = isCode ? 'flex' : 'none';
+      // 代码预览 tab：隐藏左侧5个分析卡片栏，代码预览区撑满整个工作台主体区域
+      if (leftPanelEl) leftPanelEl.style.display = isCode ? 'none' : '';
+      if (codeEl) codeEl.style.flex = isCode ? '1 1 100%' : '';
       if (tabPreview) tabPreview.classList.toggle('active', !isCode);
       if (tabCode) tabCode.classList.toggle('active', isCode);
       // 切到代码 tab 时按当前卡片数据即时序列化一次
