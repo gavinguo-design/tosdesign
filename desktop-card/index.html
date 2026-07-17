@@ -2468,20 +2468,23 @@
       padding: 20px 28px 56px;
     }
     .tpl-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 116px);
+      gap: 16px;
+      justify-content: start;
     }
     .tpl-card {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 8px;
+      width: 116px;
       cursor: pointer;
     }
     .tpl-card-preview {
       width: 92px;
       height: 92px;
+      margin: 0 auto;
       border-radius: 13px;
       overflow: hidden;
       background: #fff;
@@ -2500,7 +2503,9 @@
       width: 138px; height: 138px;
       transform: scale(0.667);
       transform-origin: top left;
-      position: relative;
+      position: absolute;
+      top: 0;
+      left: 0;
       overflow: hidden;
       border-radius: 20px;
     }
@@ -2509,7 +2514,7 @@
       color: var(--muted);
       text-align: center;
       line-height: 1.4;
-      max-width: 140px;
+      max-width: 116px;
     }
     .tpl-count-badge {
       font-size: 12px;
@@ -5206,6 +5211,7 @@
       big: tplBuildBig(),
     };
     const TEMPLATE_TAB_LABELS = { single: '单文本', dual: '双文本', triple: '三文本', big: '大字体' };
+    const TEMPLATE_TAB_PREFIX = { single: 'S', dual: 'D', triple: 'T', big: 'B' };
 
     let templatesInited = false;
     let activeTemplateLayout = 'single';
@@ -5278,7 +5284,11 @@
       const badge = document.getElementById('tplCountBadge');
       if (badge) badge.textContent = `${variants.length} 个变体`;
       grid.innerHTML = '';
+      const prefix = TEMPLATE_TAB_PREFIX[layout] || 'S';
+      let idx = 0;
       variants.forEach(v => {
+        idx++;
+        const numberedLabel = `${prefix}-${String(idx).padStart(2, '0')} · ${v.label}`;
         const dark = v.data.dark || false;
         const card = document.createElement('div');
         card.className = 'tpl-card';
@@ -5298,7 +5308,7 @@
 
         const label = document.createElement('div');
         label.className = 'tpl-card-label';
-        label.textContent = v.label;
+        label.textContent = numberedLabel;
 
         card.appendChild(preview);
         card.appendChild(label);
