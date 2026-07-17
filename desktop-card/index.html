@@ -3849,7 +3849,7 @@
       if (!v) return;
       if (v.startsWith('icons/')) {
         const wrapper = document.createElement('span');
-        wrapper.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:4px;background:#000;flex-shrink:0;vertical-align:middle;';
+        wrapper.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:6px;background:#000;flex-shrink:0;vertical-align:middle;';
         const img = document.createElement('img');
         img.src = v;
         img.alt = '';
@@ -5205,7 +5205,7 @@
           ['none', 'hero'].forEach(iconState => {
             if (hasAction && iconState === 'hero') return; // skip: 按钮+大图标重叠
             const data = { ...TPL_BASE.dual };
-            if (hasHeaderIcon) data.headerIcon = 'icons/信息.svg';
+            if (hasHeaderIcon) data.headerIcon = 'icons/偏好.svg';
             if (hasAction) data.action = 'Button';
             if (iconState === 'hero') { data.icon = '🏔️'; data.heroIcon = true; }
             const parts = ['双文本'];
@@ -5226,7 +5226,7 @@
           ['none', 'hero'].forEach(iconState => {
             if (hasAction && iconState === 'hero') return; // 按钮+大图标重叠，跳过
             const data = { ...TPL_BASE.triple };
-            if (hasHeaderIcon) data.headerIcon = 'icons/信息.svg';
+            if (hasHeaderIcon) data.headerIcon = 'icons/偏好.svg';
             if (hasAction) data.action = 'Button';
             if (iconState === 'hero') { data.icon = '🏔️'; data.heroIcon = true; }
             const parts = ['三文本'];
@@ -5258,7 +5258,7 @@
         { data: {...baseUnit, action:'Open'}, label: '大字体 + 单位 + 短按钮' },
 
         // ── 标题图标延伸 ──
-        { data: {...base, headerIcon:'icons/信息.svg', action:'Button', buttonWide:true}, label: '大字体 + 标题图标 + 长按钮' },
+        { data: {...base, headerIcon:'icons/偏好.svg', action:'Button', buttonWide:true}, label: '大字体 + 标题图标 + 长按钮' },
       ];
     }
 
