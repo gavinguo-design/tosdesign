@@ -98,7 +98,7 @@
       pointer-events: none; /* let clicks pass through gaps */
     }
 
-    /* CHAT PANEL — floating glass */
+    /* CHAT PANEL - floating glass */
     .chat-panel {
       width: 320px;
       max-height: calc(100vh - 120px);
@@ -1038,7 +1038,7 @@
       z-index: 1;
     }
 
-    /* Widget — single absolute positioned card */
+    /* Widget - single absolute positioned card */
     .phone-widget-area {
       position: absolute;
       top: 146px;
@@ -1150,7 +1150,7 @@
     .login-err { color: #ff6b6b; font-size: 0.75rem; text-align: center; margin-top: 0.6rem; min-height: 1em; }
     .login-switch { text-align: center; font-size: 0.75rem; color: var(--muted); margin-top: 0.9rem; }
     .login-switch a { color: var(--accent); cursor: pointer; text-decoration: none; }
-    /* 顶部右上角账号入口(login-user-bar)已移除，账号信息统一在左侧边栏底部展示 */
+    /* 顶部右上角账号入口(login-user-bar)已移除,账号信息统一在左侧边栏底部展示 */
     /* --- SIDEBAR --- */
     .sidebar {
       width: 200px; flex-shrink: 0;
@@ -1570,7 +1570,7 @@
       background: rgba(0,0,0,0.15);
       border-radius: 2px;
     }
-    /* 5 维度卡片：全部同时展示，纵向堆叠（不再是切换互斥显示） */
+    /* 5 维度卡片:全部同时展示,纵向堆叠(不再是切换互斥显示) */
     .wb-left-card {
       margin: 10px 12px;
       background: rgba(255,255,255,0.92);
@@ -2231,7 +2231,7 @@
         <div class="login-field"><label>密码</label><input type="password" id="loginPassword" placeholder="至少6位" /></div>
         <button class="login-btn" onclick="doLogin()">登录</button>
         <div class="login-err" id="loginErr"></div>
-        <div class="login-switch">还没有账号？<a onclick="showRegister()"> 立即注册</a></div>
+        <div class="login-switch">还没有账号?<a onclick="showRegister()"> 立即注册</a></div>
       </div>
       <div id="registerForm" style="display:none">
         <div class="login-field"><label>姓名</label><input type="text" id="regName" placeholder="你的名字" /></div>
@@ -2239,7 +2239,7 @@
         <div class="login-field"><label>密码</label><input type="password" id="regPassword" placeholder="至少6位" /></div>
         <button class="login-btn" onclick="doRegister()">注册</button>
         <div class="login-err" id="registerErr"></div>
-        <div class="login-switch">已有账号？<a onclick="showLogin()"> 返回登录</a></div>
+        <div class="login-switch">已有账号?<a onclick="showLogin()"> 返回登录</a></div>
       </div>
     </div>
   </div>
@@ -2360,7 +2360,7 @@
 
     <!-- WELCOME STATE: centered landing when no session active -->
     <div id="welcomeState">
-      <div class="welcome-title">你想创作什么？</div>
+      <div class="welcome-title">你想创作什么?</div>
       <div class="welcome-input-box">
         <textarea
           class="welcome-textarea"
@@ -2399,7 +2399,7 @@
         <!-- Left analysis panel -->
         <div id="wb-left-panel">
           <div id="wb-left-content">
-            <!-- 5个维度：全部同时展示，各自一张独立卡片，标题栏可点击折叠/展开 -->
+            <!-- 5个维度:全部同时展示,各自一张独立卡片,标题栏可点击折叠/展开 -->
             <div id="wb-panel-tone-left" class="wb-left-card">
               <div class="wb-left-card-header" onclick="toggleWbLeftCard('tone')"><span class="wb-left-card-icon">🎭</span><span class="wb-left-card-title">调性分析</span><span class="wb-left-card-arrow">▼</span></div>
               <div class="wb-left-card-body">
@@ -2431,7 +2431,7 @@
                 <div class="csp-block">
                   <div class="csp-header">🎨 场景类型</div>
                   <div class="csp-body csp-scene-row">
-                    <span class="csp-badge" id="wbSpecSceneLeft">—</span>
+                    <span class="csp-badge" id="wbSpecSceneLeft">-</span>
                     <span class="csp-reason" id="wbSpecReasonLeft"></span>
                   </div>
                 </div>
@@ -2446,7 +2446,7 @@
                       <div class="csp-spec-cell"><div class="csp-spec-label">卡片尺寸</div><div class="csp-spec-val">138×138dp</div></div>
                       <div class="csp-spec-cell"><div class="csp-spec-label">圆角</div><div class="csp-spec-val" id="wbSpecRadiusLeft">20dp</div></div>
                       <div class="csp-spec-cell"><div class="csp-spec-label">内边距</div><div class="csp-spec-val">10dp</div></div>
-                      <div class="csp-spec-cell"><div class="csp-spec-label">布局</div><div class="csp-spec-val" id="wbSpecLayoutLeft">—</div></div>
+                      <div class="csp-spec-cell"><div class="csp-spec-label">布局</div><div class="csp-spec-val" id="wbSpecLayoutLeft">-</div></div>
                       <div class="csp-spec-cell"><div class="csp-spec-label">主题</div><div class="csp-spec-val" id="wbSpecThemeLeft">浅色</div></div>
                       <div class="csp-spec-cell"><div class="csp-spec-label">字体</div><div class="csp-spec-val">SF Pro</div></div>
                     </div>
@@ -2503,7 +2503,7 @@
           <div class="wb-code-body" id="wb-code-body">
             <div class="wb-code-empty" id="wb-code-empty">
               <div class="wb-code-empty-icon">&lt;/&gt;</div>
-              <div class="wb-code-empty-text">生成一张卡片后，这里会显示对应的 AtomicView TPK JSON</div>
+              <div class="wb-code-empty-text">生成一张卡片后,这里会显示对应的 AtomicView TPK JSON</div>
             </div>
             <pre id="wb-code-json" style="display:none"></pre>
           </div>
@@ -2511,8 +2511,8 @@
         <!-- Right chat panel -->
         <div id="wb-right-panel">
           <div class="wb-rp-header">
-            <div class="wb-rp-title">你想创作什么？</div>
-            <div class="wb-rp-sub">告诉我怎么调整，我会实时更新预览</div>
+            <div class="wb-rp-title">你想创作什么?</div>
+            <div class="wb-rp-sub">告诉我怎么调整,我会实时更新预览</div>
           </div>
           <div id="wb-rp-messages" class="wb-rp-messages"></div>
           <div class="wb-rp-input-area">
@@ -2552,7 +2552,7 @@
               <div class="csp-block">
                 <div class="csp-header">🎨 场景类型</div>
                 <div class="csp-body csp-scene-row">
-                  <span class="csp-badge" id="wbSpecScene">—</span>
+                  <span class="csp-badge" id="wbSpecScene">-</span>
                   <span class="csp-reason" id="wbSpecReason"></span>
                 </div>
               </div>
@@ -2567,7 +2567,7 @@
                     <div class="csp-spec-cell"><div class="csp-spec-label">卡片尺寸</div><div class="csp-spec-val">138×138dp</div></div>
                     <div class="csp-spec-cell"><div class="csp-spec-label">圆角</div><div class="csp-spec-val" id="wbSpecRadius">20dp</div></div>
                     <div class="csp-spec-cell"><div class="csp-spec-label">内边距</div><div class="csp-spec-val">10dp</div></div>
-                    <div class="csp-spec-cell"><div class="csp-spec-label">布局</div><div class="csp-spec-val" id="wbSpecLayout">—</div></div>
+                    <div class="csp-spec-cell"><div class="csp-spec-label">布局</div><div class="csp-spec-val" id="wbSpecLayout">-</div></div>
                     <div class="csp-spec-cell"><div class="csp-spec-label">主题</div><div class="csp-spec-val" id="wbSpecTheme">浅色</div></div>
                     <div class="csp-spec-cell"><div class="csp-spec-label">字体</div><div class="csp-spec-val">SF Pro</div></div>
                   </div>
@@ -2619,8 +2619,8 @@
         <div class="chat-messages" id="chatMessages">
           <div class="msg bot">
             <div class="msg-bubble">
-              你好！我可以帮你设计桌面卡片。<br><br>
-              告诉我卡片的用途、数据类型、配色偏好，或者直接说「做一个天气卡片」🎨
+              你好!我可以帮你设计桌面卡片。<br><br>
+              告诉我卡片的用途、数据类型、配色偏好,或者直接说「做一个天气卡片」🎨
             </div>
             <div class="msg-time">刚刚</div>
           </div>
@@ -2689,44 +2689,44 @@
         <!-- EMPTY STATE: how I design -->
         <div class="empty-state" id="emptyState">
           <div class="es-title">我是这样帮你设计一张卡片的 <span>✦</span></div>
-          <div class="es-sub">138 × 138 的方寸之间，每一步都有讲究</div>
+          <div class="es-sub">138 × 138 的方寸之间,每一步都有讲究</div>
           <div class="es-flow">
             <div class="es-step">
               <div class="es-step-num">STEP 1</div>
               <div class="es-step-icon">🧠</div>
               <div class="es-step-name">听懂你要什么</div>
-              <div class="es-step-desc">一句「天气卡片」背后，我会拆出<em>场景、数据、想传达的情绪</em></div>
+              <div class="es-step-desc">一句「天气卡片」背后,我会拆出<em>场景、数据、想传达的情绪</em></div>
             </div>
             <div class="es-arrow">→</div>
             <div class="es-step">
               <div class="es-step-num">STEP 2</div>
               <div class="es-step-icon">🎯</div>
               <div class="es-step-name">定调性</div>
-              <div class="es-step-desc">在<em>视觉吸引、信息密度、行动引导</em>三个维度间找平衡——展示型克制，操作型鲜明</div>
+              <div class="es-step-desc">在<em>视觉吸引、信息密度、行动引导</em>三个维度间找平衡--展示型克制,操作型鲜明</div>
             </div>
             <div class="es-arrow">→</div>
             <div class="es-step">
               <div class="es-step-num">STEP 3</div>
               <div class="es-step-icon">📐</div>
               <div class="es-step-name">挑布局</div>
-              <div class="es-step-desc">大数字要突显？信息要分层？<em>4 种布局</em>按内容结构选，不硬塞</div>
+              <div class="es-step-desc">大数字要突显?信息要分层?<em>4 种布局</em>按内容结构选,不硬塞</div>
             </div>
             <div class="es-arrow">→</div>
             <div class="es-step">
               <div class="es-step-num">STEP 4</div>
               <div class="es-step-icon">🎨</div>
               <div class="es-step-name">配色</div>
-              <div class="es-step-desc">跟着场景走：晴天暖、夜间深、警示红，<em>浅色深色</em>各一套</div>
+              <div class="es-step-desc">跟着场景走:晴天暖、夜间深、警示红,<em>浅色深色</em>各一套</div>
             </div>
             <div class="es-arrow">→</div>
             <div class="es-step">
               <div class="es-step-num">STEP 5</div>
               <div class="es-step-icon">✨</div>
               <div class="es-step-name">出稿给你挑</div>
-              <div class="es-step-desc">拿不准时我会给<em>两个方案</em>让你选，选完再一起打磨细节</div>
+              <div class="es-step-desc">拿不准时我会给<em>两个方案</em>让你选,选完再一起打磨细节</div>
             </div>
           </div>
-          <div class="es-hint">试试对我说：<b onclick="document.getElementById('chatInput').value='做一个天气卡片';sendMessage()">「做一个天气卡片」</b></div>
+          <div class="es-hint">试试对我说:<b onclick="document.getElementById('chatInput').value='做一个天气卡片';sendMessage()">「做一个天气卡片」</b></div>
         </div>
 
         <!-- VARIANT COMPARE MODE -->
@@ -2748,7 +2748,7 @@
           <div class="csp-block">
             <div class="csp-header">🎨 场景类型</div>
             <div class="csp-body csp-scene-row">
-              <span class="csp-badge" id="cspSceneBadge">—</span>
+              <span class="csp-badge" id="cspSceneBadge">-</span>
               <span class="csp-reason" id="cspSceneReason"></span>
             </div>
           </div>
@@ -2763,7 +2763,7 @@
                 <div class="csp-spec-cell"><div class="csp-spec-label">卡片尺寸</div><div class="csp-spec-val">138×138dp</div></div>
                 <div class="csp-spec-cell"><div class="csp-spec-label">圆角</div><div class="csp-spec-val" id="cspRadius">20dp</div></div>
                 <div class="csp-spec-cell"><div class="csp-spec-label">内边距</div><div class="csp-spec-val">10dp</div></div>
-                <div class="csp-spec-cell"><div class="csp-spec-label">布局</div><div class="csp-spec-val" id="cspLayout">—</div></div>
+                <div class="csp-spec-cell"><div class="csp-spec-label">布局</div><div class="csp-spec-val" id="cspLayout">-</div></div>
                 <div class="csp-spec-cell"><div class="csp-spec-label">主题</div><div class="csp-spec-val" id="cspTheme">浅色</div></div>
                 <div class="csp-spec-cell"><div class="csp-spec-label">字体</div><div class="csp-spec-val">SF Pro</div></div>
               </div>
@@ -2837,7 +2837,7 @@
       document.getElementById('themeLight').classList.toggle('active', theme === 'light');
       document.getElementById('themeDark').classList.toggle('active', theme === 'dark');
       if (currentCardData) {
-        // 插图卡的明暗由亮度采样锁定，主题切换不覆盖
+        // 插图卡的明暗由亮度采样锁定,主题切换不覆盖
         const dk = currentCardData.bgImage ? currentCardData.dark : (theme === 'dark');
         applyPreset({ ...currentCardData, dark: dk });
       }
@@ -2855,7 +2855,7 @@
 
     function pushVersion(data, variant) {
       hideEmptyState();
-      clearCompare(); // 新卡上桌，撤掉未选完的 A/B 对比，防止重叠
+      clearCompare(); // 新卡上桌,撤掉未选完的 A/B 对比,防止重叠
       document.getElementById('cardPreviewWrapper').classList.toggle('hidden', currentMode !== 'card');
       document.getElementById('phonePreviewWrapper').classList.toggle('visible', currentMode === 'phone');
       versions.push({ data, time: new Date(), variant: variant || null });
@@ -2895,7 +2895,7 @@
       });
 
       // 规范快查动态字段
-      document.getElementById('cspLayout').textContent = LAYOUT_LABELS[data.layout] || data.layout || '—';
+      document.getElementById('cspLayout').textContent = LAYOUT_LABELS[data.layout] || data.layout || '-';
       document.getElementById('cspTheme').textContent = data.bgImage ? '插图背景' : (data.dark ? '深色' : '浅色');
       document.getElementById('cspRadius').textContent = data.layout === 'big' ? '20dp' : '18dp';
 
@@ -2904,7 +2904,7 @@
       const checks = [
         { ok: !!(data.header || data.title), text: '已设置主标题' },
         { ok: !!(data.value || data.subtitle), text: '已设置内容数据' },
-        { ok: !!data.layout, text: '布局类型已确定：' + (LAYOUT_LABELS[data.layout] || data.layout || '未知') },
+        { ok: !!data.layout, text: '布局类型已确定:' + (LAYOUT_LABELS[data.layout] || data.layout || '未知') },
         { ok: !!data.bg || !!data.bgImage, text: '已设置背景色 / 插图' },
         { ok: true, text: '卡片尺寸 138×138dp ✓' },
       ];
@@ -2968,7 +2968,7 @@
       const themeDark = currentTheme === 'dark';
       const labels = ['A', 'B'];
       variants.forEach((data, i) => {
-        // 有插图的卡：文字明暗由亮度采样决定，不被页面主题覆盖
+        // 有插图的卡:文字明暗由亮度采样决定,不被页面主题覆盖
         const dark = data.bgImage ? !!data.dark : themeDark;
         const item = document.createElement('div');
         item.className = 'compare-item';
@@ -3031,7 +3031,7 @@
       const { reason, ...cardData } = chosen;
       presentCard(cardData, variantLabel);
       chatHistory.push({ role: 'user', content: '我选择方案' + variantLabel });
-      chatHistory.push({ role: 'assistant', content: '好的，已采用方案' + variantLabel + '，可以继续述说你想调整的细节。' });
+      chatHistory.push({ role: 'assistant', content: '好的,已采用方案' + variantLabel + ',可以继续述说你想调整的细节。' });
       addMsg('已采用方案 ' + variantLabel + ' ✨ 继续告诉我你想调整的细节', 'bot');
     }
 
@@ -3069,7 +3069,7 @@
           </div>
           <div class="step-detail">
             <div class="step-detail-inner">
-              ${state.desc ? `<div class="step-result">${state.desc}</div>` : '<div class="step-result" style="color:var(--muted2)">—</div>'}
+              ${state.desc ? `<div class="step-result">${state.desc}</div>` : '<div class="step-result" style="color:var(--muted2)">-</div>'}
               <div class="step-adjust-label">微调指令</div>
               <textarea class="step-adjust-input" rows="2" placeholder="描述你想调整的内容..."></textarea>
               <button class="step-adjust-btn" onclick="rerunStep('${step.id}', this)">重新生成 ↺<span class="wip-badge">待调试</span></button>
@@ -3120,12 +3120,12 @@
       if (typeof v === 'string') s = v;
       else if (typeof v === 'object') s = v.text || v.value || v.content || JSON.stringify(v);
       else s = String(v);
-      // 容错：AI 偶尔会输出合体度符 ℃，强制拆成 °C 分体字符（Figma 规范要求分体）
-      return s.replace(/℃/g, '°C');
+      // 容错:AI 偶尔会输出合体度符 °C,强制拆成 °C 分体字符(Figma 规范要求分体)
+      return s.replace(/°C/g, '°C');
     }
 
-    // 按钮用色规范（Figma）：统一中性胶囊，黑8%底(浅色)/白15%底(深色)/白磨砂(渐变背景)
-    // 语义强调色只用于数值文字和图标，按钮永不实底语义色
+    // 按钮用色规范(Figma):统一中性胶囊,黑8%底(浅色)/白15%底(深色)/白磨砂(渐变背景)
+    // 语义强调色只用于数值文字和图标,按钮永不实底语义色
     function buttonStyle(data, dark) {
       const isGradient = typeof data.bg === 'string' && data.bg.includes('gradient');
       if (isGradient) {
@@ -3136,7 +3136,7 @@
         : 'background:rgba(0,0,0,0.08);color:rgba(0,0,0,0.8);';
     }
 
-    // 字号降级：按可用宽度和字符数自动缩小，避免大数字溢出
+    // 字号降级:按可用宽度和字符数自动缩小,避免大数字溢出
     function fitFontSize(text, baseSize, maxWidth, charRatio) {
       if (!text) return baseSize;
       const ratio = charRatio || 0.62; // 数字/字母平均宽度系数
@@ -3178,8 +3178,8 @@
           `overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;`,
           data.title));
       } else if (layout === 'dual') {
-        // Figma 规范：dual 布局 header 与 subtitle 是自然流动关系（header 结束后仅 ~2px 间距），不是固定像素坐标：
-        // 标题 1 行时 subtitle 上移，标题 2 行时 subtitle 下移。用 flex column 容器实现动态跟随，不再用固定 top:57px。
+        // Figma 规范:dual 布局 header 与 subtitle 是自然流动关系(header 结束后仅 ~2px 间距),不是固定像素坐标:
+        // 标题 1 行时 subtitle 上移,标题 2 行时 subtitle 下移。用 flex column 容器实现动态跟随,不再用固定 top:57px。
         const dualCol = document.createElement('div');
         dualCol.style.cssText = `position:absolute;left:14px;top:14px;width:110px;display:flex;flex-direction:column;gap:2px;`;
         if (data.headerIcon) {
@@ -3212,7 +3212,7 @@
           `font-size:12px;font-weight:600;` + buttonStyle(data, dark),
           data.action));
       } else if (layout === 'triple') {
-        // Figma规范：无按钮时支持顶对齐（header14/value30/subtitle56）和底对齐（header70/value86/subtitle112，末行底部贴齐124=138-14）两种变体，由 data.alignBottom 控制
+        // Figma规范:无按钮时支持顶对齐(header14/value30/subtitle56)和底对齐(header70/value86/subtitle112,末行底部贴齐124=138-14)两种变体,由 data.alignBottom 控制
         const triTop = data.alignBottom ? 70 : 14;
         const triHeadSize = fitFontSize(data.header || data.title, 12, data.headerIcon ? 92 : 110);
         const triHeader = mk(
@@ -3269,10 +3269,10 @@
         }
         wrap.appendChild(dw);
         if (data.action) {
-          // Figma规范：big+按钮 无副文本槽位（header+DATA+Button）；副文本需求应选triple
+          // Figma规范:big+按钮 无副文本槽位(header+DATA+Button);副文本需求应选triple
         } else {
-          // Figma规范：两行副文本共存时固定 top:98/112（两行占满底部区域）。
-          // 只有一行 subtitle 时（如天气卡的 Sunny·Feels like）应贴底显示（top:112，与底部padding14对齐），图标固定在右下角不会冲突。
+          // Figma规范:两行副文本共存时固定 top:98/112(两行占满底部区域)。
+          // 只有一行 subtitle 时(如天气卡的 Sunny·Feels like)应贴底显示(top:112,与底部padding14对齐),图标固定在右下角不会冲突。
           const onlyOneLine = data.subtitle && !data.subtitle2;
           if (data.subtitle) wrap.appendChild(mk(
             `position:absolute;left:14px;top:${onlyOneLine ? 112 : 98}px;width:110px;height:12px;` +
@@ -3285,10 +3285,10 @@
         }
       }
 
-      // 行动按钮：所有布局通用（dual 布局已在上面渲染过，跳过）
+      // 行动按钮:所有布局通用(dual 布局已在上面渲染过,跳过)
       if (data.action && layout !== 'dual') {
         const styles = buttonStyle(data, dark);
-        // Figma规范: 按钮 y=94 高30 r999；长按钮110px/短按钮74px 两档
+        // Figma规范: 按钮 y=94 高30 r999;长按钮110px/短按钮74px 两档
         const wide = String(data.action).length > 4 || data.buttonWide;
         const btn = mk(
           `position:absolute;left:14px;bottom:14px;width:${wide?110:74}px;height:30px;border-radius:999px;` +
@@ -3315,10 +3315,10 @@
     function applyPreset(data) {
       currentCardData = data;
       const dark = data.dark || false;
-      // dark 只决定文字反白；背景以 data.bg 优先（支持渐变），无 bg 时才用默认深/浅色
+      // dark 只决定文字反白;背景以 data.bg 优先(支持渐变),无 bg 时才用默认深/浅色
       let bg = data.bg || (dark ? '#1c1c1e' : '#ffffff');
       if (data.bgImage) {
-        // 文字保护层：暗底加左上深化渐变，亮底加左上提白渐变，增强对比
+        // 文字保护层:暗底加左上深化渐变,亮底加左上提白渐变,增强对比
         const scrim = dark
           ? 'linear-gradient(135deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 55%, rgba(0,0,0,0) 78%)'
           : 'linear-gradient(135deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.3) 55%, rgba(255,255,255,0) 78%)';
@@ -3399,21 +3399,21 @@
     };
 
     function updateStepsFromResponse(fullReply, textPart, cardData) {
-      // 1. 需求分析 — 提取正文前两句
+      // 1. 需求分析 - 提取正文前两句
       const analyzeDesc = textPart
         ? textPart.split(/。|\n/)[0].trim().slice(0, 60)
         : null;
 
-      // 2. 调性分析 — 优先提取逐轴推理（VA2 视觉吸引力：xxx），退回旧格式
+      // 2. 调性分析 - 优先提取逐轴推理(VA2 视觉吸引力:xxx),退回旧格式
       let toneDesc = null;
-      const vaLine = fullReply.match(/VA(\d)[\s·]*视觉吸引力[：:]\s*([^\n]+)/);
-      const isLine = fullReply.match(/IS(\d)[\s·]*信息显著性[：:]\s*([^\n]+)/);
-      const aaLine = fullReply.match(/AA(\d)[\s·]*行动权威性[：:]\s*([^\n]+)/);
+      const vaLine = fullReply.match(/VA(\d)[\s·]*视觉吸引力[::]\s*([^\n]+)/);
+      const isLine = fullReply.match(/IS(\d)[\s·]*信息显著性[::]\s*([^\n]+)/);
+      const aaLine = fullReply.match(/AA(\d)[\s·]*行动权威性[::]\s*([^\n]+)/);
       if (vaLine || isLine || aaLine) {
         const rows = [];
-        if (vaLine) rows.push(`<b>VA${vaLine[1]}</b> 视觉吸引力 — ${vaLine[2].trim()}`);
-        if (isLine) rows.push(`<b>IS${isLine[1]}</b> 信息显著性 — ${isLine[2].trim()}`);
-        if (aaLine) rows.push(`<b>AA${aaLine[1]}</b> 行动权威性 — ${aaLine[2].trim()}`);
+        if (vaLine) rows.push(`<b>VA${vaLine[1]}</b> 视觉吸引力 - ${vaLine[2].trim()}`);
+        if (isLine) rows.push(`<b>IS${isLine[1]}</b> 信息显著性 - ${isLine[2].trim()}`);
+        if (aaLine) rows.push(`<b>AA${aaLine[1]}</b> 行动权威性 - ${aaLine[2].trim()}`);
         toneDesc = rows.join('<br>');
       } else {
         const axisMatch = fullReply.match(/VA(\d)\+IS(\d)\+AA(\d)/);
@@ -3430,31 +3430,31 @@
       let layoutDesc = null;
       if (cardData?.layout) {
         const ll = LAYOUT_LABELS[cardData.layout] || cardData.layout;
-        layoutDesc = `选用 ${cardData.layout} 布局（${ll}）`;
-        if (cardData.header) layoutDesc += `<br>主标题：${cardData.header}`;
-        if (cardData.value)  layoutDesc += `<br>核心数据：${cardData.value}${cardData.unit || ''}`;
+        layoutDesc = `选用 ${cardData.layout} 布局(${ll})`;
+        if (cardData.header) layoutDesc += `<br>主标题:${cardData.header}`;
+        if (cardData.value)  layoutDesc += `<br>核心数据:${cardData.value}${cardData.unit || ''}`;
       }
 
       // 4. 配色方案
       let colorDesc = null;
       if (cardData?.accentColor || cardData?.bg) {
         colorDesc = '';
-        if (cardData.accentColor) colorDesc += `强调色：${cardData.accentColor}`;
-        if (cardData.bg)          colorDesc += `<br>背景色：${cardData.bg}`;
+        if (cardData.accentColor) colorDesc += `强调色:${cardData.accentColor}`;
+        if (cardData.bg)          colorDesc += `<br>背景色:${cardData.bg}`;
         if (cardData.dark)        colorDesc += `<br>深色模式已开启`;
       }
 
-      // 5. 插图生成（占位）
-      const illustBtnHtml = '<button class="step-adjust-btn" style="margin-top:6px" onclick="generateIllustration(this)">🎨 生成插图（即梦 Seedream）</button>';
+      // 5. 插图生成(占位)
+      const illustBtnHtml = '<button class="step-adjust-btn" style="margin-top:6px" onclick="generateIllustration(this)">🎨 生成插图(即梦 Seedream)</button>';
       if (cardData && cardData.illustPrompt) {
-        // 自动生图流程接管此步骤状态（running→done/error），这里不覆盖
+        // 自动生图流程接管此步骤状态(running→done/error),这里不覆盖
       } else {
-        updateStep('illust', 'done', '本卡无插图需求（数据/工具类）；也可手动生成<br>' + illustBtnHtml);
+        updateStep('illust', 'done', '本卡无插图需求(数据/工具类);也可手动生成<br>' + illustBtnHtml);
       }
 
       // 6. 卡片渲染
       const fieldCount = cardData ? Object.keys(cardData).length : 0;
-      const renderDesc = fieldCount ? `共输出 ${fieldCount} 个字段，138×138px 卡片已渲染` : '未输出卡片数据';
+      const renderDesc = fieldCount ? `共输出 ${fieldCount} 个字段,138×138px 卡片已渲染` : '未输出卡片数据';
 
       // 回填真实内容
       if (analyzeDesc) updateStep('analyze', 'done', analyzeDesc);
@@ -3465,12 +3465,12 @@
     }
 
     function startProgressReal() {
-      // 真实进度：初始化全部 pending，AI 分析中只亮第一步
+      // 真实进度:初始化全部 pending,AI 分析中只亮第一步
       const initStates = {};
       SKILL_STEPS.forEach(s => initStates[s.id] = { status: 'pending', desc: null });
       renderSteps(initStates);
       showProgress();
-      updateStep('analyze', 'running', 'AI 分析中…');
+      updateStep('analyze', 'running', 'AI 分析中...');
       updateStep('tone', 'running', null);
       updateStep('layout', 'running', null);
       updateStep('color', 'running', null);
@@ -3494,7 +3494,7 @@
           ];
         } else {
           msgHtml = text + '<br>📄 ' + uploadedFile.name;
-          userContent = text + '\n\n[用户上传了文件: ' + uploadedFile.name + '，请基于文件名和描述理解需求]';
+          userContent = text + '\n\n[用户上传了文件: ' + uploadedFile.name + ',请基于文件名和描述理解需求]';
         }
         clearUpload();
       }
@@ -3505,7 +3505,7 @@
       document.getElementById('suggestions').style.display = 'none';
 
       addTyping();
-      startProgressReal(); // 真实进度：等 API 返回才标记完成
+      startProgressReal(); // 真实进度:等 API 返回才标记完成
 
       try {
         const token = localStorage.getItem('tos_token') || '';
@@ -3518,9 +3518,9 @@
         removeTyping();
 
         if (!data.ok) {
-          addMsg('出错了：' + (data.error || '请重试'), 'bot');
+          addMsg('出错了:' + (data.error || '请重试'), 'bot');
           ['analyze','tone','layout','color'].forEach(s => updateStep(s, 'error', null));
-          // 关掉工作台 loading，显示错误提示
+          // 关掉工作台 loading,显示错误提示
           if (document.getElementById('workbench-view').classList.contains('active')) {
             setWbLoading(false);
             const wbErr = document.getElementById('wb-loading');
@@ -3529,7 +3529,7 @@
               const spinner = wbErr.querySelector('.wb-spinner');
               if (spinner) spinner.style.display = 'none';
               const txt = wbErr.querySelector('.wb-loading-text');
-              if (txt) txt.textContent = (data.error === '未登录') ? '请先登录后再创作 →' : ('出错了：' + (data.error || '请重试'));
+              if (txt) txt.textContent = (data.error === '未登录') ? '请先登录后再创作 →' : ('出错了:' + (data.error || '请重试'));
             }
           }
           return;
@@ -3545,7 +3545,7 @@
         const AXIS_NAMES = { VA: '视觉吸引力', IS: '信息显著性', AA: '行动权威性' };
         const toneRows = [];
         ['VA', 'IS', 'AA'].forEach(ax => {
-          const m = displayReply.match(new RegExp(ax + '(\\d)[\\s·]*' + AXIS_NAMES[ax] + '[：:]\\s*([^\\n]+)'));
+          const m = displayReply.match(new RegExp(ax + '(\\d)[\\s·]*' + AXIS_NAMES[ax] + '[::]\\s*([^\\n]+)'));
           if (m) toneRows.push({ ax, level: m[1], reason: m[2].trim() });
         });
         let toneBlockHtml = '';
@@ -3556,10 +3556,10 @@
               '<span class="tone-row-body"><span class="tone-row-name">' + AXIS_NAMES[r.ax] + '</span>' +
               '<span class="tone-row-reason">' + r.reason + '</span></span></div>'
             ).join('') + '</div>';
-          // 从正文中移除原始调性段落（已经结构化展示了）
-          displayReply = displayReply.replace(/调性分析[：:]?\s*/,'');
+          // 从正文中移除原始调性段落(已经结构化展示了)
+          displayReply = displayReply.replace(/调性分析[::]?\s*/,'');
           ['VA','IS','AA'].forEach(ax => {
-            displayReply = displayReply.replace(new RegExp(ax + '\\d[\\s·]*' + AXIS_NAMES[ax] + '[：:][^\\n]*\\n?'), '');
+            displayReply = displayReply.replace(new RegExp(ax + '\\d[\\s·]*' + AXIS_NAMES[ax] + '[::][^\\n]*\\n?'), '');
           });
           displayReply = displayReply.replace(/综合调性[^\n]*\n?/, '').trim();
         }
@@ -3570,9 +3570,25 @@
           try { parsed.push(JSON.parse(m[1])); } catch(e) { console.warn('card parse error', e); }
         });
 
-        // 工作台loading关掉（无论有没有卡片数据）
+        // 工作台loading关掉(无论有没有卡片数据)
         if (document.getElementById('workbench-view').classList.contains('active')) {
           setWbLoading(false);
+        }
+
+        // 预解析:拿到 cardData 但先不渲染卡片,用于提前刷左侧分析
+        let preCardData = null;
+        if (parsed.length >= 1) {
+          const { reason: _r0, ...cd0 } = parsed[0];
+          preCardData = cd0;
+        }
+
+        // ✨ 左侧5个分析卡片:先于卡片/插图渲染,用打字机效果逐字显示
+        if (document.getElementById('workbench-view').classList.contains('active')) {
+          if (typeof renderWbTone === 'function') renderWbTone(toneRows);
+          if (typeof renderWbColor === 'function' && preCardData) renderWbColor(preCardData);
+          if (typeof renderWbFont === 'function' && preCardData) renderWbFont(preCardData);
+          if (typeof renderWbSuggest === 'function') renderWbSuggest(displayReply);
+          if (typeof renderWbSpec === 'function' && preCardData) renderWbSpec(preCardData);
         }
 
         if (parsed.length >= 2) {
@@ -3592,16 +3608,9 @@
           addWbRpMsg(displayReply || '卡片已更新 ✨', 'bot');
         }
         updateStepsFromResponse(reply, displayReply, cardData);
-        // Sync bottom card panels
-        if (document.getElementById('workbench-view').classList.contains('active')) {
-          if (typeof renderWbTone === 'function') renderWbTone(toneRows);
-          if (typeof renderWbColor === 'function' && cardData) renderWbColor(cardData);
-          if (typeof renderWbFont === 'function' && cardData) renderWbFont(cardData);
-          if (typeof renderWbSuggest === 'function') renderWbSuggest(displayReply);
-        }
       } catch(e) {
         removeTyping();
-        addMsg('网络错误，请重试', 'bot');
+        addMsg('网络错误,请重试', 'bot');
         ['analyze','tone','layout','color'].forEach(s => updateStep(s, 'error', null));
       }
     }
@@ -3623,7 +3632,7 @@
       el.style.height = Math.min(el.scrollHeight, 90) + 'px';
     }
 
-    // 采样插图左上文字区亮度，决定文字反色（亮底黑字/暗底白字）
+    // 采样插图左上文字区亮度,决定文字反色(亮底黑字/暗底白字)
     function probeTextAreaLuma(imgUrl) {
       return new Promise((resolve) => {
         const img = new Image();
@@ -3651,13 +3660,13 @@
     }
 
     async function applyIllustration(cd, url) {
-      // 天气/自然/氛围类背景是饱和渐变色，设计上就是默认白字，不做亮度采样判断（避免上半部提亮被误判为亮底黑字）
+      // 天气/自然/氛围类背景是饱和渐变色,设计上就是默认白字,不做亮度采样判断(避免上半部提亮被误判为亮底黑字)
       const AMBIENT_SCENES = ['weather', 'nature', 'mood', 'travel', 'celebration', 'music'];
       if (AMBIENT_SCENES.includes(cd.scene)) {
         return { ...cd, bgImage: url, dark: true, heroIcon: false, icon: '' };
       }
       const luma = await probeTextAreaLuma(url);
-      // luma>150 亮底 → 黑字(dark:false)；否则白字(dark:true)；采样失败默认白字
+      // luma>150 亮底 → 黑字(dark:false);否则白字(dark:true);采样失败默认白字
       const dark = luma === null ? true : luma <= 168; // 中间调偏向白字+暗化保护层
       return { ...cd, bgImage: url, dark, heroIcon: false, icon: '' };
     }
@@ -3674,11 +3683,11 @@
       return d.url;
     }
 
-    // 双方案并行生图：全部完成后才返回（先出图后亮卡）
+    // 双方案并行生图:全部完成后才返回(先出图后亮卡)
     async function illustrateVariants(variants) {
       const need = variants.filter(v => v.illustPrompt && !v.bgImage).length;
       if (!need) return variants;
-      updateStep('illust', 'running', '🎨 即梦为两个方案并行生成插图中（约10秒）…');
+      updateStep('illust', 'running', '🎨 即梦为两个方案并行生成插图中(约10秒)...');
       let successCount = 0, failCount = 0;
       await Promise.all(variants.map(async (data, i) => {
         if (!data.illustPrompt || data.bgImage) return;
@@ -3695,23 +3704,23 @@
       if (failCount === 0) {
         updateStep('illust', 'done', `✓ ${successCount} 个方案插图已生成`);
       } else if (successCount > 0) {
-        updateStep('illust', 'done', `⚠️ ${successCount} 个成功，${failCount} 个失败（已用渐变色兜底）<br>${illustBtnHtml}`);
+        updateStep('illust', 'done', `⚠️ ${successCount} 个成功,${failCount} 个失败(已用渐变色兜底)<br>${illustBtnHtml}`);
       } else {
-        updateStep('illust', 'error', `插图生成失败（即梦 Seedream 接口错误），已使用渐变色背景<br>${illustBtnHtml}`);
+        updateStep('illust', 'error', `插图生成失败(即梦 Seedream 接口错误),已使用渐变色背景<br>${illustBtnHtml}`);
       }
       return variants;
     }
 
-    // 单卡：先生图再亮卡
+    // 单卡:先生图再亮卡
     async function presentCard(cd, variantLabel) {
       if (cd.illustPrompt && !cd.bgImage) {
-        updateStep('illust', 'running', '🎨 即梦 Seedream 生成插图中（约10秒）…');
+        updateStep('illust', 'running', '🎨 即梦 Seedream 生成插图中(约10秒)...');
         try {
           const url = await fetchIllustration(cd.illustPrompt, cd.scene);
           cd = await applyIllustration(cd, url);
           updateStep('illust', 'done', '✓ 插图已生成并应用为卡片背景');
         } catch(e) {
-          updateStep('illust', 'error', '插图生成失败，已使用纯色背景，可展开手动重试');
+          updateStep('illust', 'error', '插图生成失败,已使用纯色背景,可展开手动重试');
         }
       }
       pushVersion(cd, variantLabel);
@@ -3720,7 +3729,7 @@
 
     async function generateIllustration(btn) {
       if (!currentCardData) { alert('先生成一张卡片'); return; }
-      btn.textContent = '⏳ 生成中（约10秒）…';
+      btn.textContent = '⏳ 生成中(约10秒)...';
       btn.disabled = true;
       const subject = currentCardData.illustPrompt
         || (currentCardData.header || currentCardData.title || '') + ' 主题场景插画';
@@ -3732,14 +3741,14 @@
           body: JSON.stringify({ prompt: subject, scene: currentCardData.scene }),
         });
         const data = await res.json();
-        if (!data.ok) { alert('插图生成失败：' + (data.error || '请重试')); btn.textContent = '🎨 生成插图（即梦 Seedream）'; btn.disabled = false; return; }
+        if (!data.ok) { alert('插图生成失败:' + (data.error || '请重试')); btn.textContent = '🎨 生成插图(即梦 Seedream)'; btn.disabled = false; return; }
         const updated = await applyIllustration(currentCardData, data.url);
         pushVersion(updated);
         btn.textContent = '✓ 已生成并应用';
         setTimeout(() => { btn.textContent = '🎨 重新生成插图'; btn.disabled = false; }, 2000);
       } catch(e) {
-        alert('网络错误，请重试');
-        btn.textContent = '🎨 生成插图（即梦 Seedream）'; btn.disabled = false;
+        alert('网络错误,请重试');
+        btn.textContent = '🎨 生成插图(即梦 Seedream)'; btn.disabled = false;
       }
     }
 
@@ -3749,7 +3758,7 @@
       if (!currentCardData) { alert('先生成一张卡片再推送到 Figma'); return; }
       const btn = document.getElementById('figmaBtn');
       const orig = btn.innerHTML;
-      btn.innerHTML = '<span>⏳</span> 推送中…';
+      btn.innerHTML = '<span>⏳</span> 推送中...';
       btn.disabled = true;
       try {
         const token = localStorage.getItem('tos_token') || '';
@@ -3762,15 +3771,15 @@
         if (data.ok) {
           btn.innerHTML = '<span>✓</span> 已推送';
           const box = document.getElementById('figmaLinkBox');
-          box.innerHTML = '🔗 卡片将在几秒内出现在 Figma：<a href="' + FIGMA_FILE_URL + '" target="_blank">打开 Figma 文件 ↗</a>';
+          box.innerHTML = '🔗 卡片将在几秒内出现在 Figma:<a href="' + FIGMA_FILE_URL + '" target="_blank">打开 Figma 文件 ↗</a>';
           box.classList.add('visible');
           setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 2000);
         } else {
-          alert('推送失败：' + (data.error || '请重试'));
+          alert('推送失败:' + (data.error || '请重试'));
           btn.innerHTML = orig; btn.disabled = false;
         }
       } catch(e) {
-        alert('网络错误，请重试');
+        alert('网络错误,请重试');
         btn.innerHTML = orig; btn.disabled = false;
       }
     }
@@ -3778,7 +3787,7 @@
     function updateFigmaBtnVisibility() {
       const btn = document.getElementById('figmaBtn');
       if (!btn) return;
-      // 只在：有确定的当前卡片 且 不在双方案待选状态 时显示
+      // 只在:有确定的当前卡片 且 不在双方案待选状态 时显示
       const show = !!currentCardData && !pendingVariants && versions.length > 0;
       btn.style.display = show ? 'flex' : 'none';
       if (!show) document.getElementById('figmaLinkBox').classList.remove('visible');
@@ -3823,7 +3832,7 @@
       }
     }
     function showUserBar(name) {
-      // 顶部 userBar 已移除，只更新左侧边栏账号信息
+      // 顶部 userBar 已移除,只更新左侧边栏账号信息
       const sba = document.getElementById('sidebarAvatar');
       const sbu = document.getElementById('sidebarUsername');
       if (sba) sba.textContent = name[0].toUpperCase();
@@ -3857,7 +3866,7 @@
         localStorage.setItem('tos_name',  data.user.name);
         document.getElementById('loginOverlay').classList.add('hidden');
         showUserBar(data.user.name);
-      } catch(e) { errEl.textContent = '网络错误，请重试'; }
+      } catch(e) { errEl.textContent = '网络错误,请重试'; }
       finally { btn.textContent = '登录'; btn.disabled = false; }
     }
     async function doRegister() {
@@ -3874,8 +3883,8 @@
         const data = await res.json();
         if (!data.ok) { errEl.textContent = data.error || '注册失败'; return; }
         errEl.style.color = '#01CB65';
-        errEl.textContent = '注册成功！等待管理员审批后可登录';
-      } catch(e) { errEl.textContent = '网络错误，请重试'; }
+        errEl.textContent = '注册成功!等待管理员审批后可登录';
+      } catch(e) { errEl.textContent = '网络错误,请重试'; }
       finally { btn.textContent = '注册'; btn.disabled = false; }
     }
     function doLogout() {
@@ -3974,8 +3983,8 @@
       msgs.innerHTML = [
         '<div class="msg bot">',
         '<div class="msg-bubble">',
-        '你好！我可以帮你设计桌面卡片。<br><br>',
-        '告诉我卡片的用途、数据类型、配色偏好，或者直接说「做一个天气卡片」',
+        '你好!我可以帮你设计桌面卡片。<br><br>',
+        '告诉我卡片的用途、数据类型、配色偏好,或者直接说「做一个天气卡片」',
         '</div>',
         '<div class="msg-time">刚刚</div>',
         '</div>'
@@ -4022,7 +4031,7 @@
         renderWbSpec(currentCardData);
       } else {
         setWbLoading(false);
-        // 没有卡片数据时显示空态提示，不展示 spinner
+        // 没有卡片数据时显示空态提示,不展示 spinner
         const emptyHint = document.getElementById('wb-empty-hint');
         if (emptyHint) emptyHint.style.display = 'flex';
       }
@@ -4070,7 +4079,7 @@
         document.querySelector('.wb-spinner').style.display = '';
         document.querySelector('.wb-loading-text').textContent = 'AI 正在为你创作...';
       } else {
-        // don’t show stage yet until renderWbCard is called
+        // don't show stage yet until renderWbCard is called
       }
     }
 
@@ -4207,7 +4216,7 @@
       if (jsonEl) jsonEl.textContent = JSON.stringify(data, null, 2);
       const tabDataModel = document.querySelector('[data-tab="datamodel"]');
       if (tabDataModel) tabDataModel.textContent = 'Data Model (1)';
-      // 同步刷新代码预览 tab（AtomicView TPK JSON）
+      // 同步刷新代码预览 tab(AtomicView TPK JSON)
       updateWbCodeView(data);
     }
 
@@ -4217,7 +4226,7 @@
 
       // 1. 调性分析
       const tone = data._tone || '现代简约 · 科技感';
-      scroll.appendChild(makeWbCard('调性分析', `<span class="wb-tag">现代简约</span><span class="wb-tag">科技感</span><br><span style="font-size:0.72rem;color:var(--muted)">视觉平衡，信息清晰</span>`));
+      scroll.appendChild(makeWbCard('调性分析', `<span class="wb-tag">现代简约</span><span class="wb-tag">科技感</span><br><span style="font-size:0.72rem;color:var(--muted)">视觉平衡,信息清晰</span>`));
 
       // 2. 配色方案
       const swatchColors = [];
@@ -4230,15 +4239,15 @@
 
       // 3. 字体搞配
       const fontName = data._font || 'SF Pro Display';
-      scroll.appendChild(makeWbCard('字体搞配', `显示字体：<b>SF Pro Display</b><br>数据字体：<b>SF Pro Text</b>`));
+      scroll.appendChild(makeWbCard('字体搞配', `显示字体:<b>SF Pro Display</b><br>数据字体:<b>SF Pro Text</b>`));
 
       // 4. 设计建议
       scroll.appendChild(makeWbCard('设计建议', data._advice ||
-        '• 保持内容简洁，重点信息突出显示<br>• 配色与主题行业匹配<br>• 可尝试深色模式'));
+        '• 保持内容简洁,重点信息突出显示<br>• 配色与主题行业匹配<br>• 可尝试深色模式'));
 
       // 5. 布局规格
       const layout = data.layout ? (LAYOUT_LABELS[data.layout] || data.layout) : '双行内容';
-      scroll.appendChild(makeWbCard('布局规格', `类型：<b>${layout}</b><br>138×138px 标准尺寸<br>圆角20px`));
+      scroll.appendChild(makeWbCard('布局规格', `类型:<b>${layout}</b><br>138×138px 标准尺寸<br>圆角20px`));
     }
 
     function makeWbCard(title, bodyHtml) {
@@ -4278,7 +4287,7 @@
       const layoutEl = document.getElementById('wbSpecLayoutLeft');
       const themeEl = document.getElementById('wbSpecThemeLeft');
       const radiusEl = document.getElementById('wbSpecRadiusLeft');
-      if (layoutEl) layoutEl.textContent = LAYOUT_LABELS[data.layout] || data.layout || '—';
+      if (layoutEl) layoutEl.textContent = LAYOUT_LABELS[data.layout] || data.layout || '-';
       if (themeEl) themeEl.textContent = data.bgImage ? '插图背景' : (data.dark ? '深色' : '浅色');
       if (radiusEl) radiusEl.textContent = data.layout === 'big' ? '20dp' : '18dp';
 
@@ -4287,7 +4296,7 @@
       const checks = [
         { ok: !!(data.header || data.title), text: '已设置主标题' },
         { ok: !!(data.value || data.subtitle), text: '已设置内容数据' },
-        { ok: !!data.layout, text: '布局类型已确定：' + (LAYOUT_LABELS[data.layout] || data.layout || '未知') },
+        { ok: !!data.layout, text: '布局类型已确定:' + (LAYOUT_LABELS[data.layout] || data.layout || '未知') },
         { ok: !!data.bg || !!data.bgImage, text: '已设置背景色 / 插图' },
         { ok: true, text: '卡片尺寸 138×138dp ✓' },
       ];
@@ -4374,7 +4383,7 @@
       if (!preview) return;
       const handles = preview.querySelectorAll('.wb-preview-handle');
       if (!handles || handles.length === 0) return;
-      
+
       handles.forEach((handle, idx) => {
         let isDragging = false;
         let startX = 0;
@@ -4452,7 +4461,7 @@
       const isCode = view === 'code';
       previewEl.style.display = isCode ? 'none' : '';
       codeEl.style.display = isCode ? 'flex' : 'none';
-      // 代码预览 tab：隐藏左侧5个分析卡片栏，代码预览区撑满整个工作台主体区域
+      // 代码预览 tab:隐藏左侧5个分析卡片栏,代码预览区撑满整个工作台主体区域
       if (leftPanelEl) leftPanelEl.style.display = isCode ? 'none' : '';
       if (codeEl) codeEl.style.flex = isCode ? '1 1 100%' : '';
       if (tabPreview) tabPreview.classList.toggle('active', !isCode);
@@ -4462,10 +4471,10 @@
     }
 
     /* ─── ATOMICVIEW TPK JSON SERIALIZER ─── */
-    // 把当前 Web 卡片数据（title/subtitle/header/value/icon/action 等 + 4 种布局）
+    // 把当前 Web 卡片数据(title/subtitle/header/value/icon/action 等 + 4 种布局)
     // 尽力映射到公司原生渲染引擎 AtomicView 的 TPK index.json 结构。
-    // 输出结构：{ ui: [...], layout: { pkg, <template-id>: ConstraintLayout }, data: {}, actions: {} }
-    // 注意：Web 侧的渐变背景 / 背景图 / 深浅色文字自适应等能力在 AtomicView 只有近似字段，
+    // 输出结构:{ ui: [...], layout: { pkg, <template-id>: ConstraintLayout }, data: {}, actions: {} }
+    // 注意:Web 侧的渐变背景 / 背景图 / 深浅色文字自适应等能力在 AtomicView 只有近似字段,
     // 无法精准还原的会退化为纯色 + 注释字段 _note。
     function cardDataToAtomicViewJSON(cardData) {
       const empty = { ui: [], layout: { pkg: 'com.tos.desktop.widget' }, data: {}, actions: {} };
@@ -4477,7 +4486,7 @@
       const sc = dark ? '#99FFFFFF' : '#99000000'; // rgba(*,0.6)
       const accent = (data.userColorOk && data.accentColor) ? data.accentColor : tc;
 
-      // 卡片容器背景色映射：渐变 / 背景图 → 只能取近似纯色 + _note 说明
+      // 卡片容器背景色映射:渐变 / 背景图 → 只能取近似纯色 + _note 说明
       const bg = data.bg || (dark ? '#1C1C1E' : '#FFFFFF');
       const bgIsGradient = typeof bg === 'string' && bg.includes('gradient');
       const bgIsImage = !!data.bgImage;
@@ -4487,10 +4496,10 @@
         // 提取渐变中第一个 hex 作为近似主色
         const m = bg.match(/#[0-9a-fA-F]{3,8}/);
         containerBgColor = m ? m[0] : (dark ? '#1C1C1E' : '#FFFFFF');
-        bgNote = 'Web 端为 CSS 渐变，AtomicView backgroundColor 仅支持纯色，此处取近似主色';
+        bgNote = 'Web 端为 CSS 渐变,AtomicView backgroundColor 仅支持纯色,此处取近似主色';
       } else if (bgIsImage) {
         containerBgColor = dark ? '#1C1C1E' : '#FFFFFF';
-        bgNote = 'Web 端为图片背景，AtomicView 需通过 background="@tpk/..." 引用 TPK 内素材';
+        bgNote = 'Web 端为图片背景,AtomicView 需通过 background="@tpk/..." 引用 TPK 内素材';
       }
 
       const children = {};
@@ -4541,7 +4550,7 @@
           },
         });
       } else if (layoutType === 'dual') {
-        // Web 端是 flex column（title + subtitle 自然流动 2dp gap），此处近似为竖向链式约束
+        // Web 端是 flex column(title + subtitle 自然流动 2dp gap),此处近似为竖向链式约束
         if (data.headerIcon) {
           children.headerIcon = mkText('headerIcon', data.headerIcon, {
             textSize: '16sp',
@@ -4697,7 +4706,7 @@
             },
           });
         }
-        // big + action 时 Web 端无副文本（Figma 规范）；无 action 时才渲染 subtitle
+        // big + action 时 Web 端无副文本(Figma 规范);无 action 时才渲染 subtitle
         if (!data.action) {
           if (data.subtitle) {
             children.subtitle = mkText('subtitle', data.subtitle, {
@@ -4729,7 +4738,7 @@
         }
       }
 
-      // ── 通用：右下角装饰 icon（Web 端 emoji，AtomicView 用 TextView + emoji 或 ImageView）
+      // ── 通用:右下角装饰 icon(Web 端 emoji,AtomicView 用 TextView + emoji 或 ImageView)
       const iconStr = data.icon ? String(data.icon) : '';
       if (iconStr) {
         const heroIcon = !!data.heroIcon;
@@ -4748,11 +4757,11 @@
           layout_constraintBottom_toBottomOf: 'parent',
           layout_marginEnd: (heroIcon ? 10 : 10) + 'dp',
           layout_marginBottom: (heroIcon ? 8 : 10) + 'dp',
-          _note: 'Web 侧 emoji 装饰，如需图像可改为 ImageView + src="@tpk/assets/icons/xxx.png"',
+          _note: 'Web 侧 emoji 装饰,如需图像可改为 ImageView + src="@tpk/assets/icons/xxx.png"',
         };
       }
 
-      // ── 行动按钮（dual/triple/big 通用；big+action 时无副文本；Figma 长/短按钮两档）
+      // ── 行动按钮(dual/triple/big 通用;big+action 时无副文本;Figma 长/短按钮两档)
       if (data.action) {
         const wide = String(data.action).length > 4 || data.buttonWide;
         const isGradient = bgIsGradient;
@@ -4807,7 +4816,7 @@
       return result;
     }
 
-    // 简易 JSON 语法高亮（VSCode 深色主题近似色）
+    // 简易 JSON 语法高亮(VSCode 深色主题近似色)
     function highlightJson(jsonStr) {
       const esc = jsonStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       return esc.replace(
@@ -4824,7 +4833,7 @@
       );
     }
 
-    // 渲染当前卡片对应的 TPK JSON 到代码 tab；被 renderWbCard 与 switchWbView('code') 调用
+    // 渲染当前卡片对应的 TPK JSON 到代码 tab;被 renderWbCard 与 switchWbView('code') 调用
     function updateWbCodeView(cardData) {
       const pre = document.getElementById('wb-code-json');
       const empty = document.getElementById('wb-code-empty');
@@ -4865,14 +4874,14 @@
     }
 
     /* ─── WB LEFT PANEL FUNCTIONS ─── */
-    // 5个维度全部同时展示为独立卡片（accordion），点击标题栏可展开/收起该卡片内容。
-    // 默认全部展开；不再有顶部导航 pill / 跳转锚点。
+    // 5个维度全部同时展示为独立卡片(accordion),点击标题栏可展开/收起该卡片内容。
+    // 默认全部展开;不再有顶部导航 pill / 跳转锚点。
     function toggleWbLeftCard(panel) {
       const card = document.getElementById('wb-panel-' + panel + '-left');
       if (card) card.classList.toggle('collapsed');
     }
 
-    // 展开指定卡片（不切换，仅确保可见），供其他代码路径调用时使用
+    // 展开指定卡片(不切换,仅确保可见),供其他代码路径调用时使用
     function expandWbLeftCard(panel) {
       const card = document.getElementById('wb-panel-' + panel + '-left');
       if (card) card.classList.remove('collapsed');
@@ -4884,11 +4893,47 @@
       expandWbLeftCard(panel);
     }
 
+    /* ✨ 打字机效果：逐字将 innerHTML 填入目标元素
+       - 正确处理 HTML tag（整个 tag 一次写入）避免逐字展示斶看到碎片标签
+       - 同一 el 重复调用会取消上次 timer */
+    const _wbTyperTimers = new WeakMap();
+    function typewriteHTML(el, html, speed) {
+      if (!el) return;
+      if (_wbTyperTimers.has(el)) { clearInterval(_wbTyperTimers.get(el)); _wbTyperTimers.delete(el); }
+      el.innerHTML = '';
+      const tokens = [];
+      let i = 0;
+      while (i < html.length) {
+        if (html[i] === '<') {
+          const end = html.indexOf('>', i);
+          if (end === -1) { tokens.push(html.slice(i)); break; }
+          tokens.push(html.slice(i, end + 1));
+          i = end + 1;
+        } else if (html[i] === '&') {
+          const end = html.indexOf(';', i);
+          if (end !== -1 && end - i <= 8) { tokens.push(html.slice(i, end + 1)); i = end + 1; }
+          else { tokens.push(html[i]); i++; }
+        } else {
+          tokens.push(html[i]);
+          i++;
+        }
+      }
+      const step = speed || 12;
+      let k = 0;
+      let buf = '';
+      const timer = setInterval(() => {
+        if (k >= tokens.length) { clearInterval(timer); _wbTyperTimers.delete(el); return; }
+        buf += tokens[k++];
+        el.innerHTML = buf;
+      }, step);
+      _wbTyperTimers.set(el, timer);
+    }
+
     function renderWbTone(toneRows) {
       const el = document.getElementById('wb-tone-content-left');
       if (!el || !toneRows || !toneRows.length) return;
       const AXIS_NAMES = { VA: '视觉吸引力', IS: '信息显著性', AA: '行动权威性' };
-      el.innerHTML = toneRows.map(r =>
+      const html = toneRows.map(r =>
         `<div class="wb-tone-row">
           <div class="wb-tone-row-header">
             <span class="wb-tone-badge ${r.ax.toLowerCase()}">${r.ax}${r.level}</span>
@@ -4897,6 +4942,7 @@
           <div class="wb-tone-reason">${r.reason}</div>
         </div>`
       ).join('');
+      typewriteHTML(el, html, 10);
     }
 
     function renderWbColor(data) {
@@ -4904,23 +4950,25 @@
       if (!el || !data) return;
       const colors = [data.bg || '#ffffff', data.accentColor || '#7C5CFC'].filter(Boolean);
       const labels = ['背景色', '强调色'];
-      el.innerHTML = colors.map((c, i) =>
+      const html = colors.map((c, i) =>
         `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
           <div style="width:32px;height:32px;border-radius:8px;background:${c};border:1px solid rgba(0,0,0,0.1)"></div>
           <div><div style="font-family:monospace;font-size:12px;color:#333">${c}</div><div style="font-size:11px;color:#999">${labels[i]||''}</div></div>
         </div>`
       ).join('');
+      typewriteHTML(el, html, 8);
     }
 
     function renderWbFont(data) {
       const el = document.getElementById('wb-font-content-left');
       if (!el || !data) return;
-      el.innerHTML = `<div style="font-size:12px;color:#333;line-height:2">
+      const html = `<div style="font-size:12px;color:#333;line-height:2">
         <div><span style="color:#999;font-family:monospace">layout</span>  ${data.layout || '—'}</div>
         <div><span style="color:#999;font-family:monospace">header</span>  ${data.header || '—'}</div>
-        <div><span style="color:#999;font-family:monospace">value</span>   ${data.value || '—'}</div>
-        <div><span style="color:#999;font-family:monospace">unit</span>    ${data.unit || '—'}</div>
+        <div><span style="color:#999;font-family:monospace">value</span>   ${data.value || '—'}</div>
+        <div><span style="color:#999;font-family:monospace">unit</span>    ${data.unit || '—'}</div>
       </div>`;
+      typewriteHTML(el, html, 10);
     }
 
     function renderWbSuggest(text) {
@@ -4930,7 +4978,8 @@
         el.innerHTML = '<span class="wb-bottom-empty">等待 AI 建议...</span>';
         return;
       }
-      el.innerHTML = `<div style="font-size:13px;color:#333;line-height:1.7">${text.replace(/\n/g,'<br>')}</div>`;
+      const html = `<div style="font-size:13px;color:#333;line-height:1.7">${text.replace(/\n/g,'<br>')}</div>`;
+      typewriteHTML(el, html, 14);
     }
   </script>
 
