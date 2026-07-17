@@ -4612,6 +4612,8 @@
       document.getElementById('workbench-view').classList.remove('active');
       const tplView = document.getElementById('templates-view');
       if (tplView) tplView.classList.remove('active');
+      const emptyView = document.getElementById('empty-view');
+      if (emptyView) emptyView.classList.remove('active');
       document.getElementById('gallery-view').classList.add('active');
       // highlight sidebar
       document.querySelectorAll('.sidebar-nav-item').forEach(b => b.classList.remove('active'));
