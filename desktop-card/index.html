@@ -5176,10 +5176,10 @@
     // triple 18种 = 顶对齐(headerIcon有无(2) × action有无(2) × icon状态(3)=12) + 底对齐无按钮(headerIcon有无(2) × icon状态(3)=6)；底对齐+按钮物理重叠（Figma规范里底对齐本身就是无按钮变体），直接跳过
     // big    60种 = headerIcon有无(2) × unit有无(2) × icon状态(3) × 副文本/按钮状态(5：有action无副文本1种 + 无action时subtitle/subtitle2独立开关器4种)
     const TPL_BASE = {
-      single: { layout: 'single', title: 'Morning Briefing: 3 meetings today, first at 9:30 AM', bg: '#f0f4ff', dark: false },
-      dual:   { layout: 'dual', title: 'Missed Call', subtitle: 'Emma · 2 min ago', bg: '#ffffff', dark: false },
-      triple: { layout: 'triple', header: 'Beijing', value: 'Sunny', subtitle: '24°C · Feels 26°C', bg: 'linear-gradient(165deg,#3D7EE8,#BEE3F8)', dark: true },
-      big:    { layout: 'big', header: 'Memory', value: '8.2', bg: '#ffffff', dark: false },
+      single: { layout: 'single', title: 'Title', bg: '#ffffff', dark: false },
+      dual:   { layout: 'dual', title: 'Title', subtitle: 'Subtitle', bg: '#ffffff', dark: false },
+      triple: { layout: 'triple', header: 'Header', value: 'Value', subtitle: 'Subtitle', bg: '#ffffff', dark: false },
+      big:    { layout: 'big', header: 'Header', value: 'Value', bg: '#ffffff', dark: false },
     };
 
     function tplBuildSingle() {
@@ -5187,7 +5187,7 @@
       [false, true].forEach(hasAction => {
         ['none', 'emoji', 'hero'].forEach(iconState => {
           const data = { ...TPL_BASE.single };
-          if (hasAction) data.action = 'Open';
+          if (hasAction) data.action = 'Button';
           if (iconState === 'hero') data.heroIcon = true;
           const parts = ['单文本'];
           if (hasAction) parts.push('按钮');
@@ -5205,8 +5205,8 @@
         [false, true].forEach(hasAction => {
           ['none', 'emoji', 'hero'].forEach(iconState => {
             const data = { ...TPL_BASE.dual };
-            if (hasHeaderIcon) data.headerIcon = 'icons/通话.svg';
-            if (hasAction) data.action = 'Call';
+            if (hasHeaderIcon) data.headerIcon = 'icons/信息.svg';
+            if (hasAction) data.action = 'Button';
             if (iconState === 'hero') data.heroIcon = true;
             const parts = ['双文本'];
             if (hasHeaderIcon) parts.push('标题图标');
@@ -5229,8 +5229,8 @@
             if (alignBottom && hasAction) return;
             ['none', 'emoji', 'hero'].forEach(iconState => {
               const data = { ...TPL_BASE.triple, alignBottom };
-              if (hasHeaderIcon) data.headerIcon = 'icons/定位.svg';
-              if (hasAction) data.action = 'Details';
+              if (hasHeaderIcon) data.headerIcon = 'icons/信息.svg';
+              if (hasAction) data.action = 'Button';
               if (iconState === 'hero') data.heroIcon = true;
               const parts = ['三文本', alignBottom ? '底对齐' : '顶对齐'];
               if (hasHeaderIcon) parts.push('标题图标');
@@ -5260,11 +5260,11 @@
             subtitleStates.forEach(st => {
               const data = { ...TPL_BASE.big };
               if (hasHeaderIcon) data.headerIcon = 'icons/信息.svg';
-              if (hasUnit) data.unit = 'GB';
+              if (hasUnit) data.unit = 'Unit';
               if (iconState === 'hero') data.heroIcon = true;
-              if (st.action) data.action = 'Details';
-              if (st.subtitle) data.subtitle = '4 apps running';
-              if (st.subtitle2) data.subtitle2 = 'Updated just now';
+              if (st.action) data.action = 'Button';
+              if (st.subtitle) data.subtitle = 'Subtitle';
+              if (st.subtitle2) data.subtitle2 = 'Subtitle 2';
               const parts = ['大字体'];
               if (hasHeaderIcon) parts.push('标题图标');
               if (hasUnit) parts.push('单位');
