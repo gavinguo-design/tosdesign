@@ -4115,6 +4115,12 @@
         const label = ['A', 'B'][i];
         const dark = !!data.dark;
         let bg = data.bg || (dark ? '#1c1c1e' : '#fff');
+        if (data.bgImage) {
+          const scrim = dark
+            ? 'linear-gradient(135deg,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.25) 55%,rgba(0,0,0,0) 78%)'
+            : 'linear-gradient(135deg,rgba(255,255,255,0.65) 0%,rgba(255,255,255,0.3) 55%,rgba(255,255,255,0) 78%)';
+          bg = `${scrim}, url(${data.bgImage}) center/cover no-repeat`;
+        }
         const wrapper = document.createElement('div');
         wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;';
         const lbl = document.createElement('div');
