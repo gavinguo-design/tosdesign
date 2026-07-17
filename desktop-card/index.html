@@ -3922,7 +3922,8 @@
           data.action));
       } else if (layout === 'triple') {
         // Figma规范:无按钮时支持顶对齐(header14/value30/subtitle56)和底对齐(header70/value86/subtitle112,末行底部贴齐124=138-14)两种变体,由 data.alignBottom 控制
-        const triTop = data.alignBottom ? 70 : 14;
+        // 底对齐+按钮会导致 value(86-110) 与按钮(94-124) 物理重叠,有按钮时强制顶对齐
+        const triTop = (data.alignBottom && !data.action) ? 70 : 14;
         const triHeadSize = fitFontSize(data.header || data.title, 12, data.headerIcon ? 92 : 110);
         const triHeader = mk(
           `position:absolute;left:14px;top:${triTop}px;width:110px;height:14px;` +
@@ -5091,7 +5092,7 @@
     // 基于 desktop-card-figma-spec.md 第12节组合矩阵，按 buildCardInner() 实际支持的字段组合生成变体：
     // single 12种 = alignBottom(2) × action有无(2) × icon状态(无/emoji/hero=3)
     // dual   12种 = headerIcon有无(2) × action有无(2) × icon状态(3)
-    // triple 24种 = alignBottom(2) × headerIcon有无(2) × action有无(2) × icon状态(3)
+    // triple 18种 = 顶对齐(headerIcon有无(2) × action有无(2) × icon状态(3)=12) + 底对齐无按钮(headerIcon有无(2) × icon状态(3)=6)；底对齐+按钮物理重叠（Figma规范里底对齐本身就是无按钮变体），直接跳过
     // big    60种 = headerIcon有无(2) × unit有无(2) × icon状态(3) × 副文本/按钮状态(5：有action无副文本1种 + 无action时subtitle/subtitle2独立开关器4种)
     const TPL_BASE = {
       single: { layout: 'single', title: 'Morning Briefing: 3 meetings today, first at 9:30 AM', bg: '#f0f4ff', dark: false },
@@ -5145,6 +5146,8 @@
       [false, true].forEach(alignBottom => {
         [false, true].forEach(hasHeaderIcon => {
           [false, true].forEach(hasAction => {
+            // Figma规范:底对齐+按钮会造成 value 与按钮物理重叠，且底对齐设计意图本身就是无按钮变体，跳过该组合
+            if (alignBottom && hasAction) return;
             ['none', 'emoji', 'hero'].forEach(iconState => {
               const data = { ...TPL_BASE.triple, alignBottom };
               if (hasHeaderIcon) data.headerIcon = 'icons/定位.png';
