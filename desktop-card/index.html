@@ -3136,6 +3136,11 @@
     <!-- WORKBENCH VIEW -->
     <div id="workbench-view">
       <!-- Top toolbar removed: 卡片预览/代码预览 tab 已移到卡片左侧 -->
+      <!-- View tab bar: full-width, above content -->
+      <div class="wb-view-tabs" id="wbViewTabs" style="border-bottom:1px solid var(--border);padding:0 16px;background:var(--surface2);">
+        <button class="wb-view-tab active" id="wbViewTabPreview" onclick="switchWbView('preview')">卡片预览</button>
+        <button class="wb-view-tab" id="wbViewTabCode" onclick="switchWbView('code')">代码预览</button>
+      </div>
       <!-- Top card: left panel + preview + right chat panel -->
       <div id="wb-top-card">
         <!-- Left analysis panel -->
@@ -3211,10 +3216,6 @@
           <div class="wb-preview-handle">
             <div class="wb-preview-handle-dot"></div>
             <div class="wb-preview-handle-dot"></div>
-          </div>
-          <div class="wb-view-tabs wb-view-tabs-vert" id="wbViewTabs">
-            <button class="wb-view-tab active" id="wbViewTabPreview" title="卡片预览" onclick="switchWbView('preview')">📱<span class="wb-view-tab-label">卡片</span></button>
-            <button class="wb-view-tab" id="wbViewTabCode" title="代码预览" onclick="switchWbView('code')">💻<span class="wb-view-tab-label">代码</span></button>
           </div>
           <div id="wb-preview-card">
             <div id="wb-loading" style="display:none">
