@@ -3876,21 +3876,18 @@
 
     // 按钮用色规范(Figma):统一中性胶囊,黑8%底(浅色)/白15%底(深色)/白磨砂(渐变背景)
     // 语义强调色只用于数值文字和图标,按钮永不实底语义色
-    // headerIcon 支持两种来源:emoji 字符串(直接 textContent)或图标库文件(icons/xxx.svg,渲染为「圆角矩形黑底+白色SVG」)
-    // 规范：16×16 容器、4px 圆角、纯黑底、SVG 反色为白色（filter: brightness(0) invert(1)）
+    // headerIcon 支持两种来源:emoji 字符串(直接 textContent)或图标库文件(icons/xxx.svg,直接渲染纯SVG)
+    // 规范：16×16 直接显示 SVG，不加底板，不反色
     function applyHeaderIcon(el, value) {
       const v = str(value);
       el.textContent = '';
       if (!v) return;
       if (v.startsWith('icons/')) {
-        const wrapper = document.createElement('span');
-        wrapper.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:6px;background:#000;flex-shrink:0;vertical-align:middle;';
         const img = document.createElement('img');
         img.src = v;
         img.alt = '';
-        img.style.cssText = 'width:10px;height:10px;filter:brightness(0) invert(1);display:block;';
-        wrapper.appendChild(img);
-        el.appendChild(wrapper);
+        img.style.cssText = 'width:16px;height:16px;display:block;vertical-align:middle;';
+        el.appendChild(img);
       } else {
         el.textContent = v;
       }
