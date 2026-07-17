@@ -2391,8 +2391,8 @@
         <div class="wb-tb-btns">
           <button class="wb-tb-btn primary" onclick="showWorkbench(true);setTimeout(()=>submitWelcomeWorkbench&&submitWelcomeWorkbench(),100)">生成卡片</button>
           <button class="wb-tb-btn">换个方案</button>
-          <button class="wb-tb-btn">保存到库</button>
-          <button class="wb-tb-btn">打开库</button>
+          <button class="wb-tb-btn" id="wbSaveLibBtn" onclick="saveToLibrary(this)">保存到库</button>
+          <button class="wb-tb-btn" id="wbOpenLibBtn" onclick="openLibrary()">打开库</button>
         </div>
         <div class="wb-tb-right">
           <div class="wb-view-tabs" id="wbViewTabs">
@@ -2485,7 +2485,7 @@
                 <span class="wb-spinner-ring wb-spinner-ring-3"></span>
                 <span class="wb-spinner-core"></span>
               </div>
-              <div class="wb-loading-text">AI 正在为你创作...</div>
+              <div class="wb-loading-text">tOS-UX 数字设计师 正在为你创作中</div>
             </div>
             <div id="wb-card-stage">
               <div class="card-scale-label">2× 预览</div>
@@ -4087,7 +4087,7 @@
       if (loading) {
         stage.classList.remove('visible');
         document.querySelector('.wb-spinner').style.display = '';
-        document.querySelector('.wb-loading-text').textContent = 'AI 正在为你创作...';
+        document.querySelector('.wb-loading-text').textContent = 'tOS-UX 数字设计师 正在为你创作中';
       } else {
         // don't show stage yet until renderWbCard is called
       }
