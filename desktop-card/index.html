@@ -4789,7 +4789,13 @@
         });
         const data = await res.json();
         if (!data.ok) { alert('删除失败:' + (data.error || '请重试')); return; }
-        openLibrary();
+        // 刷新触发删除的那个视图:侧边滑出面板 or 卡片库 tab 页
+        const overlay = document.getElementById('libraryOverlay');
+        if (overlay && !overlay.classList.contains('hidden')) {
+          openLibrary();
+        } else {
+          showLibraryView();
+        }
       } catch (e) { alert('网络错误,请重试'); }
     }
 
