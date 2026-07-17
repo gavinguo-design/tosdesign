@@ -2924,6 +2924,29 @@
     </div>
 
     <!-- GALLERY VIEW: 灵感剧场 / 最佳案例 -->
+    <!-- LIBRARY VIEW: 卡片库 -->
+    <div id="library-view">
+      <div class="gallery-header">
+        <span class="gallery-title">卡片库</span>
+        <span class="gallery-sub">我保存的卡片</span>
+      </div>
+      <div id="lib-view-body" style="flex:1;overflow-y:auto;padding:20px 24px;">
+        <div id="lib-view-loading" class="hidden" style="text-align:center;padding:60px 0;color:var(--muted);font-size:0.9rem">加载中...</div>
+        <div id="lib-view-unauth" class="hidden" style="text-align:center;padding:60px 0">
+          <div style="font-size:2rem;margin-bottom:12px">🔒</div>
+          <div style="font-size:1rem;color:var(--text);margin-bottom:16px">请先登录查看你的卡片库</div>
+          <button class="wb-tb-btn primary" onclick="showLogin()">去登录</button>
+        </div>
+        <div id="lib-view-empty" class="hidden" style="text-align:center;padding:60px 0">
+          <div style="font-size:2rem;margin-bottom:12px">📭</div>
+          <div style="font-size:1rem;color:var(--text);margin-bottom:8px">还没有保存的卡片</div>
+          <div style="font-size:0.85rem;color:var(--muted);margin-bottom:20px">生成卡片后点「保存到库」即可存档</div>
+          <button class="wb-tb-btn primary" onclick="startNewSession()">去生成一张</button>
+        </div>
+        <div id="lib-view-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px"></div>
+      </div>
+    </div>
+
     <div id="gallery-view">
       <div class="gallery-header">
         <span class="gallery-title">灵感剧场</span>
@@ -4701,6 +4724,62 @@
       document.getElementById('libraryOverlay').classList.add('hidden');
     }
 
+    async function showLibraryView() {
+      const loading = document.getElementById('lib-view-loading');
+      const unauth  = document.getElementById('lib-view-unauth');
+      const empty   = document.getElementById('lib-view-empty');
+      const grid    = document.getElementById('lib-view-grid');
+      if (!loading) return;
+      [loading, unauth, empty].forEach(el => el.classList.add('hidden'));
+      grid.innerHTML = '';
+      const token = localStorage.getItem('tos_token');
+      if (!token) { unauth.classList.remove('hidden'); return; }
+      loading.classList.remove('hidden');
+      try {
+        const res = await fetch('/api/library', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        loading.classList.add('hidden');
+        if (!data.ok) { empty.classList.remove('hidden'); return; }
+        const items = data.items || [];
+        if (!items.length) { empty.classList.remove('hidden'); return; }
+        _libraryCache = items;
+        grid.innerHTML = items.map(it => {
+          const time = it.savedAt ? new Date(it.savedAt).toLocaleString('zh-CN', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
+          const title = (it.title || '未命名卡片').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+          return `<div style="background:var(--surface);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px;border:1px solid var(--border)">
+            <div style="width:92px;height:92px;overflow:hidden;border-radius:13px;background:#eee;margin:0 auto;position:relative" id="lib-thumb-${it.id}"></div>
+            <div style="font-size:12px;font-weight:600;color:var(--text);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${title}</div>
+            <div style="font-size:11px;color:var(--muted);text-align:center">${time}</div>
+            <div style="display:flex;gap:6px">
+              <button class="wb-tb-btn" style="flex:1;font-size:11px" onclick='loadLibItem(${JSON.stringify(it.id)})'>加载</button>
+              <button class="wb-tb-btn" style="flex:1;font-size:11px;color:#ff3430" onclick='deleteFromLibrary(${JSON.stringify(it.id)})'>删除</button>
+            </div>
+          </div>`;
+        }).join('');
+        // render card thumbnails
+        items.forEach(it => {
+          const thumb = document.getElementById(`lib-thumb-${it.id}`);
+          if (!thumb || !it.cardData) return;
+          try {
+            const inner = document.createElement('div');
+            inner.style.cssText = 'width:138px;height:138px;transform:scale(0.667);transform-origin:top left;position:relative;overflow:hidden;border-radius:20px;';
+            inner.appendChild(buildCardInner(it.cardData));
+            thumb.appendChild(inner);
+          } catch(e) {}
+        });
+      } catch(e) {
+        loading.classList.add('hidden');
+        empty.classList.remove('hidden');
+      }
+    }
+
+    function loadLibItem(id) {
+      const item = _libraryCache.find(x => String(x.id) === String(id));
+      if (!item || !item.cardData) return;
+      pushVersion(item.cardData, null);
+      showWorkbench(false);
+    }
+
 
     initAuth();
     // ─── INIT ─────────────────────────────────────────────
@@ -4827,7 +4906,7 @@
     // navId: 需要高亮的侧边栏按钮 id（不传则自动从事件源推断）
     function showView(viewId, label, navId) {
       // 隐藏所有已知 view
-      const allViewIds = ['workbench-view', 'gallery-view', 'templates-view', 'icon-library-view', 'tutorial-view', 'empty-view'];
+      const allViewIds = ['workbench-view', 'gallery-view', 'library-view', 'templates-view', 'icon-library-view', 'tutorial-view', 'empty-view'];
       const ws = document.getElementById('welcomeState');
       if (ws) ws.classList.add('hidden');
       allViewIds.forEach(id => {
@@ -4837,6 +4916,7 @@
       const target = document.getElementById(viewId);
       if (target) {
         target.classList.add('active');
+        if (viewId === 'library-view') { showLibraryView(); }
         if (viewId === 'icon-library-view' && !iconLibraryInited) {
           renderIconLibraryGrid();
           iconLibraryInited = true;
