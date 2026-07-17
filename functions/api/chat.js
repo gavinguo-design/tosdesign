@@ -1,4 +1,4 @@
-const CRS_BASE = "https://crs.chenge.ink/api/v1";
+const CRS_BASE = "https://crs.chenge.ink/openai/v1";
 const CRS_KEY = "cr_3a07c6ba66da659eaae348c5782ac9934507be57af7c040220bbc1af67bc1b49";
 const TOKEN_SECRET = 'tosdesign-secret-2024';
 
@@ -65,18 +65,17 @@ export async function onRequestPost({ request, env }) {
     return new Response(JSON.stringify({ ok: false, error: 'messages required' }), { status: 400, headers });
   }
   try {
-    const res = await fetch(`${CRS_BASE}/messages`, {
+    const res = await fetch(`${CRS_BASE}/chat/completions`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${CRS_KEY}`,
-        'anthropic-version': '2023-06-01',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1024, system: SYSTEM_PROMPT, messages }),
+      body: JSON.stringify({ model: 'gpt-4.1', max_tokens: 1024, messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages] }),
     });
     const data = await res.json();
     if (!res.ok) return new Response(JSON.stringify({ ok: false, error: data.error?.message || 'API error' }), { status: 500, headers });
-    const text = data.content?.[0]?.text || '';
+    const text = data.choices?.[0]?.message?.content || '';
     return new Response(JSON.stringify({ ok: true, text }), { headers });
   } catch (e) {
     return new Response(JSON.stringify({ ok: false, error: e.message }), { status: 500, headers });
