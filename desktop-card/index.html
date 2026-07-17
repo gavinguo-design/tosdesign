@@ -2468,15 +2468,9 @@
       padding: 20px 28px 56px;
     }
     .tpl-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      display: flex;
+      flex-wrap: wrap;
       gap: 20px;
-    }
-    @media (max-width: 1199px) {
-      .tpl-grid { grid-template-columns: repeat(3, 1fr); }
-    }
-    @media (max-width: 899px) {
-      .tpl-grid { grid-template-columns: repeat(2, 1fr); }
     }
     .tpl-card {
       display: flex;
@@ -2486,15 +2480,16 @@
       cursor: pointer;
     }
     .tpl-card-preview {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      max-width: 140px;
-      border-radius: 16px;
+      width: 92px;
+      height: 92px;
+      border-radius: 13px;
       overflow: hidden;
       background: #fff;
       border: 1px solid var(--border);
       box-shadow: 0 2px 10px rgba(0,0,0,0.06);
       position: relative;
+      cursor: pointer;
+      flex-shrink: 0;
       transition: transform 0.15s, box-shadow 0.15s;
     }
     .tpl-card:hover .tpl-card-preview {
@@ -2502,7 +2497,12 @@
       box-shadow: 0 10px 24px rgba(0,0,0,0.14);
     }
     .tpl-card-scale {
-      position: absolute; inset: 0;
+      width: 138px; height: 138px;
+      transform: scale(0.667);
+      transform-origin: top left;
+      position: relative;
+      overflow: hidden;
+      border-radius: 20px;
     }
     .tpl-card-label {
       font-size: 11.5px;
@@ -5212,16 +5212,16 @@
         card.className = 'tpl-card';
         card.onclick = () => applyTemplate(v.data, v.label);
 
+        // 外层：固定显示尺寸 92×92（.tpl-card-preview 已在 CSS 中定义）
         const preview = document.createElement('div');
         preview.className = 'tpl-card-preview';
         preview.style.background = v.data.bg || (dark ? '#1c1c1e' : '#ffffff');
 
+        // 内层：138×138 + scale(0.667) 缩放（.tpl-card-scale 已在 CSS 中定义）
         const scaleWrap = document.createElement('div');
         scaleWrap.className = 'tpl-card-scale';
-        const inner = document.createElement('div');
-        inner.style.cssText = 'width:138px;height:138px;position:relative;transform:scale(0.58);transform-origin:top left;pointer-events:none;';
-        inner.appendChild(buildCardInner(v.data));
-        scaleWrap.appendChild(inner);
+        scaleWrap.style.pointerEvents = 'none';
+        scaleWrap.appendChild(buildCardInner(v.data));
         preview.appendChild(scaleWrap);
 
         const label = document.createElement('div');
