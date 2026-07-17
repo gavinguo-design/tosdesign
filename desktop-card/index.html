@@ -5275,7 +5275,10 @@
         { data: {...baseUnit, action:'Open'}, label: '大字体 + 单位 + 短按钮' },
 
         // ── 标题图标延伸 ──
-        { data: {...base, headerIcon:'icons/偏好.svg', action:'Button', buttonWide:true}, label: '大字体 + 标题图标 + 长按钮' },
+        { data: {...base, headerIcon:'icons/偏好.svg'},                                              label: '大字体 + 标题图标' },
+        { data: {...base, headerIcon:'icons/偏好.svg', icon:'🏔️', heroIcon:true},                    label: '大字体 + 标题图标 + 大装饰图标' },
+        { data: {...base, headerIcon:'icons/偏好.svg', action:'Button', buttonWide:true},           label: '大字体 + 标题图标 + 长按钮' },
+        { data: {...base, headerIcon:'icons/偏好.svg', action:'Open'},                              label: '大字体 + 标题图标 + 短按钮' },
       ];
     }
 
