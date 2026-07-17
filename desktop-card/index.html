@@ -3907,11 +3907,25 @@
       };
 
       if (layout === 'single') {
-        wrap.appendChild(mk(
-          `position:absolute;left:14px;top:${data.alignBottom?'105px':'14px'};width:110px;` +
-          `font-size:16px;font-weight:600;line-height:1.2;color:${tc};` +
-          `overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;`,
-          data.title));
+        if (data.headerIcon) {
+          // 单文本带标题图标：图标底版+标题文字水平排列
+          const sRow = document.createElement('div');
+          sRow.style.cssText = `position:absolute;left:14px;top:${data.alignBottom?'105px':'14px'};width:110px;display:flex;align-items:center;gap:4px;`;
+          const hi = document.createElement('span');
+          applyHeaderIcon(hi, data.headerIcon);
+          sRow.appendChild(hi);
+          const st = document.createElement('span');
+          st.style.cssText = `font-size:16px;font-weight:600;line-height:1.2;color:${tc};overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;flex:1;`;
+          st.textContent = data.title || '';
+          sRow.appendChild(st);
+          wrap.appendChild(sRow);
+        } else {
+          wrap.appendChild(mk(
+            `position:absolute;left:14px;top:${data.alignBottom?'105px':'14px'};width:110px;` +
+            `font-size:16px;font-weight:600;line-height:1.2;color:${tc};` +
+            `overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;`,
+            data.title));
+        }
       } else if (layout === 'dual') {
         // Figma 规范:dual 布局 header 与 subtitle 是自然流动关系(header 结束后仅 ~2px 间距),不是固定像素坐标:
         // 标题 1 行时 subtitle 上移,标题 2 行时 subtitle 下移。用 flex column 容器实现动态跟随,不再用固定 top:57px。
@@ -5195,6 +5209,8 @@
           out.push({ data, label: parts.join(' + ') });
         });
       });
+      // 标题图标变体
+      out.push({ data: { ...TPL_BASE.single, headerIcon:'icons/偏好.svg' }, label: '单文本 + 标题图标' });
       return out;
     }
 
