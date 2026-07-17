@@ -2297,6 +2297,26 @@
       overflow: hidden;
     }
     #gallery-view.active { display: flex; }
+
+    /* ─── EMPTY / COMING SOON VIEW ─── */
+    #empty-view {
+      position: absolute; inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      z-index: 26;
+      background:
+        radial-gradient(ellipse 65% 55% at 92% 5%, rgba(230,210,205,0.70), transparent),
+        radial-gradient(ellipse 70% 65% at 5% 100%, rgba(205,225,195,0.65), transparent),
+        #eeecf1;
+    }
+    #empty-view.active { display: flex; }
+    .empty-view-icon { font-size: 44px; }
+    .empty-view-text { font-size: 18px; font-weight: 600; color: #1a1a1a; }
+    .empty-view-sub { font-size: 14px; color: #888892; }
+
     .gallery-header {
       flex-shrink: 0;
       display: flex;
@@ -2573,18 +2593,19 @@
     <!-- GALLERY VIEW: 灵感剧场 / 最佳案例 -->
     <div id="gallery-view">
       <div class="gallery-header">
-        <button class="gallery-back-btn" onclick="hideGallery()">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 2.5L3.5 7l5.5 4.5"/>
-          </svg>
-          返回
-        </button>
         <span class="gallery-title">灵感剧场</span>
         <span class="gallery-sub">最佳案例</span>
       </div>
       <div class="gallery-grid-wrap">
         <div class="gallery-grid" id="galleryGrid"></div>
       </div>
+    </div>
+
+    <!-- EMPTY / COMING SOON VIEW -->
+    <div id="empty-view">
+      <div class="empty-view-icon">🚧</div>
+      <div class="empty-view-text">即将上线</div>
+      <div class="empty-view-sub" id="empty-view-label"></div>
     </div>
 
     <!-- WORKBENCH VIEW -->
@@ -4386,7 +4407,9 @@
       '20.png',
       '21.png',
       'Group 2117132607.png',
-      'Group 2134130822.png'
+      'Group 2134130822.png',
+      '玩机技巧｜纯净通话.png',
+      '玩机技巧｜纯净通话-1.png'
     ];
 
     let galleryInited = false;
