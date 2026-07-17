@@ -1,5 +1,22 @@
-const CRS_BASE = "https://crs.chenge.ink/openai/v1";
 const CRS_KEY = "cr_3a07c6ba66da659eaae348c5782ac9934507be57af7c040220bbc1af67bc1b49";
+
+// API candidates: tried in order until one succeeds
+const API_CANDIDATES = [
+  {
+    url: "https://crs.chenge.ink/api/v1/messages",
+    headers: { 'Authorization': `Bearer ${CRS_KEY}`, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
+    buildBody: (msgs) => JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1024, system: SYSTEM_PROMPT, messages: msgs }),
+    parseText: (d) => d.content?.[0]?.text || '',
+    label: 'crs-claude',
+  },
+  {
+    url: "https://crs.chenge.ink/openai/v1/chat/completions",
+    headers: { 'Authorization': `Bearer ${CRS_KEY}`, 'Content-Type': 'application/json' },
+    buildBody: (msgs) => JSON.stringify({ model: 'gpt-4.1', max_tokens: 1024, messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...msgs] }),
+    parseText: (d) => d.choices?.[0]?.message?.content || '',
+    label: 'crs-gpt',
+  },
+];
 const TOKEN_SECRET = 'tosdesign-secret-2024';
 
 async function verifyToken(token) {
@@ -64,22 +81,24 @@ export async function onRequestPost({ request, env }) {
   if (!messages || !Array.isArray(messages)) {
     return new Response(JSON.stringify({ ok: false, error: 'messages required' }), { status: 400, headers });
   }
-  try {
-    const res = await fetch(`${CRS_BASE}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${CRS_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ model: 'gpt-4.1', max_tokens: 1024, messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages] }),
-    });
-    const data = await res.json();
-    if (!res.ok) return new Response(JSON.stringify({ ok: false, error: data.error?.message || 'API error' }), { status: 500, headers });
-    const text = data.choices?.[0]?.message?.content || '';
-    return new Response(JSON.stringify({ ok: true, text }), { headers });
-  } catch (e) {
-    return new Response(JSON.stringify({ ok: false, error: e.message }), { status: 500, headers });
+  let lastError = 'all candidates failed';
+  for (const cand of API_CANDIDATES) {
+    try {
+      const res = await fetch(cand.url, {
+        method: 'POST',
+        headers: cand.headers,
+        body: cand.buildBody(messages),
+      });
+      const data = await res.json();
+      if (!res.ok) { lastError = `${cand.label}: ${data.error?.message || JSON.stringify(data)}`; continue; }
+      const text = cand.parseText(data);
+      if (!text) { lastError = `${cand.label}: empty response`; continue; }
+      return new Response(JSON.stringify({ ok: true, text, via: cand.label }), { headers });
+    } catch (e) {
+      lastError = `${cand.label}: ${e.message}`;
+    }
   }
+  return new Response(JSON.stringify({ ok: false, error: lastError }), { status: 500, headers });
 }
 
 export async function onRequestOptions() {
