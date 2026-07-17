@@ -5183,12 +5183,12 @@
     // 超出138px内层容器可用空间(仅33px)，overflow裁切在scale变换下出现字体渲染乱码(如"Möffihg")，且该变体未在 Figma 规范文档化(见 spec 第12.3节「不一致项#1」)，故直接移除
     // dual   12种 = headerIcon有无(2) × action有无(2) × icon状态(3)
     // triple 18种 = 顶对齐(headerIcon有无(2) × action有无(2) × icon状态(3)=12) + 底对齐无按钮(headerIcon有无(2) × icon状态(3)=6)；底对齐+按钮物理重叠（Figma规范里底对齐本身就是无按钮变体），直接跳过
-    // big    16种 = 手工精选的有设计意义的核心组合（原60种全排列过度冗余，已精简为：基础款7种 + 标题图标款6种 + 装饰图标款3种）
+    // big    8种 = 依据Figma截图4个核心变体（纯展示/图标按钮/普通按钮）延伸收敛：无按钮纯展示4种 + 有按钮操作4种
     const TPL_BASE = {
       single: { layout: 'single', title: 'Title', bg: '#ffffff', dark: false },
       dual:   { layout: 'dual', title: 'Title', subtitle: 'Subtitle', bg: '#ffffff', dark: false },
       triple: { layout: 'triple', header: 'Header', value: 'Value', subtitle: 'Subtitle', bg: '#ffffff', dark: false },
-      big:    { layout: 'big', header: 'Header', value: 'Value', bg: '#ffffff', dark: false },
+      big:    { layout: 'big', header: 'Header', value: 'DATA', bg: '#ffffff', dark: false },
     };
 
     function tplBuildSingle() {
@@ -5260,27 +5260,19 @@
     function tplBuildBig() {
       const base = { ...TPL_BASE.big };
       return [
-        // ─── 基础款（无标题图标，无装饰图标）───
-        { data: { ...base }, label: '大字体 · 基础' },
-        { data: { ...base, unit: 'Unit' }, label: '大字体 + 单位' },
-        { data: { ...base, subtitle: 'Subtitle' }, label: '大字体 + 副文本' },
-        { data: { ...base, unit: 'Unit', subtitle: 'Subtitle' }, label: '大字体 + 单位 + 副文本' },
-        { data: { ...base, unit: 'Unit', subtitle: 'Subtitle', subtitle2: 'Subtitle 2' }, label: '大字体 + 单位 + 双副文本' },
-        { data: { ...base, action: 'Button' }, label: '大字体 + 按钮' },
-        { data: { ...base, unit: 'Unit', action: 'Button' }, label: '大字体 + 单位 + 按钮' },
+        // ── 无按钮纯展示系列 ──
+        { data: {...base},                                        label: '大字体 · 基础' },
+        { data: {...base, subtitle:'Subtitle'},                   label: '大字体 + 副文本' },
+        { data: {...base, value:'24', unit:'MB'},                 label: '大字体 + 单位' },
+        { data: {...base, value:'24', unit:'MB', subtitle:'Subtitle'}, label: '大字体 + 单位 + 副文本' },
 
-        // ─── 带标题图标款 ───
-        { data: { ...base, headerIcon: 'icons/信息.svg' }, label: '大字体 + 标题图标' },
-        { data: { ...base, headerIcon: 'icons/信息.svg', unit: 'Unit' }, label: '大字体 + 标题图标 + 单位' },
-        { data: { ...base, headerIcon: 'icons/信息.svg', subtitle: 'Subtitle' }, label: '大字体 + 标题图标 + 副文本' },
-        { data: { ...base, headerIcon: 'icons/信息.svg', unit: 'Unit', subtitle: 'Subtitle' }, label: '大字体 + 标题图标 + 单位 + 副文本' },
-        { data: { ...base, headerIcon: 'icons/信息.svg', action: 'Button' }, label: '大字体 + 标题图标 + 按钮' },
-        { data: { ...base, headerIcon: 'icons/信息.svg', unit: 'Unit', action: 'Button' }, label: '大字体 + 标题图标 + 单位 + 按钮' },
+        // ── 有按钮操作系列（Figma 原版） ──
+        { data: {...base, action:'Button'},                       label: '大字体 + 按钮' },
+        { data: {...base, value:'24', unit:'MB', action:'Button'}, label: '大字体 + 单位 + 按钮' },
 
-        // ─── 带装饰图标款 ───
-        { data: { ...base, icon: '●' }, label: '大字体 + 装饰图标' },
-        { data: { ...base, unit: 'Unit', subtitle: 'Subtitle', icon: '●' }, label: '大字体 + 单位 + 副文本 + 装饰图标' },
-        { data: { ...base, headerIcon: 'icons/信息.svg', unit: 'Unit', subtitle: 'Subtitle', icon: '●' }, label: '大字体 + 标题图标 + 单位 + 副文本 + 装饰图标' },
+        // ── 带标题图标延伸 ──
+        { data: {...base, headerIcon:'icons/信息.svg', action:'Button'},           label: '大字体 + 标题图标 + 按钮' },
+        { data: {...base, headerIcon:'icons/信息.svg', value:'24', unit:'MB', action:'Button'}, label: '大字体 + 标题图标 + 单位 + 按钮' },
       ];
     }
 
