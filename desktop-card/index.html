@@ -3882,7 +3882,7 @@
     // 按钮用色规范(Figma):统一中性胶囊,黑8%底(浅色)/白15%底(深色)/白磨砂(渐变背景)
     // 语义强调色只用于数值文字和图标,按钮永不实底语义色
     // headerIcon 支持两种来源:emoji 字符串(直接 textContent)或图标库文件(icons/xxx.svg,直接渲染纯SVG)
-    // 规范：16×16 直接显示 SVG，不加底板，不反色
+    // 规范：16×16 直接显示 SVG，不加底板，dark背景自动反白
     function applyHeaderIcon(el, value) {
       const v = str(value);
       el.textContent = '';
@@ -3891,7 +3891,10 @@
         const img = document.createElement('img');
         img.src = v;
         img.alt = '';
-        img.style.cssText = 'width:16px;height:16px;display:block;vertical-align:middle;';
+        // 检查父容器是否有 .dark 类，有则反白
+        const isDark = el.closest('.tos-card-inner')?.classList.contains('dark');
+        const filter = isDark ? 'brightness(0) invert(1)' : 'none';
+        img.style.cssText = `width:16px;height:16px;display:block;vertical-align:middle;filter:${filter};`;
         el.appendChild(img);
       } else {
         el.textContent = v;
