@@ -5211,6 +5211,8 @@
       });
       // 标题图标变体
       out.push({ data: { ...TPL_BASE.single, headerIcon:'icons/偏好.svg' }, label: '单文本 + 标题图标' });
+      out.push({ data: { ...TPL_BASE.single, headerIcon:'icons/偏好.svg', icon:'🏔️', heroIcon:true }, label: '单文本 + 标题图标 + 大装饰图标' });
+      out.push({ data: { ...TPL_BASE.single, headerIcon:'icons/偏好.svg', action:'Button' }, label: '单文本 + 标题图标 + 按钮' });
       return out;
     }
 
