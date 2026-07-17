@@ -5195,11 +5195,12 @@
         ['none', 'emoji', 'hero'].forEach(iconState => {
           const data = { ...TPL_BASE.single };
           if (hasAction) data.action = 'Button';
-          if (iconState === 'hero') data.heroIcon = true;
+          if (iconState === 'emoji') data.icon = '●';
+          if (iconState === 'hero') { data.icon = '●'; data.heroIcon = true; }
           const parts = ['单文本'];
           if (hasAction) parts.push('按钮');
-          if (iconState === 'emoji') parts.push('图标');
-          if (iconState === 'hero') parts.push('大图标');
+          if (iconState === 'emoji') parts.push('装饰图标');
+          if (iconState === 'hero') parts.push('大装饰图标');
           out.push({ data, label: parts.join(' + ') });
         });
       });
@@ -5214,12 +5215,13 @@
             const data = { ...TPL_BASE.dual };
             if (hasHeaderIcon) data.headerIcon = 'icons/信息.svg';
             if (hasAction) data.action = 'Button';
-            if (iconState === 'hero') data.heroIcon = true;
+            if (iconState === 'emoji') data.icon = '●';
+            if (iconState === 'hero') { data.icon = '●'; data.heroIcon = true; }
             const parts = ['双文本'];
             if (hasHeaderIcon) parts.push('标题图标');
             if (hasAction) parts.push('按钮');
-            if (iconState === 'emoji') parts.push('图标');
-            if (iconState === 'hero') parts.push('大图标');
+            if (iconState === 'emoji') parts.push('装饰图标');
+            if (iconState === 'hero') parts.push('大装饰图标');
             out.push({ data, label: parts.join(' + ') });
           });
         });
@@ -5238,12 +5240,13 @@
               const data = { ...TPL_BASE.triple, alignBottom };
               if (hasHeaderIcon) data.headerIcon = 'icons/信息.svg';
               if (hasAction) data.action = 'Button';
-              if (iconState === 'hero') data.heroIcon = true;
+              if (iconState === 'emoji') data.icon = '●';
+            if (iconState === 'hero') { data.icon = '●'; data.heroIcon = true; }
               const parts = ['三文本', alignBottom ? '底对齐' : '顶对齐'];
               if (hasHeaderIcon) parts.push('标题图标');
               if (hasAction) parts.push('按钮');
-              if (iconState === 'emoji') parts.push('图标');
-              if (iconState === 'hero') parts.push('大图标');
+              if (iconState === 'emoji') parts.push('装饰图标');
+              if (iconState === 'hero') parts.push('大装饰图标');
               out.push({ data, label: parts.join(' + ') });
             });
           });
@@ -5268,15 +5271,16 @@
               const data = { ...TPL_BASE.big };
               if (hasHeaderIcon) data.headerIcon = 'icons/信息.svg';
               if (hasUnit) data.unit = 'Unit';
-              if (iconState === 'hero') data.heroIcon = true;
+              if (iconState === 'emoji') data.icon = '●';
+            if (iconState === 'hero') { data.icon = '●'; data.heroIcon = true; }
               if (st.action) data.action = 'Button';
               if (st.subtitle) data.subtitle = 'Subtitle';
               if (st.subtitle2) data.subtitle2 = 'Subtitle 2';
               const parts = ['大字体'];
               if (hasHeaderIcon) parts.push('标题图标');
               if (hasUnit) parts.push('单位');
-              if (iconState === 'emoji') parts.push('图标');
-              if (iconState === 'hero') parts.push('大图标');
+              if (iconState === 'emoji') parts.push('装饰图标');
+              if (iconState === 'hero') parts.push('大装饰图标');
               parts.push(st.label);
               out.push({ data, label: parts.join(' + ') });
             });
