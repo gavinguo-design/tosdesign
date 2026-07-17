@@ -1825,6 +1825,23 @@
     }
     #wb-card-stage.visible { display: flex; }
 
+    /* ─── SAVE-TO-LIBRARY FLY ANIMATION ─── */
+    .lib-fly-card {
+      position: fixed;
+      pointer-events: none;
+      border-radius: 8px;
+      transition: all 0.5s cubic-bezier(0.4,0,0.2,1);
+      z-index: 9999;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
+    .sidebar-nav-item.lib-flash {
+      animation: libNavFlash 0.3s ease;
+    }
+    @keyframes libNavFlash {
+      0% { background: rgba(124,92,252,0.35); }
+      100% { background: transparent; }
+    }
+
     .wb-card-container {
       width: 276px; height: 276px;
       border-radius: 40px;
@@ -2286,6 +2303,17 @@
       font-family: inherit; line-height: 1.5;
     }
     .wb-chat-input::placeholder { color: var(--muted); }
+
+    /* ─── LIBRARY VIEW (卡片库) ─── */
+    #library-view {
+      position: absolute; inset: 0;
+      display: none;
+      flex-direction: column;
+      z-index: 26;
+      background: #0f0f0f;
+      overflow: hidden;
+    }
+    #library-view.active { display: flex; }
 
     /* ─── GALLERY VIEW (灵感剧场 / 最佳案例) ─── */
     #gallery-view {
@@ -4609,6 +4637,50 @@
     }
 
     // ─── CARD LIBRARY (保存到库 / 打开库, Cloudflare KV 云端存储) ───
+    function playSaveToLibraryFlyAnim() {
+      try {
+        const stage = document.getElementById('wb-card-stage') || document.querySelector('.wb-preview-inner');
+        const navLibrary = document.getElementById('navLibrary');
+        if (!stage || !navLibrary) return;
+        const stageRect = stage.getBoundingClientRect();
+        const navRect = navLibrary.getBoundingClientRect();
+        // fallback bg color from wb-card if present
+        const wbCard = document.getElementById('wb-card');
+        let bg = '#7C5CFC';
+        if (wbCard) {
+          const cs = window.getComputedStyle(wbCard);
+          if (cs && cs.backgroundColor && cs.backgroundColor !== 'rgba(0, 0, 0, 0)') bg = cs.backgroundColor;
+        }
+        const fly = document.createElement('div');
+        fly.className = 'lib-fly-card';
+        fly.style.width = '32px';
+        fly.style.height = '32px';
+        fly.style.background = bg;
+        const startLeft = stageRect.left + stageRect.width / 2 - 16;
+        const startTop = stageRect.top + stageRect.height / 2 - 16;
+        fly.style.left = startLeft + 'px';
+        fly.style.top = startTop + 'px';
+        fly.style.transform = 'scale(1)';
+        fly.style.opacity = '1';
+        document.body.appendChild(fly);
+        // force reflow so the transition applies
+        void fly.offsetWidth;
+        const endLeft = navRect.left + navRect.width / 2 - 16;
+        const endTop = navRect.top + navRect.height / 2 - 16;
+        requestAnimationFrame(() => {
+          fly.style.left = endLeft + 'px';
+          fly.style.top = endTop + 'px';
+          fly.style.transform = 'scale(0.3)';
+          fly.style.opacity = '0';
+        });
+        setTimeout(() => {
+          fly.remove();
+          navLibrary.classList.add('lib-flash');
+          setTimeout(() => { navLibrary.classList.remove('lib-flash'); }, 300);
+        }, 500);
+      } catch (e) { /* animation is best-effort, never block save flow */ }
+    }
+
     async function saveToLibrary(btn) {
       const token = localStorage.getItem('tos_token');
       if (!token) {
@@ -4633,6 +4705,7 @@
         if (!data.ok) { alert('保存失败:' + (data.error || '请重试')); btn.textContent = orig; btn.disabled = false; return; }
         btn.textContent = '已保存 ✓';
         btn.classList.add('saved-flash');
+        playSaveToLibraryFlyAnim();
         setTimeout(() => { btn.textContent = orig; btn.disabled = false; btn.classList.remove('saved-flash'); }, 1600);
       } catch (e) {
         alert('网络错误,请重试');
