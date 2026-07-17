@@ -3834,6 +3834,7 @@
         img.width = 16;
         img.height = 16;
         img.style.verticalAlign = 'middle';
+        img.style.display = 'inline-block';
         el.appendChild(img);
       } else {
         el.textContent = v;
@@ -5043,9 +5044,9 @@
 
     // ─── ICON LIBRARY VIEW (图标库) ───
     const ICON_LIBRARY_ITEMS = [
-      '信息', '偏好', '分享', '天气：多云', '安全', '定位',
-      '快递', '手机', '手表', '推荐', '用户', '短信',
-      '视频', '设置', '邮箱', '钱包',
+      '信息', '偏好', '充电', '分享', '天气：多云', '天气：晴天',
+      '天气：雨天', '存储', '安全', '定位', '快递', '手表',
+      '推荐', '文件', '步数', '用户', '短信', '通话', '邮箱',
     ];
     let iconLibraryInited = false;
     let iconLibToastTimer = null;
@@ -5054,7 +5055,7 @@
       const grid = document.getElementById('iconLibGrid');
       if (!grid) return;
       grid.innerHTML = ICON_LIBRARY_ITEMS.map(name => {
-        const src = 'icons/' + encodeURIComponent(name + '.png');
+        const src = 'icons/' + encodeURIComponent(name + '.svg');
         return `<div class="icon-lib-item" data-name="${name}" onclick="copyIconPath('${name.replace(/'/g, "\\'")}')">
           <img src="${src}" alt="${name}" loading="lazy">
           <div class="icon-lib-item-name">${name}</div>
@@ -5063,7 +5064,7 @@
     }
 
     function copyIconPath(name) {
-      const path = 'icons/' + name + '.png';
+      const path = 'icons/' + name + '.svg';
       const done = () => showIconLibToast('已复制: ' + path);
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(path).then(done).catch(() => fallbackCopy(path, done));
@@ -5130,7 +5131,7 @@
         [false, true].forEach(hasAction => {
           ['none', 'emoji', 'hero'].forEach(iconState => {
             const data = { ...TPL_BASE.dual };
-            if (hasHeaderIcon) data.headerIcon = 'icons/手机.png';
+            if (hasHeaderIcon) data.headerIcon = 'icons/通话.svg';
             if (hasAction) data.action = 'Call';
             if (iconState === 'hero') data.heroIcon = true;
             const parts = ['双文本'];
@@ -5154,7 +5155,7 @@
             if (alignBottom && hasAction) return;
             ['none', 'emoji', 'hero'].forEach(iconState => {
               const data = { ...TPL_BASE.triple, alignBottom };
-              if (hasHeaderIcon) data.headerIcon = 'icons/定位.png';
+              if (hasHeaderIcon) data.headerIcon = 'icons/定位.svg';
               if (hasAction) data.action = 'Details';
               if (iconState === 'hero') data.heroIcon = true;
               const parts = ['三文本', alignBottom ? '底对齐' : '顶对齐'];
@@ -5184,7 +5185,7 @@
           ['none', 'emoji', 'hero'].forEach(iconState => {
             subtitleStates.forEach(st => {
               const data = { ...TPL_BASE.big };
-              if (hasHeaderIcon) data.headerIcon = 'icons/信息.png';
+              if (hasHeaderIcon) data.headerIcon = 'icons/信息.svg';
               if (hasUnit) data.unit = 'GB';
               if (iconState === 'hero') data.heroIcon = true;
               if (st.action) data.action = 'Details';
