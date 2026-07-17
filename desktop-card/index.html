@@ -2330,9 +2330,18 @@
     }
     .gallery-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      grid-template-columns: repeat(5, 1fr);
       gap: 24px;
       perspective: 1200px;
+    }
+    @media (max-width: 1199px) {
+      .gallery-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+    @media (max-width: 899px) {
+      .gallery-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 599px) {
+      .gallery-grid { grid-template-columns: repeat(2, 1fr); }
     }
     .magnetic-card {
       position: relative;
@@ -2571,7 +2580,7 @@
           返回
         </button>
         <span class="gallery-title">灵感剧场</span>
-        <span class="gallery-sub">最佳案例 · 磁力网格</span>
+        <span class="gallery-sub">最佳案例</span>
       </div>
       <div class="gallery-grid-wrap">
         <div class="gallery-grid" id="galleryGrid"></div>
