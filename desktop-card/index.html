@@ -2317,6 +2317,116 @@
     .empty-view-text { font-size: 18px; font-weight: 600; color: #1a1a1a; }
     .empty-view-sub { font-size: 14px; color: #888892; }
 
+    /* ─── TEMPLATES VIEW (基础模板) ─── */
+    #templates-view {
+      position: absolute; inset: 0;
+      display: none;
+      flex-direction: column;
+      z-index: 26;
+      background:
+        radial-gradient(ellipse 65% 55% at 92% 5%, rgba(230,210,205,0.70), transparent),
+        radial-gradient(ellipse 70% 65% at 5% 100%, rgba(205,225,195,0.65), transparent),
+        #eeecf1;
+      overflow: hidden;
+    }
+    #templates-view.active { display: flex; }
+    .tpl-header {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tpl-back-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.08);
+      color: #444;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .tpl-back-btn:hover { background: rgba(0,0,0,0.1); color: #111; }
+    .tpl-title { font-size: 18px; font-weight: 600; color: #1a1a1a; letter-spacing: 0.01em; }
+    .tpl-sub { font-size: 12px; color: #888892; margin-left: 2px; }
+    .tpl-tabs {
+      flex-shrink: 0;
+      display: flex;
+      gap: 8px;
+      padding: 16px 28px 0;
+    }
+    .tpl-tab {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tpl-tab:hover { background: rgba(0,0,0,0.04); color: var(--text); }
+    .tpl-tab.active { background: var(--accent); color: #fff; }
+    .tpl-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 28px 56px;
+    }
+    .tpl-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 1199px) {
+      .tpl-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 899px) {
+      .tpl-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .tpl-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .tpl-card-preview {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      max-width: 140px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      position: relative;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .tpl-card:hover .tpl-card-preview {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.14);
+    }
+    .tpl-card-scale {
+      position: absolute; inset: 0;
+    }
+    .tpl-card-label {
+      font-size: 11.5px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.4;
+      max-width: 140px;
+    }
+    .tpl-count-badge {
+      font-size: 12px;
+      color: var(--muted);
+      margin-left: auto;
+      padding-right: 4px;
+    }
+
     .gallery-header {
       flex-shrink: 0;
       display: flex;
@@ -2508,7 +2618,7 @@
         </svg>
         <div class="sidebar-nav-item-body">卡片库</div>
       </button>
-      <button class="sidebar-nav-item" id="navTemplates" onclick="showView('templates-view', '基础模板', 'navTemplates')">
+      <button class="sidebar-nav-item" id="navTemplates" onclick="showTemplates()">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 2l6.5 3.5v7L9 16 2.5 12.5v-7z"/>
           <path d="M9 2v14"/>
@@ -2606,6 +2716,25 @@
       <div class="empty-view-icon">🚧</div>
       <div class="empty-view-text">即将上线</div>
       <div class="empty-view-sub" id="empty-view-label"></div>
+    </div>
+
+    <!-- TEMPLATES VIEW: 基础模板 -->
+    <div id="templates-view">
+      <div class="tpl-header">
+        <button class="tpl-back-btn" onclick="hideTemplates()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 2.5L3.5 7l5.5 4.5"/>
+          </svg>
+          返回工作台
+        </button>
+        <span class="tpl-title">基础模板</span>
+        <span class="tpl-sub">4 种布局 × 全部参数组合</span>
+        <span class="tpl-count-badge" id="tplCountBadge"></span>
+      </div>
+      <div class="tpl-tabs" id="tplTabs"></div>
+      <div class="tpl-body">
+        <div class="tpl-grid" id="tplGrid"></div>
+      </div>
     </div>
 
     <!-- WORKBENCH VIEW -->
@@ -3440,7 +3569,7 @@
             '');
           const hi = document.createElement('span');
           hi.style.cssText = 'font-size:16px;line-height:1;';
-          hi.textContent = str(data.headerIcon);
+          applyHeaderIcon(hi, data.headerIcon);
           dh.appendChild(hi);
           const dt = document.createElement('span');
           dt.textContent = data.title;
@@ -3473,7 +3602,7 @@
         if (data.headerIcon) {
           const hi = document.createElement('span');
           hi.style.cssText = 'font-size:12px;line-height:1;';
-          hi.textContent = str(data.headerIcon);
+          applyHeaderIcon(hi, data.headerIcon);
           triHeader.appendChild(hi);
         }
         const ht = document.createElement('span');
@@ -3497,7 +3626,7 @@
         if (data.headerIcon) {
           const hi = document.createElement('span');
           hi.style.cssText = 'font-size:12px;line-height:1;';
-          hi.textContent = str(data.headerIcon);
+          applyHeaderIcon(hi, data.headerIcon);
           bigHeader.appendChild(hi);
         }
         const bt = document.createElement('span');
@@ -4481,6 +4610,209 @@
     function hideGallery() {
       document.getElementById('gallery-view').classList.remove('active');
       showWorkbench(false);
+    }
+
+    // ─── TEMPLATES VIEW (基础模板：4种布局全参数组合预览) ───
+    // 基于 desktop-card-figma-spec.md 第12节组合矩阵，按 buildCardInner() 实际支持的字段组合生成变体：
+    // single 12种 = alignBottom(2) × action有无(2) × icon状态(无/emoji/hero=3)
+    // dual   12种 = headerIcon有无(2) × action有无(2) × icon状态(3)
+    // triple 24种 = alignBottom(2) × headerIcon有无(2) × action有无(2) × icon状态(3)
+    // big    60种 = headerIcon有无(2) × unit有无(2) × icon状态(3) × 副文本/按钮状态(5：有action无副文本1种 + 无action时subtitle/subtitle2独立开关器4种)
+    const TPL_BASE = {
+      single: { layout: 'single', title: 'Morning Briefing: 3 meetings today, first at 9:30 AM', bg: '#f0f4ff', dark: false },
+      dual:   { layout: 'dual', title: 'Missed Call', subtitle: 'Emma · 2 min ago', bg: '#ffffff', dark: false },
+      triple: { layout: 'triple', header: 'Beijing', value: 'Sunny', subtitle: '24°C · Feels 26°C', bg: 'linear-gradient(165deg,#3D7EE8,#BEE3F8)', dark: true },
+      big:    { layout: 'big', header: 'Memory', value: '8.2', bg: '#ffffff', dark: false },
+    };
+
+    function tplBuildSingle() {
+      const out = [];
+      [false, true].forEach(alignBottom => {
+        [false, true].forEach(hasAction => {
+          ['none', 'emoji', 'hero'].forEach(iconState => {
+            const data = { ...TPL_BASE.single, alignBottom };
+            if (hasAction) data.action = 'Open';
+            if (iconState === 'emoji') data.icon = '📋';
+            if (iconState === 'hero') { data.icon = '📋'; data.heroIcon = true; }
+            const parts = ['单文本', alignBottom ? '底对齐' : '顶对齐'];
+            if (hasAction) parts.push('按钮');
+            if (iconState === 'emoji') parts.push('图标');
+            if (iconState === 'hero') parts.push('大图标');
+            out.push({ data, label: parts.join(' + ') });
+          });
+        });
+      });
+      return out;
+    }
+
+    function tplBuildDual() {
+      const out = [];
+      [false, true].forEach(hasHeaderIcon => {
+        [false, true].forEach(hasAction => {
+          ['none', 'emoji', 'hero'].forEach(iconState => {
+            const data = { ...TPL_BASE.dual };
+            if (hasHeaderIcon) data.headerIcon = '📞';
+            if (hasAction) data.action = 'Call';
+            if (iconState === 'emoji') data.icon = '📞';
+            if (iconState === 'hero') { data.icon = '📞'; data.heroIcon = true; }
+            const parts = ['双文本'];
+            if (hasHeaderIcon) parts.push('标题图标');
+            if (hasAction) parts.push('按钮');
+            if (iconState === 'emoji') parts.push('图标');
+            if (iconState === 'hero') parts.push('大图标');
+            out.push({ data, label: parts.join(' + ') });
+          });
+        });
+      });
+      return out;
+    }
+
+    function tplBuildTriple() {
+      const out = [];
+      [false, true].forEach(alignBottom => {
+        [false, true].forEach(hasHeaderIcon => {
+          [false, true].forEach(hasAction => {
+            ['none', 'emoji', 'hero'].forEach(iconState => {
+              const data = { ...TPL_BASE.triple, alignBottom };
+              if (hasHeaderIcon) data.headerIcon = '📍';
+              if (hasAction) data.action = 'Details';
+              if (iconState === 'emoji') data.icon = '🌤';
+              if (iconState === 'hero') { data.icon = '🌤'; data.heroIcon = true; }
+              const parts = ['三文本', alignBottom ? '底对齐' : '顶对齐'];
+              if (hasHeaderIcon) parts.push('标题图标');
+              if (hasAction) parts.push('按钮');
+              if (iconState === 'emoji') parts.push('图标');
+              if (iconState === 'hero') parts.push('大图标');
+              out.push({ data, label: parts.join(' + ') });
+            });
+          });
+        });
+      });
+      return out;
+    }
+
+    function tplBuildBig() {
+      const out = [];
+      const subtitleStates = [
+        { action: true,  subtitle: false, subtitle2: false, label: '按钮(无副文本)' },
+        { action: false, subtitle: false, subtitle2: false, label: '无副文本' },
+        { action: false, subtitle: true,  subtitle2: false, label: '副文本' },
+        { action: false, subtitle: false, subtitle2: true,  label: '副文本2' },
+        { action: false, subtitle: true,  subtitle2: true,  label: '双副文本' },
+      ];
+      [false, true].forEach(hasHeaderIcon => {
+        [false, true].forEach(hasUnit => {
+          ['none', 'emoji', 'hero'].forEach(iconState => {
+            subtitleStates.forEach(st => {
+              const data = { ...TPL_BASE.big };
+              if (hasHeaderIcon) data.headerIcon = '💾';
+              if (hasUnit) data.unit = 'GB';
+              if (iconState === 'emoji') data.icon = '📊';
+              if (iconState === 'hero') { data.icon = '📊'; data.heroIcon = true; }
+              if (st.action) data.action = 'Details';
+              if (st.subtitle) data.subtitle = '4 apps running';
+              if (st.subtitle2) data.subtitle2 = 'Updated just now';
+              const parts = ['大字体'];
+              if (hasHeaderIcon) parts.push('标题图标');
+              if (hasUnit) parts.push('单位');
+              if (iconState === 'emoji') parts.push('图标');
+              if (iconState === 'hero') parts.push('大图标');
+              parts.push(st.label);
+              out.push({ data, label: parts.join(' + ') });
+            });
+          });
+        });
+      });
+      return out;
+    }
+
+    const TEMPLATE_VARIANTS = {
+      single: tplBuildSingle(),
+      dual: tplBuildDual(),
+      triple: tplBuildTriple(),
+      big: tplBuildBig(),
+    };
+    const TEMPLATE_TAB_LABELS = { single: '单文本', dual: '双文本', triple: '三文本', big: '大字体' };
+
+    let templatesInited = false;
+    let activeTemplateLayout = 'single';
+
+    function showTemplates() {
+      document.getElementById('welcomeState').classList.add('hidden');
+      document.getElementById('workbench-view').classList.remove('active');
+      document.getElementById('gallery-view').classList.remove('active');
+      const ev = document.getElementById('empty-view');
+      if (ev) ev.classList.remove('active');
+      document.getElementById('templates-view').classList.add('active');
+      document.querySelectorAll('.sidebar-nav-item').forEach(b => b.classList.remove('active'));
+      const navBtn = document.getElementById('navTemplates');
+      if (navBtn) navBtn.classList.add('active');
+      if (!templatesInited) {
+        renderTemplateTabs();
+        switchTemplateTab('single');
+        templatesInited = true;
+      }
+    }
+
+    function hideTemplates() {
+      document.getElementById('templates-view').classList.remove('active');
+      showWorkbench(false);
+    }
+
+    function renderTemplateTabs() {
+      const tabsEl = document.getElementById('tplTabs');
+      if (!tabsEl) return;
+      tabsEl.innerHTML = Object.keys(TEMPLATE_VARIANTS).map(key => {
+        const count = TEMPLATE_VARIANTS[key].length;
+        return `<button class="tpl-tab${key === activeTemplateLayout ? ' active' : ''}" data-layout="${key}" onclick="switchTemplateTab('${key}')">${TEMPLATE_TAB_LABELS[key]} (${count})</button>`;
+      }).join('');
+    }
+
+    function switchTemplateTab(layout) {
+      activeTemplateLayout = layout;
+      document.querySelectorAll('.tpl-tab').forEach(t => t.classList.toggle('active', t.dataset.layout === layout));
+      renderTemplateGrid(layout);
+    }
+
+    function renderTemplateGrid(layout) {
+      const grid = document.getElementById('tplGrid');
+      if (!grid) return;
+      const variants = TEMPLATE_VARIANTS[layout] || [];
+      const badge = document.getElementById('tplCountBadge');
+      if (badge) badge.textContent = `${variants.length} 个变体`;
+      grid.innerHTML = '';
+      variants.forEach(v => {
+        const dark = v.data.dark || false;
+        const card = document.createElement('div');
+        card.className = 'tpl-card';
+        card.onclick = () => applyTemplate(v.data, v.label);
+
+        const preview = document.createElement('div');
+        preview.className = 'tpl-card-preview';
+        preview.style.background = v.data.bg || (dark ? '#1c1c1e' : '#ffffff');
+
+        const scaleWrap = document.createElement('div');
+        scaleWrap.className = 'tpl-card-scale';
+        const inner = document.createElement('div');
+        inner.style.cssText = 'width:138px;height:138px;position:relative;transform:scale(0.58);transform-origin:top left;pointer-events:none;';
+        inner.appendChild(buildCardInner(v.data));
+        scaleWrap.appendChild(inner);
+        preview.appendChild(scaleWrap);
+
+        const label = document.createElement('div');
+        label.className = 'tpl-card-label';
+        label.textContent = v.label;
+
+        card.appendChild(preview);
+        card.appendChild(label);
+        grid.appendChild(card);
+      });
+    }
+
+    function applyTemplate(data, label) {
+      document.getElementById('templates-view').classList.remove('active');
+      showWorkbench(false);
+      presentCard({ ...data }, label);
     }
 
     function renderGalleryGrid() {
