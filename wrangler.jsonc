@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tosdesign-repo",
+  "compatibility_date": "2026-07-09",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "."
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "tosdesign-db",
+      "database_id": "你的D1数据库ID"
+    }
+  ]
+}
