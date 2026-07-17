@@ -4471,6 +4471,10 @@
 
     function startNewSession() {
       hideWorkbench();
+      const galView = document.getElementById('gallery-view');
+      if (galView) galView.classList.remove('active');
+      const tplView = document.getElementById('templates-view');
+      if (tplView) tplView.classList.remove('active');
       const ws = document.getElementById('welcomeState');
       if (ws) ws.classList.remove('hidden');
       document.getElementById('welcomeInput').value = '';
@@ -4539,6 +4543,12 @@
     function showWorkbench(loading) {
       // hide welcome, hide left-dock if shown
       document.getElementById('welcomeState').classList.add('hidden');
+      const galView = document.getElementById('gallery-view');
+      if (galView) galView.classList.remove('active');
+      const tplView = document.getElementById('templates-view');
+      if (tplView) tplView.classList.remove('active');
+      const emptyView = document.getElementById('empty-view');
+      if (emptyView) emptyView.classList.remove('active');
       const wbView = document.getElementById('workbench-view');
       wbView.classList.add('active');
       // highlight sidebar workbench
@@ -4587,7 +4597,11 @@
       '玩机技巧｜纯净通话-1.png',
       '玩机技巧｜纯净通话-2.png',
       '早安-1.png',
-      '智能路况-1.png'
+      '智能路况-1.png',
+      'Frame 2117132827.png',
+      'Group 2134130823.png',
+      '年度总结.png',
+      '当地应用.png'
     ];
 
     let galleryInited = false;
@@ -4596,6 +4610,8 @@
       // hide other views
       document.getElementById('welcomeState').classList.add('hidden');
       document.getElementById('workbench-view').classList.remove('active');
+      const tplView = document.getElementById('templates-view');
+      if (tplView) tplView.classList.remove('active');
       document.getElementById('gallery-view').classList.add('active');
       // highlight sidebar
       document.querySelectorAll('.sidebar-nav-item').forEach(b => b.classList.remove('active'));
