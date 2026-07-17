@@ -1116,6 +1116,68 @@
       display: flex; align-items: center; justify-content: center;
     }
     #loginOverlay.hidden { display: none; }
+
+    /* ─── CARD LIBRARY PANEL ─── */
+    #libraryOverlay {
+      position: fixed; inset: 0; z-index: 998;
+      background: rgba(0,0,0,0.25);
+      display: flex; align-items: stretch; justify-content: flex-end;
+    }
+    #libraryOverlay.hidden { display: none; }
+    #libraryPanel {
+      width: 380px; max-width: 90vw; height: 100%;
+      background: #fff;
+      box-shadow: -8px 0 32px rgba(0,0,0,0.14);
+      display: flex; flex-direction: column;
+      animation: libSlideIn 0.22s ease;
+    }
+    @keyframes libSlideIn { from { transform: translateX(24px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    #libraryPanelHeader {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.1rem 1.2rem; border-bottom: 1px solid rgba(0,0,0,0.07);
+      flex-shrink: 0;
+    }
+    #libraryPanelTitle { font-size: 0.95rem; font-weight: 600; color: var(--text); }
+    #libraryPanelClose {
+      background: none; border: none; cursor: pointer;
+      font-size: 0.95rem; color: var(--muted); padding: 4px 6px; border-radius: 6px;
+    }
+    #libraryPanelClose:hover { background: rgba(0,0,0,0.06); color: var(--text); }
+    #libraryPanelBody { flex: 1; overflow-y: auto; padding: 1rem 1.1rem; }
+    #libraryEmpty, #libraryLoading {
+      text-align: center; color: var(--muted); font-size: 0.82rem; padding: 2.5rem 1rem;
+    }
+    #libraryEmpty.hidden, #libraryLoading.hidden { display: none; }
+    #libraryList { display: flex; flex-direction: column; gap: 0.7rem; }
+    .lib-item {
+      display: flex; gap: 0.7rem; align-items: center;
+      border: 1px solid rgba(0,0,0,0.08); border-radius: 12px;
+      padding: 0.6rem; background: rgba(0,0,0,0.015);
+      transition: box-shadow 0.15s ease;
+    }
+    .lib-item:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+    .lib-item-thumb {
+      width: 52px; height: 52px; border-radius: 10px; flex-shrink: 0;
+      background-size: cover; background-position: center;
+      background-color: #f0f0f3;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; color: #bbb;
+    }
+    .lib-item-info { flex: 1; min-width: 0; }
+    .lib-item-title {
+      font-size: 0.82rem; font-weight: 600; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .lib-item-time { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+    .lib-item-actions { display: flex; gap: 0.35rem; flex-shrink: 0; }
+    .lib-item-btn {
+      font-size: 0.7rem; padding: 0.3rem 0.55rem; border-radius: 7px;
+      border: 1px solid rgba(0,0,0,0.1); background: #fff; cursor: pointer;
+      color: var(--text); white-space: nowrap;
+    }
+    .lib-item-btn:hover { background: rgba(124,92,252,0.08); border-color: rgba(124,92,252,0.3); }
+    .lib-item-btn.danger:hover { background: rgba(255,52,48,0.08); border-color: rgba(255,52,48,0.3); color: #ff3430; }
+    .wb-tb-btn.saved-flash { background: rgba(1,203,101,0.15) !important; color: #01a350 !important; }
     .login-box {
       background: rgba(255,255,255,0.95);
       border: 1px solid rgba(0,0,0,0.08);
@@ -2247,6 +2309,21 @@
         <button class="login-btn" onclick="doRegister()">注册</button>
         <div class="login-err" id="registerErr"></div>
         <div class="login-switch">已有账号?<a onclick="showLogin()"> 返回登录</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD LIBRARY PANEL (slide-in from right, workbench) -->
+  <div id="libraryOverlay" class="hidden" onclick="if(event.target===this) closeLibrary()">
+    <div id="libraryPanel">
+      <div id="libraryPanelHeader">
+        <span id="libraryPanelTitle">📚 我的卡片库</span>
+        <button id="libraryPanelClose" onclick="closeLibrary()">&#x2715;</button>
+      </div>
+      <div id="libraryPanelBody">
+        <div id="libraryEmpty" class="hidden">还没有保存的卡片,先去生成并保存一张吧 ~</div>
+        <div id="libraryLoading">加载中...</div>
+        <div id="libraryList"></div>
       </div>
     </div>
   </div>
@@ -3902,6 +3979,123 @@
       localStorage.removeItem('tos_name');
       document.getElementById('loginOverlay').classList.remove('hidden');
       showLogin();
+    }
+
+    // ─── CARD LIBRARY (保存到库 / 打开库, Cloudflare KV 云端存储) ───
+    async function saveToLibrary(btn) {
+      const token = localStorage.getItem('tos_token');
+      if (!token) {
+        document.getElementById('loginOverlay').classList.remove('hidden');
+        showLogin();
+        return;
+      }
+      if (!currentCardData) { alert('先生成一张卡片再保存'); return; }
+      const orig = btn.textContent;
+      btn.textContent = '保存中...'; btn.disabled = true;
+      try {
+        const res = await fetch('/api/library', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            cardData: currentCardData,
+            title: currentCardData.header || currentCardData.title || '',
+            thumbnail: currentCardData.bgImage || '',
+          }),
+        });
+        const data = await res.json();
+        if (!data.ok) { alert('保存失败:' + (data.error || '请重试')); btn.textContent = orig; btn.disabled = false; return; }
+        btn.textContent = '已保存 ✓';
+        btn.classList.add('saved-flash');
+        setTimeout(() => { btn.textContent = orig; btn.disabled = false; btn.classList.remove('saved-flash'); }, 1600);
+      } catch (e) {
+        alert('网络错误,请重试');
+        btn.textContent = orig; btn.disabled = false;
+      }
+    }
+
+    async function openLibrary() {
+      const token = localStorage.getItem('tos_token');
+      if (!token) {
+        document.getElementById('loginOverlay').classList.remove('hidden');
+        showLogin();
+        return;
+      }
+      const overlay = document.getElementById('libraryOverlay');
+      overlay.classList.remove('hidden');
+      const loadingEl = document.getElementById('libraryLoading');
+      const emptyEl = document.getElementById('libraryEmpty');
+      const listEl = document.getElementById('libraryList');
+      loadingEl.classList.remove('hidden');
+      emptyEl.classList.add('hidden');
+      listEl.innerHTML = '';
+      try {
+        const res = await fetch('/api/library', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        const data = await res.json();
+        loadingEl.classList.add('hidden');
+        if (!data.ok) { listEl.innerHTML = `<div style="color:#ff3430;font-size:0.8rem;text-align:center;padding:1rem">${data.error || '加载失败'}</div>`; return; }
+        _libraryCache = data.items || [];
+        renderLibraryList(_libraryCache);
+      } catch (e) {
+        loadingEl.classList.add('hidden');
+        listEl.innerHTML = '<div style="color:#ff3430;font-size:0.8rem;text-align:center;padding:1rem">网络错误,请重试</div>';
+      }
+    }
+
+    function renderLibraryList(items) {
+      const emptyEl = document.getElementById('libraryEmpty');
+      const listEl = document.getElementById('libraryList');
+      if (!items.length) {
+        emptyEl.classList.remove('hidden');
+        listEl.innerHTML = '';
+        return;
+      }
+      emptyEl.classList.add('hidden');
+      listEl.innerHTML = items.map(it => {
+        const thumbStyle = it.thumbnail ? `background-image:url(${it.thumbnail})` : '';
+        const thumbIcon = it.thumbnail ? '' : '🎨';
+        const time = it.savedAt ? new Date(it.savedAt).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+        const title = (it.title || '未命名卡片').replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+        return `<div class="lib-item" data-id="${it.id}">
+          <div class="lib-item-thumb" style="${thumbStyle}">${thumbIcon}</div>
+          <div class="lib-item-info">
+            <div class="lib-item-title">${title}</div>
+            <div class="lib-item-time">${time}</div>
+          </div>
+          <div class="lib-item-actions">
+            <button class="lib-item-btn" onclick='loadFromLibrary(${JSON.stringify(it.id)})'>加载</button>
+            <button class="lib-item-btn danger" onclick='deleteFromLibrary(${JSON.stringify(it.id)})'>删除</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    let _libraryCache = [];
+
+    function loadFromLibrary(id) {
+      const item = _libraryCache.find(x => String(x.id) === String(id));
+      if (!item) return;
+      pushVersion(item.cardData, null);
+      closeLibrary();
+    }
+
+    async function deleteFromLibrary(id) {
+      if (!confirm('确定要删除这张卡片吗?')) return;
+      const token = localStorage.getItem('tos_token');
+      try {
+        const res = await fetch(`/api/library/${encodeURIComponent(id)}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (!data.ok) { alert('删除失败:' + (data.error || '请重试')); return; }
+        openLibrary();
+      } catch (e) { alert('网络错误,请重试'); }
+    }
+
+    function closeLibrary() {
+      document.getElementById('libraryOverlay').classList.add('hidden');
     }
 
 

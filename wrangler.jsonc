@@ -17,5 +17,11 @@
       "database_name": "tosdesign-db",
       "database_id": "你的D1数据库ID"
     }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "CARD_LIBRARY",
+      "id": "你的KV_Namespace_ID"
+    }
   ]
 }
