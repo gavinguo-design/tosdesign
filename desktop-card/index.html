@@ -2286,6 +2286,106 @@
       font-family: inherit; line-height: 1.5;
     }
     .wb-chat-input::placeholder { color: var(--muted); }
+
+    /* ─── GALLERY VIEW (灵感剧场 / 最佳案例) ─── */
+    #gallery-view {
+      position: absolute; inset: 0;
+      display: none;
+      flex-direction: column;
+      z-index: 26;
+      background: #0f0f0f;
+      overflow: hidden;
+    }
+    #gallery-view.active { display: flex; }
+    .gallery-header {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 20px 28px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .gallery-back-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #ddd;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .gallery-back-btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
+    .gallery-title {
+      font-size: 18px; font-weight: 600; color: #fff; letter-spacing: 0.01em;
+    }
+    .gallery-sub {
+      font-size: 12px; color: #888; margin-left: 2px;
+    }
+    .gallery-grid-wrap {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 32px 56px;
+    }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 24px;
+      perspective: 1200px;
+    }
+    .magnetic-card {
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      background: #1a1a1a;
+      aspect-ratio: 1 / 1;
+      cursor: pointer;
+      transform-style: preserve-3d;
+      transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+      will-change: transform;
+    }
+    .magnetic-card img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+      user-select: none;
+    }
+    .magnetic-card-overlay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(10,10,10,0.55);
+      opacity: 0;
+      transition: opacity 0.25s ease-out;
+      pointer-events: none;
+    }
+    .magnetic-card:hover .magnetic-card-overlay { opacity: 1; }
+    .magnetic-card-overlay-btn {
+      background: rgba(255,255,255,0.95);
+      color: #111;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 9px 20px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      pointer-events: auto;
+      transition: transform 0.15s;
+    }
+    .magnetic-card-overlay-btn:hover { transform: scale(1.05); }
+    .magnetic-card-label {
+      position: absolute;
+      left: 12px; bottom: 12px;
+      font-size: 12px;
+      color: #fff;
+      opacity: 0;
+      transition: opacity 0.25s ease-out;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+      pointer-events: none;
+    }
+    .magnetic-card:hover .magnetic-card-label { opacity: 0.9; }
   </style>
 </head>
 <body>
@@ -2403,7 +2503,7 @@
         </svg>
         <div class="sidebar-nav-item-body">图标库</div>
       </button>
-      <button class="sidebar-nav-item" onclick="void(0)">
+      <button class="sidebar-nav-item" id="navGallery" onclick="showGallery()">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <polygon points="6,3 15,9 6,15"/>
         </svg>
@@ -2459,6 +2559,23 @@
       </div>
       <p class="welcome-powered">Powered by 🎨 TOS Design</p>
       <div class="welcome-blank">或 <a onclick="startBlank()">从空白开始</a></div>
+    </div>
+
+    <!-- GALLERY VIEW: 灵感剧场 / 最佳案例 -->
+    <div id="gallery-view">
+      <div class="gallery-header">
+        <button class="gallery-back-btn" onclick="hideGallery()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 2.5L3.5 7l5.5 4.5"/>
+          </svg>
+          返回
+        </button>
+        <span class="gallery-title">灵感剧场</span>
+        <span class="gallery-sub">最佳案例 · 磁力网格</span>
+      </div>
+      <div class="gallery-grid-wrap">
+        <div class="gallery-grid" id="galleryGrid"></div>
+      </div>
     </div>
 
     <!-- WORKBENCH VIEW -->
@@ -3645,23 +3762,19 @@
               '<span class="tone-row-reason">' + r.reason + '</span></span></div>'
             ).join('') + '</div>';
           // 从正文中移除原始调性段落(已经结构化展示了)
-          displayReply = displayReply.replace(/调性分析[::]?\s*/,'');
-          ['VA','IS','AA'].forEach(ax => {
-            displayReply = displayReply.replace(new RegExp(ax + '\\d[\\s·]*' + AXIS_NAMES[ax] + '[::][^\\n]*\\n?'), '');
-          });
-          displayReply = displayReply.replace(/综合调性[^\n]*\n?/, '').trim();
         }
+        // 无论调性结构化解析是否成功，都从正文剥离调性分析段落，避免塞进设计建议
+        displayReply = displayReply.replace(/调性分析[::：]?\s*/g, '');
+        ['VA','IS','AA'].forEach(ax => {
+          displayReply = displayReply.replace(new RegExp(ax + '\\d[^\\n]*\\n?', 'g'), '');
+        });
+        displayReply = displayReply.replace(/综合调性[^\n]*\n?/g, '').trim();
 
         let cardData = null;
         const parsed = [];
         cardMatches.forEach(m => {
           try { parsed.push(JSON.parse(m[1])); } catch(e) { console.warn('card parse error', e); }
         });
-
-        // 工作台loading关掉(无论有没有卡片数据)
-        if (document.getElementById('workbench-view').classList.contains('active')) {
-          setWbLoading(false);
-        }
 
         // 预解析:拿到 cardData 但先不渲染卡片,用于提前刷左侧分析
         let preCardData = null;
@@ -3684,12 +3797,14 @@
           const variants = parsed.slice(0, 2);
           cardData = parsed[0];
           try { await illustrateVariants(variants); } catch(e) { console.warn('illustrate failed', e); }
+          if (document.getElementById('workbench-view').classList.contains('active')) setWbLoading(false);
           showCompare(variants);
         } else if (parsed.length === 1) {
           addMsg((displayReply || '卡片已更新 ✨') + toneBlockHtml, 'bot');
           addWbRpMsg(displayReply || '卡片已更新 ✨', 'bot');
           const { reason, ...cd } = parsed[0];
           cardData = cd;
+          if (document.getElementById('workbench-view').classList.contains('active')) setWbLoading(false);
           presentCard(cd);
         } else {
           addMsg(displayReply || '卡片已更新 ✨', 'bot');
@@ -4245,6 +4360,96 @@
 
     function hideWorkbench() {
       document.getElementById('workbench-view').classList.remove('active');
+    }
+
+    // ─── GALLERY VIEW (灵感剧场 / 最佳案例 磁力网格) ───
+    const GALLERY_ITEMS = [
+      '年度报告.png',
+      '早安.png',
+      '智能路况.png',
+      '未接来电.png',
+      '未接来电-1.png',
+      '热点管理.png',
+      '物流提醒.png',
+      '节日倒数日.png',
+      '闹钟延迟.png',
+      '音乐推荐.png',
+      '20.png',
+      '21.png',
+      'Group 2117132607.png',
+      'Group 2134130822.png'
+    ];
+
+    let galleryInited = false;
+
+    function showGallery() {
+      // hide other views
+      document.getElementById('welcomeState').classList.add('hidden');
+      document.getElementById('workbench-view').classList.remove('active');
+      document.getElementById('gallery-view').classList.add('active');
+      // highlight sidebar
+      document.querySelectorAll('.sidebar-nav-item').forEach(b => b.classList.remove('active'));
+      const navBtn = document.getElementById('navGallery');
+      if (navBtn) navBtn.classList.add('active');
+      if (!galleryInited) {
+        renderGalleryGrid();
+        galleryInited = true;
+      }
+    }
+
+    function hideGallery() {
+      document.getElementById('gallery-view').classList.remove('active');
+      showWorkbench(false);
+    }
+
+    function renderGalleryGrid() {
+      const grid = document.getElementById('galleryGrid');
+      if (!grid) return;
+      grid.innerHTML = GALLERY_ITEMS.map(name => {
+        const label = name.replace(/\.png$/i, '');
+        const src = 'gallery/' + encodeURIComponent(name);
+        return `<div class="magnetic-card" data-label="${label}">
+          <img src="${src}" alt="${label}" loading="lazy">
+          <div class="magnetic-card-label">${label}</div>
+          <div class="magnetic-card-overlay">
+            <button class="magnetic-card-overlay-btn" onclick="useGalleryStyle('${label.replace(/'/g, "\\'")}')">使用此风格</button>
+          </div>
+        </div>`;
+      }).join('');
+      initMagneticGrid(grid);
+    }
+
+    function useGalleryStyle(label) {
+      hideGallery();
+      const input = document.getElementById('welcomeInput') || document.getElementById('wb-rp-input');
+      // best-effort: prefill a prompt referencing the chosen style
+      if (input) {
+        input.value = `参考「${label}」的风格设计一张桌面卡片`;
+      }
+    }
+
+    function initMagneticGrid(container) {
+      const MAX_TILT = 8;   // deg
+      const MAX_SHIFT = 6;  // px
+      container.querySelectorAll('.magnetic-card').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+          const rect = card.getBoundingClientRect();
+          const relX = (e.clientX - rect.left) / rect.width;   // 0..1
+          const relY = (e.clientY - rect.top) / rect.height;   // 0..1
+          const rotateY = (relX - 0.5) * 2 * MAX_TILT;
+          const rotateX = -(relY - 0.5) * 2 * MAX_TILT;
+          const shiftX = (relX - 0.5) * 2 * MAX_SHIFT;
+          const shiftY = (relY - 0.5) * 2 * MAX_SHIFT;
+          card.style.transition = 'transform 0.05s linear, box-shadow 0.3s ease-out';
+          card.style.transform = `translate(${shiftX}px, ${shiftY}px) scale(1.08) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+          card.style.boxShadow = '0 18px 40px rgba(0,0,0,0.5)';
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.transition = 'transform 0.3s ease-out, box-shadow 0.3s ease-out';
+          card.style.transform = 'translate(0px, 0px) scale(1) rotateX(0deg) rotateY(0deg)';
+          card.style.boxShadow = '0 4px 18px rgba(0,0,0,0.35)';
+        });
+      });
     }
 
     // ─── WB RIGHT PANEL CHAT ────────────────────────────────────
