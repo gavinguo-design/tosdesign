@@ -1,4 +1,5 @@
 const CRS_KEY = "cr_3a07c6ba66da659eaae348c5782ac9934507be57af7c040220bbc1af67bc1b49";
+const NICK_KEY = "sk-151c42f6f5dcea5cb53e1434f9390cbc4b88dd71babf58456de6b99514494079";
 
 // API candidates: tried in order until one succeeds
 const API_CANDIDATES = [
@@ -8,6 +9,13 @@ const API_CANDIDATES = [
     buildBody: (msgs) => JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1024, system: SYSTEM_PROMPT, messages: msgs }),
     parseText: (d) => d.content?.[0]?.text || '',
     label: 'crs-claude',
+  },
+  {
+    url: "https://admin.nickcloud.xyz/v1/messages",
+    headers: { 'Authorization': `Bearer ${NICK_KEY}`, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
+    buildBody: (msgs) => JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1024, system: SYSTEM_PROMPT, messages: msgs }),
+    parseText: (d) => d.content?.[0]?.text || '',
+    label: 'nickcloud',
   },
   {
     url: "https://crs.chenge.ink/openai/v1/chat/completions",
