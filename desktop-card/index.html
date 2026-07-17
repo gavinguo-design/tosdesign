@@ -1490,6 +1490,36 @@
       border-radius: 9px;
       padding: 3px;
     }
+    /* 竖排变体:放在卡片预览区域左侧 */
+    .wb-view-tabs-vert {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      flex-direction: column;
+      gap: 6px;
+      padding: 4px;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      z-index: 3;
+    }
+    .wb-view-tabs-vert .wb-view-tab {
+      width: 32px;
+      height: 60px;
+      padding: 6px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      font-size: 15px;
+    }
+    .wb-view-tabs-vert .wb-view-tab-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
     .wb-view-tab {
       font-size: 12px;
       font-weight: 500;
@@ -2108,6 +2138,32 @@
     }
     .wb-rp-messages::-webkit-scrollbar { width: 3px; }
     .wb-rp-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    /* ─── QUICK PROMPT CHIPS ─── */
+    .wb-chips-bar {
+      display: flex;
+      gap: 6px;
+      padding: 4px 12px 8px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      flex-shrink: 0;
+      scrollbar-width: none;
+    }
+    .wb-chips-bar::-webkit-scrollbar { display: none; }
+    .wb-chip {
+      flex-shrink: 0;
+      font-size: 12px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: rgba(124,92,252,0.08);
+      color: #5a4bd6;
+      border: 1px solid rgba(124,92,252,0.15);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+      line-height: 1.4;
+    }
+    .wb-chip:hover { background: rgba(124,92,252,0.16); transform: translateY(-1px); }
+    .wb-chip:active { transform: translateY(0); }
     .wb-rp-msg { display: flex; flex-direction: column; }
     .wb-rp-msg.user { align-items: flex-end; }
     .wb-rp-msg.bot { align-items: flex-start; }
@@ -3079,22 +3135,7 @@
 
     <!-- WORKBENCH VIEW -->
     <div id="workbench-view">
-      <!-- Top toolbar -->
-      <div id="wb-toolbar">
-        <span class="wb-tb-title">Workbench</span>
-        <div class="wb-tb-btns">
-          <button class="wb-tb-btn primary" onclick="showWorkbench(true);setTimeout(()=>submitWelcomeWorkbench&&submitWelcomeWorkbench(),100)">生成卡片</button>
-          <button class="wb-tb-btn">换个方案</button>
-          <button class="wb-tb-btn" id="wbSaveLibBtn" onclick="saveToLibrary(this)">保存到库</button>
-          <button class="wb-tb-btn" id="wbOpenLibBtn" onclick="openLibrary()">打开库</button>
-        </div>
-        <div class="wb-tb-right">
-          <div class="wb-view-tabs" id="wbViewTabs">
-            <button class="wb-view-tab active" id="wbViewTabPreview" onclick="switchWbView('preview')">卡片预览</button>
-            <button class="wb-view-tab" id="wbViewTabCode" onclick="switchWbView('code')">代码预览</button>
-          </div>
-        </div>
-      </div>
+      <!-- Top toolbar removed: 卡片预览/代码预览 tab 已移到卡片左侧 -->
       <!-- Top card: left panel + preview + right chat panel -->
       <div id="wb-top-card">
         <!-- Left analysis panel -->
@@ -3171,6 +3212,10 @@
             <div class="wb-preview-handle-dot"></div>
             <div class="wb-preview-handle-dot"></div>
           </div>
+          <div class="wb-view-tabs wb-view-tabs-vert" id="wbViewTabs">
+            <button class="wb-view-tab active" id="wbViewTabPreview" title="卡片预览" onclick="switchWbView('preview')">📱<span class="wb-view-tab-label">卡片</span></button>
+            <button class="wb-view-tab" id="wbViewTabCode" title="代码预览" onclick="switchWbView('code')">💻<span class="wb-view-tab-label">代码</span></button>
+          </div>
           <div id="wb-preview-card">
             <div id="wb-loading" style="display:none">
               <div class="wb-spinner">
@@ -3218,6 +3263,7 @@
             <div class="wb-rp-sub">告诉我怎么调整,我会实时更新预览</div>
           </div>
           <div id="wb-rp-messages" class="wb-rp-messages"></div>
+          <div id="wb-quick-chips" class="wb-chips-bar"></div>
           <div class="wb-rp-input-area">
             <div class="wb-rp-input-wrap">
               <button class="wb-rp-plus-btn">+</button>
@@ -4460,6 +4506,7 @@
         }
       }
       pushVersion(cd, variantLabel);
+      try { updateWbChips(); } catch(e) {}
     }
 
 
@@ -5055,6 +5102,7 @@
         if (emptyHint) emptyHint.style.display = 'flex';
       }
       syncWbChat();
+      try { updateWbChips(); } catch(e) {}
     }
 
     function hideWorkbench() {
@@ -5455,6 +5503,38 @@
       document.getElementById('chatInput').value = text;
       addWbRpMsg(text, 'user');
       sendMessage();
+    }
+
+    // 快捷 chip:直接把预置文本填入输入框并发送
+    function sendChipPrompt(text) {
+      if (!text) return;
+      document.getElementById('chatInput').value = text;
+      addWbRpMsg(text, 'user');
+      sendMessage();
+    }
+
+    // 根据 currentCardData 动态生成对话框上方的 prompt chips
+    function updateWbChips() {
+      const bar = document.getElementById('wb-quick-chips');
+      if (!bar) return;
+      const cd = (typeof currentCardData !== 'undefined') ? currentCardData : null;
+      const chips = [];
+      if (cd) {
+        if (!cd.action) chips.push({ label: '➕ 增加操作按钮', prompt: '给这张卡片加一个操作按钮' });
+        if (!cd.headerIcon) chips.push({ label: '🏷️ 加标题图标', prompt: '给标题加一个合适的图标' });
+        if (cd.dark === false || (!cd.dark && !cd.bgImage)) chips.push({ label: '🌙 改为深色氛围', prompt: '把这张卡片改成深色氛围' });
+        if (!cd.illustPrompt) chips.push({ label: '🎨 换更有冲击力的背景', prompt: '换一个更有视觉冲击力的插画背景' });
+        else chips.push({ label: '🔄 重新生成插画', prompt: '重新生成一张插画背景' });
+        chips.push({ label: '🔀 重新生成', prompt: '重新生成一张卡片' });
+      } else {
+        chips.push({ label: '☀️ 天气卡', prompt: '做一张天气卡片' });
+        chips.push({ label: '📦 快递提醒', prompt: '做一张快递到货提醒卡片' });
+        chips.push({ label: '🎵 音乐播放', prompt: '做一张音乐播放器卡片' });
+        chips.push({ label: '🏃 健康步数', prompt: '做一张今日步数统计卡片' });
+      }
+      bar.innerHTML = chips.map(c =>
+        `<button class="wb-chip" type="button" onclick="sendChipPrompt(${JSON.stringify(c.prompt)})">${c.label}</button>`
+      ).join('');
     }
 
     function addWbRpMsg(text, type) {
