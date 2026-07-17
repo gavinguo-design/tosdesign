@@ -5197,8 +5197,8 @@
         ['none', 'emoji', 'hero'].forEach(iconState => {
           const data = { ...TPL_BASE.single };
           if (hasAction) data.action = 'Button';
-          if (iconState === 'emoji') data.icon = '●';
-          if (iconState === 'hero') { data.icon = '●'; data.heroIcon = true; }
+          if (iconState === 'emoji') data.icon = '🏔️';
+          if (iconState === 'hero') { data.icon = '🏔️'; data.heroIcon = true; }
           const parts = ['单文本'];
           if (hasAction) parts.push('按钮');
           if (iconState === 'emoji') parts.push('装饰图标');
@@ -5217,8 +5217,8 @@
             const data = { ...TPL_BASE.dual };
             if (hasHeaderIcon) data.headerIcon = 'icons/信息.svg';
             if (hasAction) data.action = 'Button';
-            if (iconState === 'emoji') data.icon = '●';
-            if (iconState === 'hero') { data.icon = '●'; data.heroIcon = true; }
+            if (iconState === 'emoji') data.icon = '🏔️';
+            if (iconState === 'hero') { data.icon = '🏔️'; data.heroIcon = true; }
             const parts = ['双文本'];
             if (hasHeaderIcon) parts.push('标题图标');
             if (hasAction) parts.push('按钮');
@@ -5242,8 +5242,8 @@
               const data = { ...TPL_BASE.triple, alignBottom };
               if (hasHeaderIcon) data.headerIcon = 'icons/信息.svg';
               if (hasAction) data.action = 'Button';
-              if (iconState === 'emoji') data.icon = '●';
-            if (iconState === 'hero') { data.icon = '●'; data.heroIcon = true; }
+              if (iconState === 'emoji') data.icon = '🏔️';
+            if (iconState === 'hero') { data.icon = '🏔️'; data.heroIcon = true; }
               const parts = ['三文本', alignBottom ? '底对齐' : '顶对齐'];
               if (hasHeaderIcon) parts.push('标题图标');
               if (hasAction) parts.push('按钮');
