@@ -5170,7 +5170,7 @@
     // 超出138px内层容器可用空间(仅33px)，overflow裁切在scale变换下出现字体渲染乱码(如"Möffihg")，且该变体未在 Figma 规范文档化(见 spec 第12.3节「不一致项#1」)，故直接移除
     // dual   12种 = headerIcon有无(2) × action有无(2) × icon状态(3)
     // triple 18种 = 顶对齐(headerIcon有无(2) × action有无(2) × icon状态(3)=12) + 底对齐无按钮(headerIcon有无(2) × icon状态(3)=6)；底对齐+按钮物理重叠（Figma规范里底对齐本身就是无按钮变体），直接跳过
-    // big    8种 = 依据Figma截图4个核心变体（纯展示/图标按钮/普通按钮）延伸收敛：无按钮纯展示4种 + 有按钮操作4种
+    // big    8种 = 依据Figma截图4个核心变体（DATA+长按钮/24MB+长按钮/DATA+短按钮/24MB+短按钮）延伸：无按钮纯展示3种(基础/单位/副文本) + 长按钮2种(基础/单位) + 短按钮2种(基础/单位) + 标题图标+长按钮1种
     const TPL_BASE = {
       single: { layout: 'single', title: 'Title', bg: '#ffffff', dark: false },
       dual:   { layout: 'dual', title: 'Title', subtitle: 'Subtitle', bg: '#ffffff', dark: false },
@@ -5239,11 +5239,23 @@
 
     function tplBuildBig() {
       const base = { ...TPL_BASE.big };
+      const baseUnit = { ...base, value: '24', unit: 'MB' };
       return [
-        { data: {...base},                                              label: '大字体 · 基础' },
-        { data: {...base, subtitle:'Subtitle'},                         label: '大字体 + 副文本' },
-        { data: {...base, action:'Button'},                             label: '大字体 + 按钮' },
-        { data: {...base, headerIcon:'icons/信息.svg', action:'Button'}, label: '大字体 + 标题图标 + 按钮' },
+        // ── 无按钮纯展示 ──
+        { data: {...base},                           label: '大字体 · 基础' },
+        { data: {...baseUnit},                       label: '大字体 + 单位' },
+        { data: {...base, subtitle:'Subtitle'},      label: '大字体 + 副文本' },
+
+        // ── 长按钮（110px，Figma上方两个，buttonWide:true） ──
+        { data: {...base, action:'Button', buttonWide:true},     label: '大字体 + 长按钮' },
+        { data: {...baseUnit, action:'Button', buttonWide:true}, label: '大字体 + 单位 + 长按钮' },
+
+        // ── 短按钮（74px，Figma下方两个，action文字≤4字符触发短按钮） ──
+        { data: {...base, action:'Open'},     label: '大字体 + 短按钮' },
+        { data: {...baseUnit, action:'Open'}, label: '大字体 + 单位 + 短按钮' },
+
+        // ── 标题图标延伸 ──
+        { data: {...base, headerIcon:'icons/信息.svg', action:'Button', buttonWide:true}, label: '大字体 + 标题图标 + 长按钮' },
       ];
     }
 
