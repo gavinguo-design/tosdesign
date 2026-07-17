@@ -5260,19 +5260,10 @@
     function tplBuildBig() {
       const base = { ...TPL_BASE.big };
       return [
-        // ── 无按钮纯展示系列 ──
-        { data: {...base},                                        label: '大字体 · 基础' },
-        { data: {...base, subtitle:'Subtitle'},                   label: '大字体 + 副文本' },
-        { data: {...base, value:'24', unit:'MB'},                 label: '大字体 + 单位' },
-        { data: {...base, value:'24', unit:'MB', subtitle:'Subtitle'}, label: '大字体 + 单位 + 副文本' },
-
-        // ── 有按钮操作系列（Figma 原版） ──
-        { data: {...base, action:'Button'},                       label: '大字体 + 按钮' },
-        { data: {...base, value:'24', unit:'MB', action:'Button'}, label: '大字体 + 单位 + 按钮' },
-
-        // ── 带标题图标延伸 ──
-        { data: {...base, headerIcon:'icons/信息.svg', action:'Button'},           label: '大字体 + 标题图标 + 按钮' },
-        { data: {...base, headerIcon:'icons/信息.svg', value:'24', unit:'MB', action:'Button'}, label: '大字体 + 标题图标 + 单位 + 按钮' },
+        { data: {...base},                                              label: '大字体 · 基础' },
+        { data: {...base, subtitle:'Subtitle'},                         label: '大字体 + 副文本' },
+        { data: {...base, action:'Button'},                             label: '大字体 + 按钮' },
+        { data: {...base, headerIcon:'icons/信息.svg', action:'Button'}, label: '大字体 + 标题图标 + 按钮' },
       ];
     }
 
