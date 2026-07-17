@@ -1580,6 +1580,13 @@
       overflow: hidden;
     }
     .wb-left-card:first-child { margin-top: 12px; }
+    .wb-skill-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin: 16px 12px 4px;
+      letter-spacing: 0.03em;
+    }
+    .wb-skill-label.first { margin-top: 0; }
     .wb-left-card-header {
       display: flex;
       align-items: center;
@@ -2400,12 +2407,14 @@
         <div id="wb-left-panel">
           <div id="wb-left-content">
             <!-- 5个维度:全部同时展示,各自一张独立卡片,标题栏可点击折叠/展开 -->
+            <div class="wb-skill-label first">需求分析 Skill调用</div>
             <div id="wb-panel-tone-left" class="wb-left-card">
               <div class="wb-left-card-header" onclick="toggleWbLeftCard('tone')"><span class="wb-left-card-icon">🎭</span><span class="wb-left-card-title">调性分析</span><span class="wb-left-card-arrow">▼</span></div>
               <div class="wb-left-card-body">
                 <div id="wb-tone-content-left"><span class="wb-bottom-empty">等待 AI 分析...</span></div>
               </div>
             </div>
+            <div class="wb-skill-label">视觉设计 Skill调用</div>
             <div id="wb-panel-color-left" class="wb-left-card">
               <div class="wb-left-card-header" onclick="toggleWbLeftCard('color')"><span class="wb-left-card-icon">🎨</span><span class="wb-left-card-title">配色方案</span><span class="wb-left-card-arrow">▼</span></div>
               <div class="wb-left-card-body">
@@ -2418,6 +2427,7 @@
                 <div id="wb-font-content-left"><span class="wb-bottom-empty">等待卡片生成...</span></div>
               </div>
             </div>
+            <div class="wb-skill-label">校验设计 Skill调用</div>
             <div id="wb-panel-suggest-left" class="wb-left-card">
               <div class="wb-left-card-header" onclick="toggleWbLeftCard('suggest')"><span class="wb-left-card-icon">💡</span><span class="wb-left-card-title">设计建议</span><span class="wb-left-card-arrow">▼</span></div>
               <div class="wb-left-card-body">
