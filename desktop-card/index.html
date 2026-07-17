@@ -2473,35 +2473,23 @@
     .tpl-back-btn:hover { background: rgba(0,0,0,0.1); color: #111; }
     .tpl-title { font-size: 18px; font-weight: 600; color: #1a1a1a; letter-spacing: 0.01em; }
     .tpl-sub { font-size: 12px; color: #888892; margin-left: 2px; }
-    .tpl-tabs {
-      flex-shrink: 0;
-      display: flex;
-      gap: 8px;
-      padding: 16px 28px 0;
-    }
-    .tpl-tab {
-      background: transparent;
-      border: 1px solid transparent;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 500;
-      padding: 8px 16px;
-      border-radius: 999px;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .tpl-tab:hover { background: rgba(0,0,0,0.04); color: var(--text); }
-    .tpl-tab.active { background: var(--accent); color: #fff; }
     .tpl-body {
       flex: 1;
       overflow-y: auto;
       padding: 20px 28px 56px;
     }
-    .tpl-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, 116px);
+    .tpl-section-header {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 12px;
+      margin-top: 24px;
+    }
+    .tpl-section-header:first-child { margin-top: 0; }
+    .tpl-section-grid {
+      display: flex;
+      flex-wrap: wrap;
       gap: 16px;
-      justify-content: start;
     }
     .tpl-card {
       display: flex;
@@ -3018,9 +3006,8 @@
         <span class="tpl-sub">4 种布局 × 全部参数组合</span>
         <span class="tpl-count-badge" id="tplCountBadge"></span>
       </div>
-      <div class="tpl-tabs" id="tplTabs"></div>
       <div class="tpl-body">
-        <div class="tpl-grid" id="tplGrid"></div>
+        <div id="tplGrid"></div>
       </div>
     </div>
 
@@ -5274,7 +5261,6 @@
     const TEMPLATE_TAB_PREFIX = { single: 'S', dual: 'D', triple: 'T', big: 'B' };
 
     let templatesInited = false;
-    let activeTemplateLayout = 'single';
 
     function showTemplates() {
       document.getElementById('welcomeState').classList.add('hidden');
@@ -5291,8 +5277,7 @@
       const navBtn = document.getElementById('navTemplates');
       if (navBtn) navBtn.classList.add('active');
       if (!templatesInited) {
-        renderTemplateTabs();
-        switchTemplateTab('single');
+        renderTemplateGrid();
         templatesInited = true;
       }
     }
@@ -5322,58 +5307,60 @@
       showWorkbench(false);
     }
 
-    function renderTemplateTabs() {
-      const tabsEl = document.getElementById('tplTabs');
-      if (!tabsEl) return;
-      tabsEl.innerHTML = Object.keys(TEMPLATE_VARIANTS).map(key => {
-        const count = TEMPLATE_VARIANTS[key].length;
-        return `<button class="tpl-tab${key === activeTemplateLayout ? ' active' : ''}" data-layout="${key}" onclick="switchTemplateTab('${key}')">${TEMPLATE_TAB_LABELS[key]} (${count})</button>`;
-      }).join('');
-    }
-
-    function switchTemplateTab(layout) {
-      activeTemplateLayout = layout;
-      document.querySelectorAll('.tpl-tab').forEach(t => t.classList.toggle('active', t.dataset.layout === layout));
-      renderTemplateGrid(layout);
-    }
-
-    function renderTemplateGrid(layout) {
+    function renderTemplateGrid() {
       const grid = document.getElementById('tplGrid');
       if (!grid) return;
-      const variants = TEMPLATE_VARIANTS[layout] || [];
-      const badge = document.getElementById('tplCountBadge');
-      if (badge) badge.textContent = `${variants.length} 个变体`;
       grid.innerHTML = '';
-      const prefix = TEMPLATE_TAB_PREFIX[layout] || 'S';
-      let idx = 0;
-      variants.forEach(v => {
-        idx++;
-        const numberedLabel = `${prefix}-${String(idx).padStart(2, '0')} · ${v.label}`;
-        const dark = v.data.dark || false;
-        const card = document.createElement('div');
-        card.className = 'tpl-card';
-        card.onclick = () => applyTemplate(v.data, v.label);
+      const layouts = Object.keys(TEMPLATE_VARIANTS);
+      let totalCount = 0;
+      layouts.forEach(layout => {
+        const variants = TEMPLATE_VARIANTS[layout] || [];
+        totalCount += variants.length;
+        const prefix = TEMPLATE_TAB_PREFIX[layout] || 'S';
 
-        // 外层：固定显示尺寸 92×92（.tpl-card-preview 已在 CSS 中定义）
-        const preview = document.createElement('div');
-        preview.className = 'tpl-card-preview';
-        preview.style.background = v.data.bg || (dark ? '#1c1c1e' : '#ffffff');
+        const header = document.createElement('div');
+        header.className = 'tpl-section-header';
+        header.textContent = `${TEMPLATE_TAB_LABELS[layout]}（${variants.length}）`;
+        grid.appendChild(header);
 
-        // 内层：138×138 + scale(0.667) 缩放（.tpl-card-scale 已在 CSS 中定义）
-        const scaleWrap = document.createElement('div');
-        scaleWrap.className = 'tpl-card-scale';
-        scaleWrap.style.pointerEvents = 'none';
-        scaleWrap.appendChild(buildCardInner(v.data));
-        preview.appendChild(scaleWrap);
+        const sectionGrid = document.createElement('div');
+        sectionGrid.className = 'tpl-section-grid';
 
-        const label = document.createElement('div');
-        label.className = 'tpl-card-label';
-        label.textContent = numberedLabel;
+        let idx = 0;
+        variants.forEach(v => {
+          idx++;
+          const numberedLabel = `${prefix}-${String(idx).padStart(2, '0')} · ${v.label}`;
+          const dark = v.data.dark || false;
+          const card = document.createElement('div');
+          card.className = 'tpl-card';
+          card.onclick = () => applyTemplate(v.data, v.label);
 
-        card.appendChild(preview);
-        card.appendChild(label);
-        grid.appendChild(card);
+          // 外层：固定显示尺寸 92×92（.tpl-card-preview 已在 CSS 中定义）
+          const preview = document.createElement('div');
+          preview.className = 'tpl-card-preview';
+          preview.style.background = v.data.bg || (dark ? '#1c1c1e' : '#ffffff');
+
+          // 内层：138×138 + scale(0.667) 缩放（.tpl-card-scale 已在 CSS 中定义）
+          const scaleWrap = document.createElement('div');
+          scaleWrap.className = 'tpl-card-scale';
+          scaleWrap.style.pointerEvents = 'none';
+          scaleWrap.appendChild(buildCardInner(v.data));
+          preview.appendChild(scaleWrap);
+
+          const label = document.createElement('div');
+          label.className = 'tpl-card-label';
+          label.textContent = numberedLabel;
+
+          card.appendChild(preview);
+          card.appendChild(label);
+          sectionGrid.appendChild(card);
+        });
+
+        grid.appendChild(sectionGrid);
       });
+
+      const badge = document.getElementById('tplCountBadge');
+      if (badge) badge.textContent = `${totalCount} 个变体`;
     }
 
     function applyTemplate(data, label) {
