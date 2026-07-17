@@ -1649,7 +1649,7 @@
       letter-spacing: 0.03em;
       text-align: center;
     }
-    .wb-skill-label.first { margin-top: 8px; }
+    .wb-skill-label.first { margin-top: 20px; }
     .wb-left-card-header {
       display: flex;
       align-items: center;
@@ -3611,7 +3611,7 @@
 
       // 2. 调性分析 - 优先提取逐轴推理(VA2 视觉吸引力:xxx),退回旧格式
       let toneDesc = null;
-      const vaLine = fullReply.match(/VA(\d)[\s·]*视觉吸引力[::]\s*([^\n]+)/);
+      const vaLine = fullReply.match(/VA(\d)[\s·]*视觉吸引力[::：]\s*([^\n]+)/);
       const isLine = fullReply.match(/IS(\d)[\s·]*信息显著性[::]\s*([^\n]+)/);
       const aaLine = fullReply.match(/AA(\d)[\s·]*行动权威性[::]\s*([^\n]+)/);
       if (vaLine || isLine || aaLine) {
@@ -3750,7 +3750,7 @@
         const AXIS_NAMES = { VA: '视觉吸引力', IS: '信息显著性', AA: '行动权威性' };
         const toneRows = [];
         ['VA', 'IS', 'AA'].forEach(ax => {
-          const m = displayReply.match(new RegExp(ax + '(\\d)[\\s·]*' + AXIS_NAMES[ax] + '[::]\\s*([^\\n]+)'));
+          const m = displayReply.match(new RegExp(ax + '(\\d)[\\s·]*' + AXIS_NAMES[ax] + '[::：]\\s*([^\\n]+)'));
           if (m) toneRows.push({ ax, level: m[1], reason: m[2].trim() });
         });
         let toneBlockHtml = '';
