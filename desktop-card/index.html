@@ -2298,6 +2298,97 @@
     }
     #gallery-view.active { display: flex; }
 
+    /* ─── ICON LIBRARY VIEW (图标库) ─── */
+    #icon-library-view {
+      position: absolute; inset: 0;
+      display: none;
+      flex-direction: column;
+      z-index: 26;
+      background: #0f0f0f;
+      overflow: hidden;
+    }
+    #icon-library-view.active { display: flex; }
+    .icon-lib-header {
+      flex-shrink: 0;
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      padding: 20px 28px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .icon-lib-title { font-size: 18px; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+    .icon-lib-sub { font-size: 12px; color: #888; margin-left: 2px; }
+    .icon-lib-grid-wrap {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 32px 56px;
+    }
+    .icon-lib-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 18px;
+    }
+    @media (max-width: 1199px) {
+      .icon-lib-grid { grid-template-columns: repeat(5, 1fr); }
+    }
+    @media (max-width: 899px) {
+      .icon-lib-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+    @media (max-width: 599px) {
+      .icon-lib-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    .icon-lib-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 20px 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.15s;
+    }
+    .icon-lib-item:hover {
+      background: rgba(124,110,247,0.14);
+      border-color: rgba(124,110,247,0.45);
+      transform: translateY(-3px);
+    }
+    .icon-lib-item:active { transform: translateY(-1px) scale(0.97); }
+    .icon-lib-item img {
+      width: 40px; height: 40px;
+      object-fit: contain;
+      pointer-events: none;
+      user-select: none;
+    }
+    .icon-lib-item-name {
+      font-size: 12px;
+      color: #ccc;
+      text-align: center;
+      pointer-events: none;
+    }
+    .icon-lib-copy-toast {
+      position: fixed;
+      left: 50%; bottom: 40px;
+      transform: translateX(-50%) translateY(10px);
+      background: rgba(20,20,20,0.92);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 10px 20px;
+      border-radius: 999px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 999;
+    }
+    .icon-lib-copy-toast.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
     /* ─── EMPTY / COMING SOON VIEW ─── */
     #empty-view {
       position: absolute; inset: 0;
@@ -2426,6 +2517,138 @@
       margin-left: auto;
       padding-right: 4px;
     }
+
+    /* ─── TUTORIAL VIEW (使用教程) ─── */
+    #tutorial-view {
+      position: absolute; inset: 0;
+      display: none;
+      flex-direction: column;
+      z-index: 26;
+      background: var(--bg);
+      overflow: hidden;
+    }
+    #tutorial-view.active { display: flex; }
+    .tut-header {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tut-back-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.08);
+      color: #444;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .tut-back-btn:hover { background: rgba(0,0,0,0.1); color: #111; }
+    .tut-title { font-size: 18px; font-weight: 600; color: var(--text); letter-spacing: 0.01em; }
+    .tut-sub { font-size: 12px; color: var(--muted); margin-left: 2px; }
+    .tut-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 40px 28px 64px;
+    }
+    .tut-body-inner {
+      max-width: 880px;
+      margin: 0 auto;
+    }
+    .tut-hero {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .tut-hero-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      margin-bottom: 10px;
+    }
+    .tut-hero-sub {
+      font-size: 15px;
+      color: var(--muted);
+    }
+    .tut-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-bottom: 52px;
+    }
+    .tut-step-card {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px 28px;
+      backdrop-filter: blur(12px);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .tut-step-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+    }
+    .tut-step-num {
+      flex-shrink: 0;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 700;
+    }
+    .tut-step-body { flex: 1; min-width: 0; }
+    .tut-step-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .tut-step-desc {
+      font-size: 13.5px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    .tut-step-desc code {
+      background: rgba(124,92,252,0.1);
+      color: var(--accent);
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 12.5px;
+      font-family: 'SF Mono', Consolas, monospace;
+    }
+    .tut-tips-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+    .tut-tips {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 899px) {
+      .tut-tips { grid-template-columns: 1fr; }
+    }
+    .tut-tip-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.7;
+    }
+    .tut-tip-icon { font-size: 18px; margin-bottom: 8px; display: block; }
 
     .gallery-header {
       flex-shrink: 0;
@@ -2651,7 +2874,7 @@
           <span class="sidebar-nav-item-sub">最佳案例</span>
         </div>
       </button>
-      <button class="sidebar-nav-item" id="navTutorial" onclick="showView('tutorial-view', '使用教程', 'navTutorial')">
+      <button class="sidebar-nav-item" id="navTutorial" onclick="showTutorial()">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 3h9l3 3v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3z"/>
           <path d="M12 3v4h3"/>
@@ -2711,6 +2934,18 @@
       </div>
     </div>
 
+    <!-- ICON LIBRARY VIEW: 图标库 -->
+    <div id="icon-library-view">
+      <div class="icon-lib-header">
+        <span class="icon-lib-title">图标库</span>
+        <span class="icon-lib-sub">tOS Widget 专属图标</span>
+      </div>
+      <div class="icon-lib-grid-wrap">
+        <div class="icon-lib-grid" id="iconLibGrid"></div>
+      </div>
+    </div>
+    <div class="icon-lib-copy-toast" id="iconLibToast">已复制</div>
+
     <!-- EMPTY / COMING SOON VIEW -->
     <div id="empty-view">
       <div class="empty-view-icon">🚧</div>
@@ -2734,6 +2969,83 @@
       <div class="tpl-tabs" id="tplTabs"></div>
       <div class="tpl-body">
         <div class="tpl-grid" id="tplGrid"></div>
+      </div>
+    </div>
+
+    <!-- TUTORIAL VIEW: 使用教程 -->
+    <div id="tutorial-view">
+      <div class="tut-header">
+        <button class="tut-back-btn" onclick="hideTutorial()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 2.5L3.5 7l5.5 4.5"/>
+          </svg>
+          返回工作台
+        </button>
+        <span class="tut-title">使用教程</span>
+        <span class="tut-sub">5 分钟学会用 AI 设计桌面卡片</span>
+      </div>
+      <div class="tut-body">
+        <div class="tut-body-inner">
+          <div class="tut-hero">
+            <div class="tut-hero-title">快速上手指南</div>
+            <div class="tut-hero-sub">5 分钟学会用 AI 设计桌面卡片</div>
+          </div>
+
+          <div class="tut-steps">
+            <div class="tut-step-card">
+              <div class="tut-step-num">1</div>
+              <div class="tut-step-body">
+                <div class="tut-step-title">描述你的需求</div>
+                <div class="tut-step-desc">
+                  在输入框里输入 <code>做一个天气卡片</code> 这样的自然语言描述，AI 会自动分析调性（风格倾向、使用场景），并同时生成 <strong>方案 A</strong> 和 <strong>方案 B</strong> 两个设计供你挑选。左侧面板会展示配色方案、字体排版和设计建议。
+                </div>
+              </div>
+            </div>
+            <div class="tut-step-card">
+              <div class="tut-step-num">2</div>
+              <div class="tut-step-body">
+                <div class="tut-step-title">选择并迭代</div>
+                <div class="tut-step-desc">
+                  看中哪个方案就点 <code>选这个</code> 确认，之后可以继续在输入框里说 <code>把背景改成渐变蓝</code> 或 <code>文案换成中文</code>，AI 会在当前方案基础上直接修改，不用推倒重来。
+                </div>
+              </div>
+            </div>
+            <div class="tut-step-card">
+              <div class="tut-step-num">3</div>
+              <div class="tut-step-body">
+                <div class="tut-step-title">查看代码</div>
+                <div class="tut-step-desc">
+                  切换顶部的 <code>代码预览</code> tab，即可获取对应的 <strong>AtomicView TPK JSON</strong>，可以直接复制给开发同学接入，所见即所得，卡片和代码永远同步。
+                </div>
+              </div>
+            </div>
+            <div class="tut-step-card">
+              <div class="tut-step-num">4</div>
+              <div class="tut-step-body">
+                <div class="tut-step-title">保存与参考</div>
+                <div class="tut-step-desc">
+                  满意的卡片记得点 <code>保存到库</code> 云端存档，随时可以在「卡片库」里找回。没灵感的时候，去 <strong>灵感剧场</strong> 看看 30 张真实卡片案例，找找感觉再动手。
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tut-tips-title">快捷提示</div>
+          <div class="tut-tips">
+            <div class="tut-tip-card">
+              <span class="tut-tip-icon">💡</span>
+              输入越具体，效果越好。比如「早安卡，白色简洁，显示日期和问候语」比「做个卡片」生成效果好得多。
+            </div>
+            <div class="tut-tip-card">
+              <span class="tut-tip-icon">🎨</span>
+              没思路可以先去「基础模板」挑一个布局起点，再用 AI 描述来改样式和文案，比从零开始更快。
+            </div>
+            <div class="tut-tip-card">
+              <span class="tut-tip-icon">📦</span>
+              「图标库」里有 16 个专属图标，描述需求时加一句「带图标」，AI 就会自动挑一个合适的用在卡片标题前。
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -4475,6 +4787,8 @@
       if (galView) galView.classList.remove('active');
       const tplView = document.getElementById('templates-view');
       if (tplView) tplView.classList.remove('active');
+      const iconLibView = document.getElementById('icon-library-view');
+      if (iconLibView) iconLibView.classList.remove('active');
       const ws = document.getElementById('welcomeState');
       if (ws) ws.classList.remove('hidden');
       document.getElementById('welcomeInput').value = '';
@@ -4513,7 +4827,7 @@
     // navId: 需要高亮的侧边栏按钮 id（不传则自动从事件源推断）
     function showView(viewId, label, navId) {
       // 隐藏所有已知 view
-      const allViewIds = ['workbench-view', 'gallery-view', 'empty-view'];
+      const allViewIds = ['workbench-view', 'gallery-view', 'templates-view', 'icon-library-view', 'tutorial-view', 'empty-view'];
       const ws = document.getElementById('welcomeState');
       if (ws) ws.classList.add('hidden');
       allViewIds.forEach(id => {
@@ -4523,6 +4837,10 @@
       const target = document.getElementById(viewId);
       if (target) {
         target.classList.add('active');
+        if (viewId === 'icon-library-view' && !iconLibraryInited) {
+          renderIconLibraryGrid();
+          iconLibraryInited = true;
+        }
       } else {
         const emptyLabel = document.getElementById('empty-view-label');
         if (emptyLabel) emptyLabel.textContent = label || '';
@@ -4547,8 +4865,12 @@
       if (galView) galView.classList.remove('active');
       const tplView = document.getElementById('templates-view');
       if (tplView) tplView.classList.remove('active');
+      const iconLibView = document.getElementById('icon-library-view');
+      if (iconLibView) iconLibView.classList.remove('active');
       const emptyView = document.getElementById('empty-view');
       if (emptyView) emptyView.classList.remove('active');
+      const tutView = document.getElementById('tutorial-view');
+      if (tutView) tutView.classList.remove('active');
       const wbView = document.getElementById('workbench-view');
       wbView.classList.add('active');
       // highlight sidebar workbench
@@ -4617,8 +4939,12 @@
       document.getElementById('workbench-view').classList.remove('active');
       const tplView = document.getElementById('templates-view');
       if (tplView) tplView.classList.remove('active');
+      const iconLibView = document.getElementById('icon-library-view');
+      if (iconLibView) iconLibView.classList.remove('active');
       const emptyView = document.getElementById('empty-view');
       if (emptyView) emptyView.classList.remove('active');
+      const tutView = document.getElementById('tutorial-view');
+      if (tutView) tutView.classList.remove('active');
       document.getElementById('gallery-view').classList.add('active');
       // highlight sidebar
       document.querySelectorAll('.sidebar-nav-item').forEach(b => b.classList.remove('active'));
@@ -4633,6 +4959,58 @@
     function hideGallery() {
       document.getElementById('gallery-view').classList.remove('active');
       showWorkbench(false);
+    }
+
+    // ─── ICON LIBRARY VIEW (图标库) ───
+    const ICON_LIBRARY_ITEMS = [
+      '信息', '偏好', '分享', '天气：多云', '安全', '定位',
+      '快递', '手机', '手表', '推荐', '用户', '短信',
+      '视频', '设置', '邮箱', '钱包',
+    ];
+    let iconLibraryInited = false;
+    let iconLibToastTimer = null;
+
+    function renderIconLibraryGrid() {
+      const grid = document.getElementById('iconLibGrid');
+      if (!grid) return;
+      grid.innerHTML = ICON_LIBRARY_ITEMS.map(name => {
+        const src = 'icons/' + encodeURIComponent(name + '.png');
+        return `<div class="icon-lib-item" data-name="${name}" onclick="copyIconPath('${name.replace(/'/g, "\\'")}')">
+          <img src="${src}" alt="${name}" loading="lazy">
+          <div class="icon-lib-item-name">${name}</div>
+        </div>`;
+      }).join('');
+    }
+
+    function copyIconPath(name) {
+      const path = 'icons/' + name + '.png';
+      const done = () => showIconLibToast('已复制: ' + path);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(path).then(done).catch(() => fallbackCopy(path, done));
+      } else {
+        fallbackCopy(path, done);
+      }
+    }
+
+    function fallbackCopy(text, cb) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+      if (cb) cb();
+    }
+
+    function showIconLibToast(text) {
+      const toast = document.getElementById('iconLibToast');
+      if (!toast) return;
+      toast.textContent = text;
+      toast.classList.add('visible');
+      if (iconLibToastTimer) clearTimeout(iconLibToastTimer);
+      iconLibToastTimer = setTimeout(() => toast.classList.remove('visible'), 1600);
     }
 
     // ─── TEMPLATES VIEW (基础模板：4种布局全参数组合预览) ───
@@ -4764,8 +5142,12 @@
       document.getElementById('welcomeState').classList.add('hidden');
       document.getElementById('workbench-view').classList.remove('active');
       document.getElementById('gallery-view').classList.remove('active');
+      const iconLibView = document.getElementById('icon-library-view');
+      if (iconLibView) iconLibView.classList.remove('active');
       const ev = document.getElementById('empty-view');
       if (ev) ev.classList.remove('active');
+      const tutView = document.getElementById('tutorial-view');
+      if (tutView) tutView.classList.remove('active');
       document.getElementById('templates-view').classList.add('active');
       document.querySelectorAll('.sidebar-nav-item').forEach(b => b.classList.remove('active'));
       const navBtn = document.getElementById('navTemplates');
@@ -4779,6 +5161,26 @@
 
     function hideTemplates() {
       document.getElementById('templates-view').classList.remove('active');
+      showWorkbench(false);
+    }
+
+    // ─── TUTORIAL VIEW (使用教程) ───
+    function showTutorial() {
+      document.getElementById('welcomeState').classList.add('hidden');
+      document.getElementById('workbench-view').classList.remove('active');
+      document.getElementById('gallery-view').classList.remove('active');
+      const ev = document.getElementById('empty-view');
+      if (ev) ev.classList.remove('active');
+      const tplView = document.getElementById('templates-view');
+      if (tplView) tplView.classList.remove('active');
+      document.getElementById('tutorial-view').classList.add('active');
+      document.querySelectorAll('.sidebar-nav-item').forEach(b => b.classList.remove('active'));
+      const navBtn = document.getElementById('navTutorial');
+      if (navBtn) navBtn.classList.add('active');
+    }
+
+    function hideTutorial() {
+      document.getElementById('tutorial-view').classList.remove('active');
       showWorkbench(false);
     }
 
