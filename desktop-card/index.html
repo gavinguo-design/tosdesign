@@ -5033,8 +5033,7 @@
           ['none', 'emoji', 'hero'].forEach(iconState => {
             const data = { ...TPL_BASE.single, alignBottom };
             if (hasAction) data.action = 'Open';
-            if (iconState === 'emoji') data.icon = '📋';
-            if (iconState === 'hero') { data.icon = '📋'; data.heroIcon = true; }
+            if (iconState === 'hero') data.heroIcon = true;
             const parts = ['单文本', alignBottom ? '底对齐' : '顶对齐'];
             if (hasAction) parts.push('按钮');
             if (iconState === 'emoji') parts.push('图标');
@@ -5052,10 +5051,9 @@
         [false, true].forEach(hasAction => {
           ['none', 'emoji', 'hero'].forEach(iconState => {
             const data = { ...TPL_BASE.dual };
-            if (hasHeaderIcon) data.headerIcon = '📞';
+            if (hasHeaderIcon) data.headerIcon = 'icons/手机.png';
             if (hasAction) data.action = 'Call';
-            if (iconState === 'emoji') data.icon = '📞';
-            if (iconState === 'hero') { data.icon = '📞'; data.heroIcon = true; }
+            if (iconState === 'hero') data.heroIcon = true;
             const parts = ['双文本'];
             if (hasHeaderIcon) parts.push('标题图标');
             if (hasAction) parts.push('按钮');
@@ -5075,10 +5073,9 @@
           [false, true].forEach(hasAction => {
             ['none', 'emoji', 'hero'].forEach(iconState => {
               const data = { ...TPL_BASE.triple, alignBottom };
-              if (hasHeaderIcon) data.headerIcon = '📍';
+              if (hasHeaderIcon) data.headerIcon = 'icons/定位.png';
               if (hasAction) data.action = 'Details';
-              if (iconState === 'emoji') data.icon = '🌤';
-              if (iconState === 'hero') { data.icon = '🌤'; data.heroIcon = true; }
+              if (iconState === 'hero') data.heroIcon = true;
               const parts = ['三文本', alignBottom ? '底对齐' : '顶对齐'];
               if (hasHeaderIcon) parts.push('标题图标');
               if (hasAction) parts.push('按钮');
@@ -5106,10 +5103,9 @@
           ['none', 'emoji', 'hero'].forEach(iconState => {
             subtitleStates.forEach(st => {
               const data = { ...TPL_BASE.big };
-              if (hasHeaderIcon) data.headerIcon = '💾';
+              if (hasHeaderIcon) data.headerIcon = 'icons/信息.png';
               if (hasUnit) data.unit = 'GB';
-              if (iconState === 'emoji') data.icon = '📊';
-              if (iconState === 'hero') { data.icon = '📊'; data.heroIcon = true; }
+              if (iconState === 'hero') data.heroIcon = true;
               if (st.action) data.action = 'Details';
               if (st.subtitle) data.subtitle = '4 apps running';
               if (st.subtitle2) data.subtitle2 = 'Updated just now';
