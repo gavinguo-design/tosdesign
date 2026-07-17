@@ -3361,6 +3361,22 @@
 
     // 按钮用色规范(Figma):统一中性胶囊,黑8%底(浅色)/白15%底(深色)/白磨砂(渐变背景)
     // 语义强调色只用于数值文字和图标,按钮永不实底语义色
+    // headerIcon 支持两种来源:emoji 字符串(直接 textContent)或图标库文件(icons/xxx.svg,渲染为 <img>)
+    function applyHeaderIcon(el, value) {
+      const v = str(value);
+      if (v && v.startsWith('icons/')) {
+        el.textContent = '';
+        const img = document.createElement('img');
+        img.src = v;
+        img.width = 16;
+        img.height = 16;
+        img.style.verticalAlign = 'middle';
+        el.appendChild(img);
+      } else {
+        el.textContent = v;
+      }
+    }
+
     function buttonStyle(data, dark) {
       const isGradient = typeof data.bg === 'string' && data.bg.includes('gradient');
       if (isGradient) {
@@ -4439,7 +4455,10 @@
       'Group 2117132607.png',
       'Group 2134130822.png',
       '玩机技巧｜纯净通话.png',
-      '玩机技巧｜纯净通话-1.png'
+      '玩机技巧｜纯净通话-1.png',
+      '玩机技巧｜纯净通话-2.png',
+      '早安-1.png',
+      '智能路况-1.png'
     ];
 
     let galleryInited = false;
