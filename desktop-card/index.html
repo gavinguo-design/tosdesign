@@ -5090,7 +5090,8 @@
 
     // ─── TEMPLATES VIEW (基础模板：4种布局全参数组合预览) ───
     // 基于 desktop-card-figma-spec.md 第12节组合矩阵，按 buildCardInner() 实际支持的字段组合生成变体：
-    // single 12种 = alignBottom(2) × action有无(2) × icon状态(无/emoji/hero=3)
+    // single 6种 = action有无(2) × icon状态(无/emoji/hero=3)；alignBottom 变体已删除——单文本底对齐会把4行文字(-webkit-line-clamp:4≈80px)推入top:105px起点，
+    // 超出138px内层容器可用空间(仅33px)，overflow裁切在scale变换下出现字体渲染乱码(如"Möffihg")，且该变体未在 Figma 规范文档化(见 spec 第12.3节「不一致项#1」)，故直接移除
     // dual   12种 = headerIcon有无(2) × action有无(2) × icon状态(3)
     // triple 18种 = 顶对齐(headerIcon有无(2) × action有无(2) × icon状态(3)=12) + 底对齐无按钮(headerIcon有无(2) × icon状态(3)=6)；底对齐+按钮物理重叠（Figma规范里底对齐本身就是无按钮变体），直接跳过
     // big    60种 = headerIcon有无(2) × unit有无(2) × icon状态(3) × 副文本/按钮状态(5：有action无副文本1种 + 无action时subtitle/subtitle2独立开关器4种)
@@ -5103,18 +5104,16 @@
 
     function tplBuildSingle() {
       const out = [];
-      [false, true].forEach(alignBottom => {
-        [false, true].forEach(hasAction => {
-          ['none', 'emoji', 'hero'].forEach(iconState => {
-            const data = { ...TPL_BASE.single, alignBottom };
-            if (hasAction) data.action = 'Open';
-            if (iconState === 'hero') data.heroIcon = true;
-            const parts = ['单文本', alignBottom ? '底对齐' : '顶对齐'];
-            if (hasAction) parts.push('按钮');
-            if (iconState === 'emoji') parts.push('图标');
-            if (iconState === 'hero') parts.push('大图标');
-            out.push({ data, label: parts.join(' + ') });
-          });
+      [false, true].forEach(hasAction => {
+        ['none', 'emoji', 'hero'].forEach(iconState => {
+          const data = { ...TPL_BASE.single };
+          if (hasAction) data.action = 'Open';
+          if (iconState === 'hero') data.heroIcon = true;
+          const parts = ['单文本'];
+          if (hasAction) parts.push('按钮');
+          if (iconState === 'emoji') parts.push('图标');
+          if (iconState === 'hero') parts.push('大图标');
+          out.push({ data, label: parts.join(' + ') });
         });
       });
       return out;
