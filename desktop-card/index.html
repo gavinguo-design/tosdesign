@@ -4419,20 +4419,24 @@
       el.style.height = Math.min(el.scrollHeight, 90) + 'px';
     }
 
-    // 采样插图左上文字区亮度,决定文字反色(亮底黑字/暗底白字)
+    // 采样插图 header/icon 实际渲染区域亮度,决定文字反色(亮底黑字/暗底白字)
+    // 方案B(2026-07-21):不再用左上2/3笼统大区域求平均(局部亮暗会被抹平,导致图标落在局部亮点时误判),
+    // 改为只采样 header/icon 真实渲染坐标(left14,top14,宽110,高18包含12px图标+12px文字行)，匹配真实屏幕像素位置,判断更精准。
+    // 注:图标区域判定的 dark 会同时控制整张卡片文字颜色(header位置在所有布局中都固定 top:14,因此以header区域代表整卡是合理默认)
     function probeTextAreaLuma(imgUrl) {
       return new Promise((resolve) => {
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
           try {
+            const cardSize = 138; // 按卡片实际渲染尺寸绘制,保证采样坐标与真实屏幕像素一致
             const cv = document.createElement('canvas');
-            const s = 48; // 缩样采样
-            cv.width = s; cv.height = s;
+            cv.width = cardSize; cv.height = cardSize;
             const ctx = cv.getContext('2d');
-            ctx.drawImage(img, 0, 0, s, s);
-            // 左上 2/3 x 2/3 区域 = 文字区
-            const d = ctx.getImageData(0, 0, Math.floor(s * 0.67), Math.floor(s * 0.67)).data;
+            ctx.drawImage(img, 0, 0, cardSize, cardSize);
+            // header/icon 实际渲染区域:left14 top14 宽110 高18(12px图标+12px文字行+容错)
+            const rx = 14, ry = 14, rw = 110, rh = 18;
+            const d = ctx.getImageData(rx, ry, rw, rh).data;
             let sum = 0, n = 0;
             for (let i = 0; i < d.length; i += 4) {
               sum += 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
