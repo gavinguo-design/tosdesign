@@ -5902,7 +5902,7 @@
           // Scale card to fit
           const cardStage = document.getElementById('wb-card-stage');
           const availableWidth = clampedWidth - 100; // padding
-          const scale = Math.max(1, Math.min(3, availableWidth / 276)); // scale between 1x and 3x
+          const scale = Math.max(0.5, Math.min(1, availableWidth / 276)); // only shrink when squeezed, never enlarge; clamp 0.5x-1x
           if (cardStage) {
             const card = document.getElementById('wb-card');
             if (card) {
