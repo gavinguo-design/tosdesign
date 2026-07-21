@@ -3894,7 +3894,7 @@
         // 检查父容器是否有 .dark 类，有则反白
         const isDark = el.closest('.tos-card-inner')?.classList.contains('dark');
         const filter = isDark ? 'brightness(0) invert(1)' : 'none';
-        img.style.cssText = `width:16px;height:16px;display:block;vertical-align:middle;filter:${filter};`;
+        img.style.cssText = `width:12px;height:12px;display:block;vertical-align:middle;filter:${filter};`;
         el.appendChild(img);
       } else {
         el.textContent = v;
@@ -5565,6 +5565,7 @@
       const stage = document.getElementById('wb-card-stage');
       if (loading) {
         stage.classList.remove('visible');
+        stage.style.display = 'none';
         document.querySelector('.wb-spinner').style.display = '';
         document.querySelector('.wb-loading-text').textContent = 'tOS-UX 数字设计师 正在为你创作中';
       } else {
