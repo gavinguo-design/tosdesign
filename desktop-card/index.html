@@ -3883,7 +3883,7 @@
     // 语义强调色只用于数值文字和图标,按钮永不实底语义色
     // headerIcon 支持两种来源:emoji 字符串(直接 textContent)或图标库文件(icons/xxx.svg,直接渲染纯SVG)
     // 规范：16×16 直接显示 SVG，不加底板，dark背景自动反白
-    function applyHeaderIcon(el, value) {
+    function applyHeaderIcon(el, value, isDark) {
       const v = str(value);
       el.textContent = '';
       if (!v) return;
@@ -3891,8 +3891,7 @@
         const img = document.createElement('img');
         img.src = v;
         img.alt = '';
-        // 检查父容器是否有 .dark 类，有则反白
-        const isDark = el.closest('.tos-card-inner')?.classList.contains('dark');
+        // isDark 由调用方(buildCardInner)显式传入当前卡片的 data.dark，不再依赖DOM class查找(该class从未被设置过,曾导致反白永不生效)
         const filter = isDark ? 'brightness(0) invert(1)' : 'none';
         img.style.cssText = `width:12px;height:12px;display:block;vertical-align:middle;filter:${filter};`;
         el.appendChild(img);
@@ -3952,7 +3951,7 @@
           const sRow = document.createElement('div');
           sRow.style.cssText = `position:absolute;left:14px;top:${data.alignBottom?'105px':'14px'};width:110px;display:flex;align-items:center;gap:4px;`;
           const hi = document.createElement('span');
-          applyHeaderIcon(hi, data.headerIcon);
+          applyHeaderIcon(hi, data.headerIcon, dark);
           sRow.appendChild(hi);
           const st = document.createElement('span');
           st.style.cssText = `font-size:16px;font-weight:600;line-height:1.2;color:${tc};overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;flex:1;`;
@@ -3978,7 +3977,7 @@
             '');
           const hi = document.createElement('span');
           hi.style.cssText = 'font-size:16px;line-height:1;';
-          applyHeaderIcon(hi, data.headerIcon);
+          applyHeaderIcon(hi, data.headerIcon, dark);
           dh.appendChild(hi);
           const dt = document.createElement('span');
           dt.textContent = data.title;
@@ -4012,7 +4011,7 @@
         if (data.headerIcon) {
           const hi = document.createElement('span');
           hi.style.cssText = 'font-size:12px;line-height:1;';
-          applyHeaderIcon(hi, data.headerIcon);
+          applyHeaderIcon(hi, data.headerIcon, dark);
           triHeader.appendChild(hi);
         }
         const ht = document.createElement('span');
@@ -4036,7 +4035,7 @@
         if (data.headerIcon) {
           const hi = document.createElement('span');
           hi.style.cssText = 'font-size:12px;line-height:1;';
-          applyHeaderIcon(hi, data.headerIcon);
+          applyHeaderIcon(hi, data.headerIcon, dark);
           bigHeader.appendChild(hi);
         }
         const bt = document.createElement('span');
