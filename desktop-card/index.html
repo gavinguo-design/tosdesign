@@ -2686,6 +2686,26 @@
       color: var(--muted);
       font-size: 14px;
     }
+    .req-wb-blank {
+      max-width: 320px;
+      margin: 110px auto 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .req-wb-blank-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .req-wb-blank-sub {
+      font-size: 12.5px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
     .req-wb-loading-state {
       max-width: 480px;
       margin: 96px auto 0;
@@ -5546,21 +5566,17 @@
       }
 
       if (!reqWorkbenchJobs.length) {
-        meta.textContent = reqWorkbenchDecomposing ? '正在拆解需求…' : '等待新的需求';
+        meta.textContent = '暂无任务';
         body.innerHTML = `
-          <div class="req-wb-empty">
-            <div class="req-wb-hero">
-              <div class="req-wb-hero-title">把一整份需求，变成一排可追踪的卡片任务</div>
-              <div class="req-wb-hero-sub">贴一段 PRD、活动方案或一句批量描述，我会先拆成多张工作卡片，再按顺序生成每张卡的视觉方案。完成后点任意工作卡片，就能进入原来的单卡工作台继续精修。</div>
-            </div>
-            <div class="req-wb-compose">
-              <div class="req-wb-label">需求输入</div>
-              <textarea id="reqWorkbenchInput" class="req-wb-input" placeholder="粘贴你的 PRD 内容，或用一句话描述需要设计的一批卡片…">${escapeHtml(reqWorkbenchDraft)}</textarea>
-              <div class="req-wb-actions">
-                <button class="req-wb-submit" id="reqWorkbenchSubmitBtn" onclick="submitReqWorkbenchInput()" ${reqWorkbenchDecomposing ? 'disabled' : ''}>${reqWorkbenchDecomposing ? '拆解中...' : '开始拆解生成'}</button>
-                <div class="req-wb-tip">先拆清任务，再以 2 并发生成卡片，避免接口限流。</div>
-              </div>
-            </div>
+          <div class="req-wb-blank">
+            <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+              <rect x="10" y="6" width="36" height="44" rx="5" stroke="currentColor" stroke-width="2" opacity="0.35"/>
+              <line x1="17" y1="18" x2="39" y2="18" stroke="currentColor" stroke-width="2" opacity="0.35"/>
+              <line x1="17" y1="26" x2="39" y2="26" stroke="currentColor" stroke-width="2" opacity="0.25"/>
+              <line x1="17" y1="34" x2="30" y2="34" stroke="currentColor" stroke-width="2" opacity="0.25"/>
+            </svg>
+            <div class="req-wb-blank-title">暂无任务</div>
+            <div class="req-wb-blank-sub">去「新建创作」上传 PRD 或描述需求，拆解后的卡片任务会在这里展示</div>
           </div>`;
         return;
       }
