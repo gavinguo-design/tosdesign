@@ -5076,9 +5076,12 @@
           }),
         });
         const data = await res.json();
-        if (!data.ok) throw new Error(data.error || 'PDF 需求拆解失败');
+        if (!data.ok) {
+          console.error('PDF 解析后端错误详情:', data.error);
+          throw new Error('AI 服务暂时繁忙，请稍后重试一次');
+        }
         const jobs = parseCodeBlockJson(data.text, 'json');
-        if (!Array.isArray(jobs) || !jobs.length) throw new Error('AI 没有从 PDF 识别到有效的卡片清单');
+        if (!Array.isArray(jobs) || !jobs.length) throw new Error('AI 没有从 PDF 识别到有效的卡片清单，换一份更清晰的 PDF 试试');
         reqWorkbenchJobs = jobs.map((item, idx) => ({
           id: `req-job-${Date.now()}-${reqWorkbenchJobSeq++}-${idx}`,
           name: (item && item.name ? String(item.name) : `卡片 ${idx + 1}`).trim(),
@@ -5088,7 +5091,7 @@
         }));
         clearWelcomeUpload();
       } catch (error) {
-        alert(error.message || 'PDF 需求拆解失败');
+        alert(error.message || 'AI 服务暂时繁忙，请稍后重试一次');
         showReqWorkbench();
       } finally {
         reqWorkbenchImporting = false;
@@ -5681,9 +5684,12 @@
           body: JSON.stringify({ input: text }),
         });
         const data = await res.json();
-        if (!data.ok) throw new Error(data.error || '需求拆解失败');
+        if (!data.ok) {
+          console.error('需求拆解后端错误详情:', data.error);
+          throw new Error('AI 服务暂时繁忙，请稍后重试一次');
+        }
         const jobs = parseCodeBlockJson(data.text, 'json');
-        if (!Array.isArray(jobs) || !jobs.length) throw new Error('AI 没有返回有效的卡片清单');
+        if (!Array.isArray(jobs) || !jobs.length) throw new Error('AI 没有返回有效的卡片清单，试着把描述写得更具体一些');
         reqWorkbenchJobs = jobs.map((item, idx) => ({
           id: `req-job-${Date.now()}-${reqWorkbenchJobSeq++}-${idx}`,
           name: (item && item.name ? String(item.name) : `卡片 ${idx + 1}`).trim(),
@@ -5696,7 +5702,7 @@
           attempts: 0,
         }));
       } catch (error) {
-        alert(error.message || '需求拆解失败');
+        alert(error.message || 'AI 服务暂时繁忙，请稍后重试一次');
       } finally {
         reqWorkbenchDecomposing = false;
         renderReqWorkbench();

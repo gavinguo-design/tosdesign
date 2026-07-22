@@ -122,29 +122,33 @@ export async function onRequestPost({ request }) {
   let lastError = 'all candidates failed';
   for (const cand of API_CANDIDATES) {
     if (document && !cand.supportsDocument) continue;
-    try {
-      const res = await fetch(cand.url, {
-        method: 'POST',
-        headers: cand.headers,
-        body: cand.buildBody(input, document),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        lastError = `${cand.label}: ${data.error?.message || JSON.stringify(data)}`;
-        continue;
+    // 主力渠道先重试 1 次再认输，避免一抵抖就跳到备用（备用可能长期不可用）
+    const attempts = cand.label === 'crs-claude' ? 2 : 1;
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      try {
+        const res = await fetch(cand.url, {
+          method: 'POST',
+          headers: cand.headers,
+          body: cand.buildBody(input, document),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          lastError = `${cand.label}: ${data.error?.message || JSON.stringify(data)}`;
+          continue;
+        }
+        const text = cand.parseText(data);
+        if (!text) {
+          lastError = `${cand.label}: empty response`;
+          continue;
+        }
+        return new Response(JSON.stringify({ ok: true, text, via: cand.label }), { headers });
+      } catch (error) {
+        lastError = `${cand.label}: ${error.message}`;
       }
-      const text = cand.parseText(data);
-      if (!text) {
-        lastError = `${cand.label}: empty response`;
-        continue;
-      }
-      return new Response(JSON.stringify({ ok: true, text, via: cand.label }), { headers });
-    } catch (error) {
-      lastError = `${cand.label}: ${error.message}`;
     }
   }
 
-  return new Response(JSON.stringify({ ok: false, error: lastError }), { status: 500, headers });
+  return new Response(JSON.stringify({ ok: false, error: '暂时无法生成，请稍后重试（' + lastError + '）' }), { status: 500, headers });
 }
 
 export async function onRequestOptions() {
