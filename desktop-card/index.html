@@ -5044,6 +5044,22 @@
 
     function clearUpload() { uploadedFile = null; renderUploadChip(); }
 
+    function isPdfUpload(file) {
+      return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    }
+
+    function isReadableTextUpload(file) {
+      const lowerName = file.name.toLowerCase();
+      return file.type.startsWith('text/') || lowerName.endsWith('.md') || lowerName.endsWith('.txt');
+    }
+
+    function getReqWorkbenchErrorMessage(data, fallback) {
+      if (!data) return fallback;
+      if (typeof data.error === 'string' && data.error.trim()) return data.error.trim();
+      if (data.error && typeof data.error.message === 'string' && data.error.message.trim()) return data.error.message.trim();
+      return fallback;
+    }
+
     // 欢迎页（新建创作）上传文档：复用同一个 uploadedFile 状态，提交时随 welcome 文本一起带到 sendMessage
     function handleWelcomeFileSelect(input) {
       const file = input.files[0];
@@ -5051,14 +5067,24 @@
       if (file.size > 5 * 1024 * 1024) { alert('文件不能超过 5MB'); input.value = ''; return; }
       const reader = new FileReader();
       reader.onload = () => {
-        uploadedFile = { name: file.name, type: file.type, dataUrl: reader.result };
+        uploadedFile = { name: file.name, type: file.type };
         const area = document.getElementById('welcomeUploadChipArea');
         if (area) area.innerHTML = '<div class="upload-chip">📄 <span>' + file.name + '</span> <span class="rm" onclick="clearWelcomeUpload()">✕</span></div>';
-        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-          importWelcomePdfToReqWorkbench(uploadedFile);
+        if (isPdfUpload(file)) {
+          uploadedFile.dataUrl = reader.result;
+          importWelcomeDocumentToReqWorkbench(uploadedFile);
+          return;
+        }
+        if (isReadableTextUpload(file)) {
+          uploadedFile.textContent = String(reader.result || '');
+          importWelcomeDocumentToReqWorkbench(uploadedFile);
         }
       };
-      reader.readAsDataURL(file);
+      if (isReadableTextUpload(file) && !isPdfUpload(file)) {
+        reader.readAsText(file, 'utf-8');
+      } else {
+        reader.readAsDataURL(file);
+      }
       input.value = '';
     }
 
@@ -5072,7 +5098,7 @@
       alert('导入飞书文档功能即将上线 🚀');
     }
 
-    async function importWelcomePdfToReqWorkbench(file) {
+    async function importWelcomeDocumentToReqWorkbench(file) {
       const token = localStorage.getItem('tos_token') || '';
       if (!token) {
         document.getElementById('loginOverlay').classList.remove('hidden');
@@ -5085,23 +5111,31 @@
       showReqWorkbench();
       renderReqWorkbench();
       try {
+        const isPdf = isPdfUpload(file);
+        const body = isPdf
+          ? {
+              input: `请读取已上传的 PRD《${file.name}》，拆解其中所有需要设计的桌面卡片。`,
+              documentBase64: String(file.dataUrl).split(',')[1],
+              documentMediaType: 'application/pdf',
+              documentName: file.name,
+            }
+          : {
+              input: `以下是 PRD/需求文档《${file.name}》的全文，请直接阅读并拆解其中所有需要设计的桌面卡片：\n\n${String(file.textContent || '').trim()}`,
+            };
         const res = await fetch('/api/chat-prd-cards', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({
-            input: `请读取已上传的 PRD《${file.name}》，拆解其中所有需要设计的桌面卡片。`,
-            documentBase64: String(file.dataUrl).split(',')[1],
-            documentMediaType: 'application/pdf',
-            documentName: file.name,
-          }),
+          body: JSON.stringify(body),
         });
         const data = await res.json();
         if (!data.ok) {
-          console.error('PDF 解析后端错误详情:', data.error);
-          throw new Error('AI 服务暂时繁忙，请稍后重试一次');
+          console.error('需求文档解析后端错误详情:', data.error);
+          throw new Error(getReqWorkbenchErrorMessage(data, 'AI 服务暂时繁忙，请稍后重试一次'));
         }
         const jobs = parseCodeBlockJson(data.text, 'json');
-        if (!Array.isArray(jobs) || !jobs.length) throw new Error('AI 没有从 PDF 识别到有效的卡片清单，换一份更清晰的 PDF 试试');
+        if (!Array.isArray(jobs) || !jobs.length) {
+          throw new Error(isPdf ? 'AI 没有从 PDF 识别到有效的卡片清单，换一份更清晰的 PDF 试试' : 'AI 没有从文档中识别到有效的卡片清单，试着补充更完整的需求内容');
+        }
         reqWorkbenchJobs = jobs.map((item, idx) => ({
           id: `req-job-${Date.now()}-${reqWorkbenchJobSeq++}-${idx}`,
           name: (item && item.name ? String(item.name) : `卡片 ${idx + 1}`).trim(),
@@ -5111,8 +5145,9 @@
         }));
         clearWelcomeUpload();
       } catch (error) {
+        reqWorkbenchJobs = [];
+        reqWorkbenchDraft = '';
         alert(error.message || 'AI 服务暂时繁忙，请稍后重试一次');
-        showReqWorkbench();
       } finally {
         reqWorkbenchImporting = false;
         renderReqWorkbench();
