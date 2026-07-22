@@ -2372,6 +2372,321 @@
     }
     #library-view.active { display: flex; }
 
+    /* ─── REQUIREMENT WORKBENCH VIEW (需求工作台) ─── */
+    #req-workbench-view {
+      position: absolute; inset: 0;
+      display: none;
+      flex-direction: column;
+      z-index: 26;
+      background:
+        radial-gradient(ellipse 60% 55% at 96% 0%, rgba(124,92,252,0.20), transparent),
+        radial-gradient(ellipse 68% 58% at 0% 100%, rgba(140,215,182,0.22), transparent),
+        var(--bg);
+      overflow: hidden;
+    }
+    #req-workbench-view.active { display: flex; }
+    .req-wb-header {
+      flex-shrink: 0;
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(18px);
+    }
+    .req-wb-title { font-size: 18px; font-weight: 600; color: var(--text); letter-spacing: 0.01em; }
+    .req-wb-sub { font-size: 12px; color: var(--muted); margin-left: 2px; }
+    .req-wb-meta {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.66);
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    .req-wb-body {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 28px;
+    }
+    .req-wb-empty {
+      max-width: 880px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .req-wb-hero {
+      padding: 28px 30px;
+      border-radius: 24px;
+      background: rgba(255,255,255,0.66);
+      border: 1px solid rgba(255,255,255,0.64);
+      box-shadow: 0 20px 60px rgba(23,19,49,0.08);
+      backdrop-filter: blur(20px);
+    }
+    .req-wb-hero-title { font-size: 24px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .req-wb-hero-sub { font-size: 14px; line-height: 1.7; color: var(--muted); max-width: 620px; }
+    .req-wb-compose {
+      padding: 22px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.74);
+      border: 1px solid rgba(255,255,255,0.7);
+      box-shadow: 0 14px 40px rgba(18,16,38,0.08);
+      backdrop-filter: blur(18px);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .req-wb-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .req-wb-input {
+      width: 100%;
+      min-height: 240px;
+      resize: vertical;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 18px;
+      padding: 18px 20px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text);
+      background: rgba(255,255,255,0.9);
+      box-shadow: inset 0 1px 2px rgba(255,255,255,0.8);
+      outline: none;
+    }
+    .req-wb-input:focus {
+      border-color: rgba(124,92,252,0.4);
+      box-shadow: 0 0 0 4px rgba(124,92,252,0.1);
+    }
+    .req-wb-input::placeholder { color: #a4a1b7; }
+    .req-wb-actions { display: flex; align-items: center; gap: 12px; }
+    .req-wb-submit {
+      border: none;
+      border-radius: 999px;
+      padding: 12px 20px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 12px 28px rgba(124,92,252,0.22);
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    }
+    .req-wb-submit:hover { transform: translateY(-1px); box-shadow: 0 16px 34px rgba(124,92,252,0.26); }
+    .req-wb-submit:disabled { opacity: 0.6; cursor: default; transform: none; box-shadow: none; }
+    .req-wb-tip { font-size: 12px; color: var(--muted); }
+    .req-wb-grid-state { display: flex; flex-direction: column; gap: 18px; }
+    .req-wb-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 2px;
+    }
+    .req-wb-toolbar-left { display: flex; flex-direction: column; gap: 4px; }
+    .req-wb-toolbar-title { font-size: 16px; font-weight: 600; color: var(--text); }
+    .req-wb-toolbar-sub { font-size: 12px; color: var(--muted); }
+    .req-wb-toolbar-actions { display: flex; align-items: center; gap: 8px; }
+    .req-wb-ghost-btn {
+      border: 1px solid rgba(0,0,0,0.08);
+      background: rgba(255,255,255,0.74);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 9px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.15s;
+    }
+    .req-wb-ghost-btn:hover { background: #fff; transform: translateY(-1px); }
+    .req-wb-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill,minmax(180px,1fr));
+      gap: 16px;
+    }
+    .req-wb-tile {
+      position: relative;
+      border-radius: 22px;
+      padding: 14px;
+      border: 1px solid rgba(255,255,255,0.7);
+      background: rgba(255,255,255,0.78);
+      box-shadow: 0 14px 34px rgba(18,16,38,0.08);
+      backdrop-filter: blur(18px);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 296px;
+      transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    }
+    .req-wb-tile.is-clickable { cursor: pointer; }
+    .req-wb-tile.is-clickable:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 20px 38px rgba(18,16,38,0.12);
+      border-color: rgba(124,92,252,0.28);
+    }
+    .req-wb-tile-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .req-wb-scene { flex-shrink: 0; }
+    .req-wb-status {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(0,0,0,0.05);
+      color: var(--text);
+    }
+    .req-wb-status.running { background: rgba(124,92,252,0.12); color: var(--accent); }
+    .req-wb-status.completed { background: rgba(1,203,101,0.12); color: #0f9954; }
+    .req-wb-status.failed { background: rgba(255,52,48,0.12); color: #d93632; }
+    .req-wb-status.waiting { background: rgba(0,0,0,0.05); color: var(--muted); }
+    .req-wb-spinner {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1.8px solid currentColor;
+      border-right-color: transparent;
+      animation: reqWbSpin 0.75s linear infinite;
+    }
+    @keyframes reqWbSpin { to { transform: rotate(360deg); } }
+    .req-wb-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.35;
+      min-height: 44px;
+    }
+    .req-wb-brief {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+      min-height: 58px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .req-wb-progress { display: flex; flex-direction: column; gap: 8px; }
+    .req-wb-progress-text { font-size: 12px; color: var(--text); font-weight: 500; }
+    .req-wb-progress-track {
+      width: 100%;
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+    .req-wb-progress-bar {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, rgba(124,92,252,0.86), rgba(124,92,252,0.45));
+      transition: width 0.2s ease;
+    }
+    .req-wb-thumb {
+      margin-top: auto;
+      height: 146px;
+      border-radius: 18px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(246,246,250,0.95);
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .req-wb-thumb-card {
+      width: 138px;
+      height: 138px;
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+    }
+    .req-wb-thumb-scale {
+      width: 138px;
+      height: 138px;
+      position: absolute;
+      inset: 0;
+      transform: scale(0.78);
+      transform-origin: top left;
+      pointer-events: none;
+    }
+    .req-wb-thumb-skeleton {
+      position: absolute;
+      inset: 18px;
+      border-radius: 16px;
+      background: linear-gradient(90deg, rgba(0,0,0,0.04), rgba(124,92,252,0.10), rgba(0,0,0,0.04));
+      background-size: 200% 100%;
+      animation: reqWbPulse 1.6s ease infinite;
+    }
+    .req-wb-thumb-skeleton::before,
+    .req-wb-thumb-skeleton::after {
+      content: '';
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.58);
+    }
+    .req-wb-thumb-skeleton::before { top: 18px; height: 16px; }
+    .req-wb-thumb-skeleton::after { bottom: 18px; height: 34px; }
+    @keyframes reqWbPulse {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+    .req-wb-error {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(255,52,48,0.08);
+      color: #a83d3a;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .req-wb-retry-btn {
+      border: none;
+      border-radius: 999px;
+      padding: 7px 12px;
+      background: rgba(255,52,48,0.14);
+      color: #c83430;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .req-wb-retry-btn:hover { background: rgba(255,52,48,0.2); }
+    .req-wb-empty-grid {
+      text-align: center;
+      padding: 72px 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .wb-view-tabs-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .wb-req-back-btn {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.92);
+      color: var(--text);
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.15s;
+    }
+    .wb-req-back-btn.visible { display: inline-flex; }
+    .wb-req-back-btn:hover { background: #fff; transform: translateY(-1px); }
+
     /* ─── GALLERY VIEW (灵感剧场 / 最佳案例) ─── */
     #gallery-view {
       position: absolute; inset: 0;
@@ -2904,6 +3219,14 @@
         </svg>
         <div class="sidebar-nav-item-body">新建创作</div>
       </button>
+      <button class="sidebar-nav-item" id="navReqWorkbench" onclick="showReqWorkbench()">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2.5" y="2.5" width="6" height="6" rx="1.5"/>
+          <rect x="9.5" y="2.5" width="6" height="6" rx="1.5"/>
+          <rect x="6" y="9.5" width="6" height="6" rx="1.5"/>
+        </svg>
+        <div class="sidebar-nav-item-body">需求工作台</div>
+      </button>
       <button class="sidebar-nav-item" id="navWorkbench" onclick="showWorkbench(false)">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 9.5h2.5v4H3zM7.5 5h2.5v8.5H7.5zM12 7h2.5v6.5H12z"/>
@@ -2997,6 +3320,15 @@
 
     <!-- GALLERY VIEW: 灵感剧场 / 最佳案例 -->
     <!-- LIBRARY VIEW: 卡片库 -->
+    <div id="req-workbench-view">
+      <div class="req-wb-header">
+        <span class="req-wb-title">需求工作台</span>
+        <span class="req-wb-sub">一份 PRD，拆成一组可追踪的卡片任务</span>
+        <span class="req-wb-meta" id="reqWorkbenchMeta">等待新的需求</span>
+      </div>
+      <div class="req-wb-body" id="reqWorkbenchBody"></div>
+    </div>
+
     <div id="library-view">
       <div class="gallery-header">
         <span class="gallery-title">卡片库</span>
@@ -3142,8 +3474,16 @@
       <!-- Top toolbar removed: 卡片预览/代码预览 tab 已移到卡片左侧 -->
       <!-- View tab bar: full-width, above content -->
       <div class="wb-view-tabs" id="wbViewTabs" style="border-bottom:1px solid var(--border);padding:8px 16px;background:var(--surface2);">
-        <button class="wb-view-tab active" id="wbViewTabPreview" onclick="switchWbView('preview')">卡片预览</button>
-        <button class="wb-view-tab" id="wbViewTabCode" onclick="switchWbView('code')">代码预览</button>
+        <div class="wb-view-tabs-bar">
+          <button class="wb-req-back-btn" id="wbReqBackBtn" onclick="returnToReqWorkbench()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 2.5L3.5 7 9 11.5"/>
+            </svg>
+            返回需求工作台
+          </button>
+          <button class="wb-view-tab active" id="wbViewTabPreview" onclick="switchWbView('preview')">卡片预览</button>
+          <button class="wb-view-tab" id="wbViewTabCode" onclick="switchWbView('code')">代码预览</button>
+        </div>
       </div>
       <!-- Top card: left panel + preview + right chat panel -->
       <div id="wb-top-card">
@@ -3562,6 +3902,15 @@
     let versions = [];          // [{ data, time, variant }]
     let activeVersionIdx = -1;
     let pendingVariants = null; // [dataA, dataB] awaiting user pick
+    let reqWorkbenchDraft = '';
+    let reqWorkbenchJobs = [];
+    let reqWorkbenchDecomposing = false;
+    let reqWorkbenchQueueActive = 0;
+    let reqWorkbenchJobSeq = 0;
+    let wbEnteredFromReqWorkbench = false;
+    let reqWorkbenchActiveJobId = null;
+    const REQ_WORKBENCH_MAX_CONCURRENCY = 2;
+    const REQ_WORKBENCH_TOTAL_STEPS = 4;
 
     const SKILL_STEPS = [
       { id: 'analyze',   name: '需求分析',   desc: null },
@@ -4965,6 +5314,362 @@
       document.getElementById('emptyState').classList.remove('hidden');
     }
 
+
+    const REQ_SCENE_META = {
+      info: { label: '信息展示', emoji: '📊' },
+      weather: { label: '天气', emoji: '🌤️' },
+      music: { label: '音乐', emoji: '🎵' },
+      travel: { label: '出行', emoji: '✈️' },
+      celebration: { label: '庆祝', emoji: '🎉' },
+      mood: { label: '情绪氛围', emoji: '🌙' },
+      nature: { label: '自然', emoji: '🌿' },
+      action: { label: '操作提醒', emoji: '⚡' },
+      control: { label: '状态控制', emoji: '🎛️' },
+      health: { label: '健康', emoji: '🏃' },
+      media: { label: '媒体', emoji: '🎬' },
+      transport: { label: '交通', emoji: '🚗' },
+    };
+
+    function escapeHtml(text) {
+      return String(text == null ? '' : text).replace(/[<>&"]/g, (ch) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[ch]));
+    }
+
+    function getReqSceneMeta(scene) {
+      return REQ_SCENE_META[scene] || { label: scene || '通用', emoji: '🧩' };
+    }
+
+    function getReqJobStatusText(job) {
+      if (job.status === 'running') return '生成中';
+      if (job.status === 'completed') return '已完成';
+      if (job.status === 'failed') return '失败';
+      return '等待中';
+    }
+
+    function getReqJobProgress(job) {
+      const step = Math.max(0, Math.min(REQ_WORKBENCH_TOTAL_STEPS, Number(job.progressStep) || 0));
+      if (job.status === 'completed') return { text: `${REQ_WORKBENCH_TOTAL_STEPS}/${REQ_WORKBENCH_TOTAL_STEPS} 步骤`, pct: 100 };
+      if (job.status === 'failed') return { text: `失败于 ${Math.max(1, step)}/${REQ_WORKBENCH_TOTAL_STEPS} 步骤`, pct: Math.max(25, Math.round(step / REQ_WORKBENCH_TOTAL_STEPS * 100)) };
+      if (job.status === 'running') return { text: `${Math.max(1, step)}/${REQ_WORKBENCH_TOTAL_STEPS} 步骤`, pct: Math.max(18, Math.round(step / REQ_WORKBENCH_TOTAL_STEPS * 100)) };
+      return { text: '等待调度', pct: 0 };
+    }
+
+    function reqJobStatusClass(status) {
+      return status === 'completed' ? 'completed' : status === 'failed' ? 'failed' : status === 'running' ? 'running' : 'waiting';
+    }
+
+    function parseCodeBlockJson(text, blockName) {
+      if (!text) return null;
+      const patterns = [];
+      if (blockName) patterns.push(new RegExp('```' + blockName + '\\n([\\s\\S]*?)```'));
+      patterns.push(/```json\n([\s\S]*?)```/);
+      for (const pattern of patterns) {
+        const match = text.match(pattern);
+        if (!match) continue;
+        try { return JSON.parse(match[1]); } catch (error) {}
+      }
+      try { return JSON.parse(text); } catch (error) { return null; }
+    }
+
+    function buildReqThumbNode(cardData) {
+      const thumb = document.createElement('div');
+      thumb.className = 'req-wb-thumb-card';
+      let bg = cardData.bg || (cardData.dark ? '#1c1c1e' : '#ffffff');
+      if (cardData.bgImage) {
+        const scrim = cardData.dark
+          ? 'linear-gradient(135deg,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.25) 55%,rgba(0,0,0,0) 78%)'
+          : 'linear-gradient(135deg,rgba(255,255,255,0.65) 0%,rgba(255,255,255,0.3) 55%,rgba(255,255,255,0) 78%)';
+        bg = `${scrim}, url(${cardData.bgImage}) center/cover no-repeat`;
+      }
+      thumb.style.background = bg;
+      const scale = document.createElement('div');
+      scale.className = 'req-wb-thumb-scale';
+      scale.appendChild(buildCardInner(cardData));
+      thumb.appendChild(scale);
+      return thumb;
+    }
+
+    function renderReqWorkbench() {
+      const body = document.getElementById('reqWorkbenchBody');
+      const meta = document.getElementById('reqWorkbenchMeta');
+      if (!body || !meta) return;
+
+      if (!reqWorkbenchJobs.length) {
+        meta.textContent = reqWorkbenchDecomposing ? '正在拆解需求…' : '等待新的需求';
+        body.innerHTML = `
+          <div class="req-wb-empty">
+            <div class="req-wb-hero">
+              <div class="req-wb-hero-title">把一整份需求，变成一排可追踪的卡片任务</div>
+              <div class="req-wb-hero-sub">贴一段 PRD、活动方案或一句批量描述，我会先拆成多张工作卡片，再按顺序生成每张卡的视觉方案。完成后点任意工作卡片，就能进入原来的单卡工作台继续精修。</div>
+            </div>
+            <div class="req-wb-compose">
+              <div class="req-wb-label">需求输入</div>
+              <textarea id="reqWorkbenchInput" class="req-wb-input" placeholder="粘贴你的 PRD 内容，或用一句话描述需要设计的一批卡片…">${escapeHtml(reqWorkbenchDraft)}</textarea>
+              <div class="req-wb-actions">
+                <button class="req-wb-submit" id="reqWorkbenchSubmitBtn" onclick="submitReqWorkbenchInput()" ${reqWorkbenchDecomposing ? 'disabled' : ''}>${reqWorkbenchDecomposing ? '拆解中...' : '开始拆解生成'}</button>
+                <div class="req-wb-tip">先拆清任务，再以 2 并发生成卡片，避免接口限流。</div>
+              </div>
+            </div>
+          </div>`;
+        return;
+      }
+
+      const completed = reqWorkbenchJobs.filter((job) => job.status === 'completed').length;
+      const running = reqWorkbenchJobs.filter((job) => job.status === 'running').length;
+      const failed = reqWorkbenchJobs.filter((job) => job.status === 'failed').length;
+      meta.textContent = `${completed}/${reqWorkbenchJobs.length} 已完成${running ? ` · ${running} 生成中` : ''}${failed ? ` · ${failed} 失败` : ''}`;
+      body.innerHTML = `
+        <div class="req-wb-grid-state">
+          <div class="req-wb-toolbar">
+            <div class="req-wb-toolbar-left">
+              <div class="req-wb-toolbar-title">${reqWorkbenchJobs.length} 张工作卡片</div>
+              <div class="req-wb-toolbar-sub">需求已拆解，卡片正在按队列生成；已完成的卡片可直接进入工作台继续编辑。</div>
+            </div>
+            <div class="req-wb-toolbar-actions">
+              <button class="req-wb-ghost-btn" onclick="resetReqWorkbench()">新建一份需求</button>
+            </div>
+          </div>
+          <div class="req-wb-grid" id="reqWorkbenchGrid"></div>
+        </div>`;
+
+      const grid = document.getElementById('reqWorkbenchGrid');
+      if (!grid) return;
+      if (!reqWorkbenchJobs.length) {
+        grid.innerHTML = '<div class="req-wb-empty-grid">还没有工作卡片</div>';
+        return;
+      }
+
+      reqWorkbenchJobs.forEach((job) => {
+        const tile = document.createElement('div');
+        const clickable = !!job.cardData || job.status === 'running';
+        tile.className = 'req-wb-tile' + (clickable ? ' is-clickable' : '');
+        if (clickable) tile.onclick = () => openReqWorkbenchJob(job.id);
+
+        const scene = getReqSceneMeta(job.scene);
+        const progress = getReqJobProgress(job);
+        const statusClass = reqJobStatusClass(job.status);
+        const statusHtml = job.status === 'running'
+          ? `<span class="req-wb-spinner"></span>${getReqJobStatusText(job)}`
+          : getReqJobStatusText(job);
+        tile.innerHTML = `
+          <div class="req-wb-tile-top">
+            <span class="csp-badge req-wb-scene">${scene.emoji} ${scene.label}</span>
+            <span class="req-wb-status ${statusClass}">${statusHtml}</span>
+          </div>
+          <div class="req-wb-name">${escapeHtml(job.name)}</div>
+          <div class="req-wb-brief">${escapeHtml(job.brief)}</div>
+          <div class="req-wb-progress">
+            <div class="req-wb-progress-text">${escapeHtml(progress.text)}</div>
+            <div class="req-wb-progress-track"><div class="req-wb-progress-bar" style="width:${progress.pct}%"></div></div>
+          </div>
+        `;
+
+        const thumb = document.createElement('div');
+        thumb.className = 'req-wb-thumb';
+        if (job.status === 'failed') {
+          thumb.innerHTML = `<div class="req-wb-error"><div>${escapeHtml(job.error || '生成失败，请重试')}</div><button class="req-wb-retry-btn" onclick="event.stopPropagation();retryReqWorkbenchJob('${job.id}')">重试</button></div>`;
+        } else if (job.cardData) {
+          thumb.appendChild(buildReqThumbNode(job.cardData));
+        } else {
+          const skel = document.createElement('div');
+          skel.className = 'req-wb-thumb-skeleton';
+          thumb.appendChild(skel);
+        }
+        tile.appendChild(thumb);
+        grid.appendChild(tile);
+      });
+    }
+
+    function updateReqWorkbenchReturnBtn() {
+      const btn = document.getElementById('wbReqBackBtn');
+      if (!btn) return;
+      btn.classList.toggle('visible', !!wbEnteredFromReqWorkbench);
+    }
+
+    function showReqWorkbench() {
+      wbEnteredFromReqWorkbench = false;
+      reqWorkbenchActiveJobId = null;
+      updateReqWorkbenchReturnBtn();
+      showView('req-workbench-view', '需求工作台', 'navReqWorkbench');
+      renderReqWorkbench();
+      runReqWorkbenchQueue();
+    }
+
+    function returnToReqWorkbench() {
+      hideWorkbench();
+      wbEnteredFromReqWorkbench = false;
+      reqWorkbenchActiveJobId = null;
+      updateReqWorkbenchReturnBtn();
+      showReqWorkbench();
+    }
+
+    function resetReqWorkbench() {
+      reqWorkbenchJobs = [];
+      reqWorkbenchDraft = '';
+      reqWorkbenchDecomposing = false;
+      reqWorkbenchQueueActive = 0;
+      reqWorkbenchActiveJobId = null;
+      renderReqWorkbench();
+    }
+
+    async function submitReqWorkbenchInput() {
+      const input = document.getElementById('reqWorkbenchInput');
+      const text = (input ? input.value : reqWorkbenchDraft).trim();
+      reqWorkbenchDraft = text;
+      if (!text || reqWorkbenchDecomposing) return;
+      const token = localStorage.getItem('tos_token') || '';
+      if (!token) {
+        document.getElementById('loginOverlay').classList.remove('hidden');
+        showLogin();
+        return;
+      }
+      reqWorkbenchDecomposing = true;
+      renderReqWorkbench();
+      try {
+        const res = await fetch('/api/chat-prd-cards', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ input: text }),
+        });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || '需求拆解失败');
+        const jobs = parseCodeBlockJson(data.text, 'json');
+        if (!Array.isArray(jobs) || !jobs.length) throw new Error('AI 没有返回有效的卡片清单');
+        reqWorkbenchJobs = jobs.map((item, idx) => ({
+          id: `req-job-${Date.now()}-${reqWorkbenchJobSeq++}-${idx}`,
+          name: (item && item.name ? String(item.name) : `卡片 ${idx + 1}`).trim(),
+          scene: (item && item.scene ? String(item.scene) : 'info').trim() || 'info',
+          brief: (item && item.brief ? String(item.brief) : '').trim(),
+          status: 'waiting',
+          progressStep: 0,
+          error: '',
+          cardData: null,
+          attempts: 0,
+        }));
+      } catch (error) {
+        alert(error.message || '需求拆解失败');
+      } finally {
+        reqWorkbenchDecomposing = false;
+        renderReqWorkbench();
+        runReqWorkbenchQueue();
+      }
+    }
+
+    function buildReqJobPrompt(job) {
+      return [
+        `请直接生成一张最终版桌面卡片，不需要提供两个候选方案。`,
+        `卡片名称：${job.name}`,
+        `场景类型：${job.scene}`,
+        `设计需求：${job.brief}`,
+        `要求：只输出调性分析 + 一个 \`\`\`card-update 代码块；不要输出方案A/B。`,
+      ].join('\n');
+    }
+
+    async function generateReqWorkbenchJob(job) {
+      const token = localStorage.getItem('tos_token') || '';
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ messages: [{ role: 'user', content: buildReqJobPrompt(job) }] }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || '卡片生成失败');
+      const cardMatches = [...String(data.text || '').matchAll(/```card-update\n([\s\S]*?)```/g)];
+      if (!cardMatches.length) throw new Error('没有解析到 card-update 结果');
+      let parsed = null;
+      for (const match of cardMatches) {
+        try {
+          parsed = JSON.parse(match[1]);
+          break;
+        } catch (error) {}
+      }
+      if (!parsed) throw new Error('card-update JSON 解析失败');
+      const { reason, ...cardData } = parsed;
+      if (cardData.illustPrompt && !cardData.bgImage) {
+        job.progressStep = 3;
+        renderReqWorkbench();
+        const url = await fetchIllustration(cardData.illustPrompt, cardData.scene);
+        parsed = await applyIllustration(cardData, url);
+      } else {
+        parsed = cardData;
+      }
+      return parsed;
+    }
+
+    async function processReqWorkbenchJob(job) {
+      job.status = 'running';
+      job.progressStep = 1;
+      job.error = '';
+      job.attempts = (job.attempts || 0) + 1;
+      renderReqWorkbench();
+      try {
+        job.progressStep = 2;
+        renderReqWorkbench();
+        const cardData = await generateReqWorkbenchJob(job);
+        job.cardData = cardData;
+        job.status = 'completed';
+        job.progressStep = REQ_WORKBENCH_TOTAL_STEPS;
+        job.error = '';
+        if (wbEnteredFromReqWorkbench && reqWorkbenchActiveJobId === job.id) {
+          currentCardData = cardData;
+          setWbLoading(false);
+          renderWbCard(cardData);
+          renderWbAnalysis(cardData);
+          renderWbSpec(cardData);
+        }
+      } catch (error) {
+        job.status = 'failed';
+        job.progressStep = Math.min(REQ_WORKBENCH_TOTAL_STEPS - 1, Math.max(1, Number(job.progressStep) || 1));
+        job.error = error.message || '生成失败';
+        if (wbEnteredFromReqWorkbench && reqWorkbenchActiveJobId === job.id && !job.cardData) {
+          setWbLoading(false);
+          const wbErr = document.getElementById('wb-loading');
+          if (wbErr) {
+            wbErr.style.display = 'flex';
+            const spinner = wbErr.querySelector('.wb-spinner');
+            if (spinner) spinner.style.display = 'none';
+            const txt = wbErr.querySelector('.wb-loading-text');
+            if (txt) txt.textContent = job.error;
+          }
+        }
+      } finally {
+        renderReqWorkbench();
+      }
+    }
+
+    function runReqWorkbenchQueue() {
+      while (reqWorkbenchQueueActive < REQ_WORKBENCH_MAX_CONCURRENCY) {
+        const job = reqWorkbenchJobs.find((item) => item.status === 'waiting');
+        if (!job) break;
+        reqWorkbenchQueueActive += 1;
+        processReqWorkbenchJob(job)
+          .finally(() => {
+            reqWorkbenchQueueActive = Math.max(0, reqWorkbenchQueueActive - 1);
+            runReqWorkbenchQueue();
+          });
+      }
+    }
+
+    function retryReqWorkbenchJob(jobId) {
+      const job = reqWorkbenchJobs.find((item) => item.id === jobId);
+      if (!job) return;
+      job.status = 'waiting';
+      job.progressStep = 0;
+      job.error = '';
+      job.cardData = null;
+      renderReqWorkbench();
+      runReqWorkbenchQueue();
+    }
+
+    function openReqWorkbenchJob(jobId) {
+      const job = reqWorkbenchJobs.find((item) => item.id === jobId);
+      if (!job) return;
+      wbEnteredFromReqWorkbench = true;
+      reqWorkbenchActiveJobId = job.id;
+      updateReqWorkbenchReturnBtn();
+      if (job.cardData) currentCardData = job.cardData;
+      showWorkbench(job.status === 'running' && !job.cardData);
+    }
+
     function renderSidebarHistory() {
       const container = document.getElementById('sidebarHistory');
       if (!container) return;
@@ -5004,6 +5709,11 @@
       if (tutView) tutView.classList.remove('active');
       const emptyView = document.getElementById('empty-view');
       if (emptyView) emptyView.classList.remove('active');
+      const reqView = document.getElementById('req-workbench-view');
+      if (reqView) reqView.classList.remove('active');
+      wbEnteredFromReqWorkbench = false;
+      reqWorkbenchActiveJobId = null;
+      updateReqWorkbenchReturnBtn();
       const ws = document.getElementById('welcomeState');
       if (ws) ws.classList.remove('hidden');
       document.getElementById('welcomeInput').value = '';
@@ -5042,7 +5752,7 @@
     // navId: 需要高亮的侧边栏按钮 id（不传则自动从事件源推断）
     function showView(viewId, label, navId) {
       // 隐藏所有已知 view
-      const allViewIds = ['workbench-view', 'gallery-view', 'library-view', 'templates-view', 'icon-library-view', 'tutorial-view', 'empty-view'];
+      const allViewIds = ['workbench-view', 'req-workbench-view', 'gallery-view', 'library-view', 'templates-view', 'icon-library-view', 'tutorial-view', 'empty-view'];
       const ws = document.getElementById('welcomeState');
       if (ws) ws.classList.add('hidden');
       allViewIds.forEach(id => {
@@ -5053,6 +5763,7 @@
       if (target) {
         target.classList.add('active');
         if (viewId === 'library-view') { showLibraryView(); }
+        if (viewId === 'req-workbench-view') { renderReqWorkbench(); }
         if (viewId === 'icon-library-view' && !iconLibraryInited) {
           renderIconLibraryGrid();
           iconLibraryInited = true;
@@ -5087,6 +5798,8 @@
       if (libView) libView.classList.remove('active');
       const emptyView = document.getElementById('empty-view');
       if (emptyView) emptyView.classList.remove('active');
+      const reqView = document.getElementById('req-workbench-view');
+      if (reqView) reqView.classList.remove('active');
       const tutView = document.getElementById('tutorial-view');
       if (tutView) tutView.classList.remove('active');
       const wbView = document.getElementById('workbench-view');
@@ -5094,6 +5807,7 @@
       // highlight sidebar workbench
       document.querySelectorAll('.sidebar-nav-item').forEach(b => b.classList.remove('active'));
       document.getElementById('navWorkbench').classList.add('active');
+      updateReqWorkbenchReturnBtn();
       // keep floating chat hidden (right panel replaces it)
       // const fc = document.getElementById('wb-chat-float');
       if (loading) {
@@ -5116,6 +5830,7 @@
 
     function hideWorkbench() {
       document.getElementById('workbench-view').classList.remove('active');
+      updateReqWorkbenchReturnBtn();
     }
 
     // ─── GALLERY VIEW (灵感剧场 / 最佳案例 磁力网格) ───
@@ -5164,6 +5879,8 @@
       if (emptyView) emptyView.classList.remove('active');
       const tutView = document.getElementById('tutorial-view');
       if (tutView) tutView.classList.remove('active');
+      const reqView = document.getElementById('req-workbench-view');
+      if (reqView) reqView.classList.remove('active');
       document.getElementById('gallery-view').classList.add('active');
       // highlight sidebar
       document.querySelectorAll('.sidebar-nav-item').forEach(b => b.classList.remove('active'));
@@ -5353,6 +6070,8 @@
       if (iconLibView) iconLibView.classList.remove('active');
       const ev = document.getElementById('empty-view');
       if (ev) ev.classList.remove('active');
+      const reqView = document.getElementById('req-workbench-view');
+      if (reqView) reqView.classList.remove('active');
       const tutView = document.getElementById('tutorial-view');
       if (tutView) tutView.classList.remove('active');
       document.getElementById('templates-view').classList.add('active');
@@ -5379,6 +6098,8 @@
       if (ev) ev.classList.remove('active');
       const tplView = document.getElementById('templates-view');
       if (tplView) tplView.classList.remove('active');
+      const reqView = document.getElementById('req-workbench-view');
+      if (reqView) reqView.classList.remove('active');
       document.getElementById('tutorial-view').classList.add('active');
       document.querySelectorAll('.sidebar-nav-item').forEach(b => b.classList.remove('active'));
       const navBtn = document.getElementById('navTutorial');
