@@ -1394,6 +1394,27 @@
       text-underline-offset: 2px;
     }
     .welcome-blank a:hover { color: #222; }
+    .welcome-quick-actions {
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; margin-top: 16px;
+    }
+    .welcome-quick-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 15px; border-radius: 999px;
+      background: rgba(255,255,255,0.5);
+      border: 1px solid rgba(0,0,0,0.06);
+      color: #9a9aa2; font-size: 12.5px; font-weight: 450;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .welcome-quick-btn svg { opacity: 0.7; flex-shrink: 0; }
+    .welcome-quick-btn:hover {
+      background: rgba(255,255,255,0.85);
+      border-color: rgba(0,0,0,0.09);
+      color: #6b6b74;
+    }
+    .welcome-quick-btn:hover svg { opacity: 0.9; }
+    #welcomeUploadChipArea:not(:empty) { margin-top: 10px; display: flex; justify-content: center; }
+    #welcomeUploadChipArea .upload-chip { margin: 0; }
     .welcome-hint-text { display: none; }
     .welcome-chips { display: none; }
     .welcome-chip { display: none; }
@@ -3314,6 +3335,24 @@
         ></textarea>
         <button class="welcome-send-btn" onclick="submitWelcome()">创作</button>
       </div>
+      <div class="welcome-quick-actions">
+        <button class="welcome-quick-btn" onclick="document.getElementById('welcomeFileInput').click()">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6.5 1v7.5M3.2 5.3L6.5 2l3.3 3.3"/>
+            <path d="M2 9.5v1.3c0 .66.54 1.2 1.2 1.2h6.6c.66 0 1.2-.54 1.2-1.2V9.5"/>
+          </svg>
+          上传文档
+        </button>
+        <button class="welcome-quick-btn" onclick="importFeishuDoc()">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="1.3" width="9" height="10.4" rx="1.3"/>
+            <path d="M4.3 4.3h4.4M4.3 6.5h4.4M4.3 8.7h2.6"/>
+          </svg>
+          导入飞书文档
+        </button>
+      </div>
+      <input type="file" id="welcomeFileInput" accept=".pdf,.doc,.docx,.txt,.md" style="display:none" onchange="handleWelcomeFileSelect(this)" />
+      <div id="welcomeUploadChipArea"></div>
       <p class="welcome-powered">Powered by 🎨 TOS Design</p>
       <div class="welcome-blank">或 <a onclick="startBlank()">从空白开始</a></div>
     </div>
@@ -4958,6 +4997,31 @@
     }
 
     function clearUpload() { uploadedFile = null; renderUploadChip(); }
+
+    // 欢迎页（新建创作）上传文档：复用同一个 uploadedFile 状态，提交时随 welcome 文本一起带到 sendMessage
+    function handleWelcomeFileSelect(input) {
+      const file = input.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) { alert('文件不能超过 5MB'); input.value = ''; return; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        uploadedFile = { name: file.name, type: file.type, dataUrl: reader.result };
+        const area = document.getElementById('welcomeUploadChipArea');
+        if (area) area.innerHTML = '<div class="upload-chip">📄 <span>' + file.name + '</span> <span class="rm" onclick="clearWelcomeUpload()">✕</span></div>';
+      };
+      reader.readAsDataURL(file);
+      input.value = '';
+    }
+
+    function clearWelcomeUpload() {
+      uploadedFile = null;
+      const area = document.getElementById('welcomeUploadChipArea');
+      if (area) area.innerHTML = '';
+    }
+
+    function importFeishuDoc() {
+      alert('导入飞书文档功能即将上线 🚀');
+    }
 
     function exportCard() {
       alert('导出功能即将上线 🚀');
