@@ -2686,6 +2686,32 @@
       color: var(--muted);
       font-size: 14px;
     }
+    .req-wb-loading-state {
+      max-width: 480px;
+      margin: 96px auto 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      text-align: center;
+    }
+    .req-wb-loading-spinner {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 2.4px solid rgba(124,92,252,0.18);
+      border-top-color: var(--accent);
+      animation: reqWbSpin 0.8s linear infinite;
+    }
+    .req-wb-loading-text {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .req-wb-loading-sub {
+      font-size: 12.5px;
+      color: var(--muted);
+    }
     .wb-view-tabs-bar {
       display: flex;
       align-items: center;
@@ -5505,8 +5531,19 @@
       const meta = document.getElementById('reqWorkbenchMeta');
       if (!body || !meta) return;
 
+      if (reqWorkbenchImporting) {
+        meta.textContent = '正在读取 PDF 文档…';
+        body.innerHTML = `
+          <div class="req-wb-loading-state">
+            <div class="req-wb-loading-spinner"></div>
+            <div class="req-wb-loading-text">正在读取 PDF 并拆解卡片需求…</div>
+            <div class="req-wb-loading-sub">AI 正在分析文档内容，预计需要几秒到十几秒</div>
+          </div>`;
+        return;
+      }
+
       if (!reqWorkbenchJobs.length) {
-        meta.textContent = reqWorkbenchImporting ? '正在读取 PDF 文档…' : (reqWorkbenchDecomposing ? '正在拆解需求…' : '等待新的需求');
+        meta.textContent = reqWorkbenchDecomposing ? '正在拆解需求…' : '等待新的需求';
         body.innerHTML = `
           <div class="req-wb-empty">
             <div class="req-wb-hero">
@@ -5515,9 +5552,9 @@
             </div>
             <div class="req-wb-compose">
               <div class="req-wb-label">需求输入</div>
-              <textarea id="reqWorkbenchInput" class="req-wb-input" placeholder="粘贴你的 PRD 内容，或用一句话描述需要设计的一批卡片…" ${reqWorkbenchImporting ? 'disabled' : ''}>${escapeHtml(reqWorkbenchDraft)}</textarea>
+              <textarea id="reqWorkbenchInput" class="req-wb-input" placeholder="粘贴你的 PRD 内容，或用一句话描述需要设计的一批卡片…">${escapeHtml(reqWorkbenchDraft)}</textarea>
               <div class="req-wb-actions">
-                <button class="req-wb-submit" id="reqWorkbenchSubmitBtn" onclick="submitReqWorkbenchInput()" ${(reqWorkbenchDecomposing || reqWorkbenchImporting) ? 'disabled' : ''}>${reqWorkbenchImporting ? '正在读取 PDF...' : (reqWorkbenchDecomposing ? '拆解中...' : '开始拆解生成')}</button>
+                <button class="req-wb-submit" id="reqWorkbenchSubmitBtn" onclick="submitReqWorkbenchInput()" ${reqWorkbenchDecomposing ? 'disabled' : ''}>${reqWorkbenchDecomposing ? '拆解中...' : '开始拆解生成'}</button>
                 <div class="req-wb-tip">先拆清任务，再以 2 并发生成卡片，避免接口限流。</div>
               </div>
             </div>
