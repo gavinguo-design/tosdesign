@@ -41,6 +41,23 @@ Example output:
 ]
 \`\`\``;
 
+function parseSseTextResponse(raw) {
+  if (!raw) return '';
+  let text = '';
+  for (const line of String(raw).split(/\r?\n/)) {
+    if (!line.startsWith('data: ')) continue;
+    const payload = line.slice(6).trim();
+    if (!payload || payload === '[DONE]') continue;
+    try {
+      const chunk = JSON.parse(payload);
+      text += chunk.choices?.[0]?.delta?.content || '';
+    } catch {
+      // Ignore malformed stream fragments and keep reading the remaining chunks.
+    }
+  }
+  return text.trim();
+}
+
 const API_CANDIDATES = [
   {
     url: "https://crs.chenge.ink/api/v1/messages",
@@ -57,6 +74,33 @@ const API_CANDIDATES = [
     label: 'crs-claude',
   },
   {
+    url: "https://crs.chenge.ink/api/v1/chat/completions",
+    headers: { Authorization: `Bearer ${CRS_KEY}`, 'Content-Type': 'application/json' },
+    supportsDocument: true,
+    responseType: 'text',
+    buildBody: (input, document) => JSON.stringify({
+      model: 'gpt-5.6-sol',
+      max_tokens: 1400,
+      stream: true,
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        {
+          role: 'user',
+          content: document ? [
+            {
+              type: 'input_file',
+              filename: 'prd.pdf',
+              file_data: `data:${document.mediaType};base64,${document.base64}`,
+            },
+            { type: 'input_text', text: input },
+          ] : input,
+        },
+      ],
+    }),
+    parseText: parseSseTextResponse,
+    label: 'crs-gpt-56',
+  },
+  {
     url: "https://admin.nickcloud.xyz/v1/messages",
     headers: { Authorization: `Bearer ${NICK_KEY}`, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
     supportsDocument: true,
@@ -69,14 +113,6 @@ const API_CANDIDATES = [
     }),
     parseText: (d) => d.content?.[0]?.text || '',
     label: 'nickcloud',
-  },
-  {
-    url: "https://crs.chenge.ink/openai/v1/chat/completions",
-    headers: { Authorization: `Bearer ${CRS_KEY}`, 'Content-Type': 'application/json' },
-    supportsDocument: false,
-    buildBody: (input) => JSON.stringify({ model: 'gpt-4.1', max_tokens: 1400, messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: input }] }),
-    parseText: (d) => d.choices?.[0]?.message?.content || '',
-    label: 'crs-gpt',
   },
 ];
 
@@ -120,30 +156,44 @@ export async function onRequestPost({ request }) {
   }
 
   let lastError = 'all candidates failed';
+  // 带文档的 PDF 请求耐心给长一点（AI 解析文档本身需要更久），纯文本请求控制在短超时内，避免卡住干等
+  const REQUEST_TIMEOUT_MS = document ? 45000 : 20000;
   for (const cand of API_CANDIDATES) {
     if (document && !cand.supportsDocument) continue;
     // 主力渠道先重试 1 次再认输，避免一抵抖就跳到备用（备用可能长期不可用）
     const attempts = cand.label === 'crs-claude' ? 2 : 1;
     for (let attempt = 1; attempt <= attempts; attempt++) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
       try {
         const res = await fetch(cand.url, {
           method: 'POST',
           headers: cand.headers,
           body: cand.buildBody(input, document),
+          signal: controller.signal,
         });
-        const data = await res.json();
+        const payload = cand.responseType === 'text' ? await res.text() : await res.json();
         if (!res.ok) {
-          lastError = `${cand.label}: ${data.error?.message || JSON.stringify(data)}`;
+          if (cand.responseType === 'text') {
+            lastError = `${cand.label}: ${payload || `http ${res.status}`}`;
+          } else {
+            lastError = `${cand.label}: ${payload.error?.message || JSON.stringify(payload)}`;
+          }
           continue;
         }
-        const text = cand.parseText(data);
+        const text = cand.parseText(payload);
         if (!text) {
           lastError = `${cand.label}: empty response`;
           continue;
         }
         return new Response(JSON.stringify({ ok: true, text, via: cand.label }), { headers });
       } catch (error) {
-        lastError = `${cand.label}: ${error.message}`;
+        // 超时被 AbortController 中断时 error.name 为 AbortError，给出清晰提示便于排查
+        lastError = error.name === 'AbortError'
+          ? `${cand.label}: request timeout after ${REQUEST_TIMEOUT_MS}ms`
+          : `${cand.label}: ${error.message}`;
+      } finally {
+        clearTimeout(timer);
       }
     }
   }
