@@ -3943,6 +3943,7 @@
     let reqWorkbenchDraft = '';
     let reqWorkbenchJobs = [];
     let reqWorkbenchDecomposing = false;
+    let reqWorkbenchImporting = false;
     let reqWorkbenchQueueActive = 0;
     let reqWorkbenchJobSeq = 0;
     let wbEnteredFromReqWorkbench = false;
@@ -5007,6 +5008,9 @@
         uploadedFile = { name: file.name, type: file.type, dataUrl: reader.result };
         const area = document.getElementById('welcomeUploadChipArea');
         if (area) area.innerHTML = '<div class="upload-chip">📄 <span>' + file.name + '</span> <span class="rm" onclick="clearWelcomeUpload()">✕</span></div>';
+        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+          importWelcomePdfToReqWorkbench(uploadedFile);
+        }
       };
       reader.readAsDataURL(file);
       input.value = '';
@@ -5020,6 +5024,51 @@
 
     function importFeishuDoc() {
       alert('导入飞书文档功能即将上线 🚀');
+    }
+
+    async function importWelcomePdfToReqWorkbench(file) {
+      const token = localStorage.getItem('tos_token') || '';
+      if (!token) {
+        document.getElementById('loginOverlay').classList.remove('hidden');
+        showLogin();
+        return;
+      }
+      reqWorkbenchImporting = true;
+      reqWorkbenchDraft = '';
+      reqWorkbenchJobs = [];
+      showReqWorkbench();
+      renderReqWorkbench();
+      try {
+        const res = await fetch('/api/chat-prd-cards', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            input: `请读取已上传的 PRD《${file.name}》，拆解其中所有需要设计的桌面卡片。`,
+            documentBase64: String(file.dataUrl).split(',')[1],
+            documentMediaType: 'application/pdf',
+            documentName: file.name,
+          }),
+        });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'PDF 需求拆解失败');
+        const jobs = parseCodeBlockJson(data.text, 'json');
+        if (!Array.isArray(jobs) || !jobs.length) throw new Error('AI 没有从 PDF 识别到有效的卡片清单');
+        reqWorkbenchJobs = jobs.map((item, idx) => ({
+          id: `req-job-${Date.now()}-${reqWorkbenchJobSeq++}-${idx}`,
+          name: (item && item.name ? String(item.name) : `卡片 ${idx + 1}`).trim(),
+          scene: (item && item.scene ? String(item.scene) : 'info').trim() || 'info',
+          brief: (item && item.brief ? String(item.brief) : '').trim(),
+          status: 'waiting', progressStep: 0, error: '', cardData: null, attempts: 0,
+        }));
+        clearWelcomeUpload();
+      } catch (error) {
+        alert(error.message || 'PDF 需求拆解失败');
+        showReqWorkbench();
+      } finally {
+        reqWorkbenchImporting = false;
+        renderReqWorkbench();
+        runReqWorkbenchQueue();
+      }
     }
 
     function exportCard() {
@@ -5457,7 +5506,7 @@
       if (!body || !meta) return;
 
       if (!reqWorkbenchJobs.length) {
-        meta.textContent = reqWorkbenchDecomposing ? '正在拆解需求…' : '等待新的需求';
+        meta.textContent = reqWorkbenchImporting ? '正在读取 PDF 文档…' : (reqWorkbenchDecomposing ? '正在拆解需求…' : '等待新的需求');
         body.innerHTML = `
           <div class="req-wb-empty">
             <div class="req-wb-hero">
@@ -5466,9 +5515,9 @@
             </div>
             <div class="req-wb-compose">
               <div class="req-wb-label">需求输入</div>
-              <textarea id="reqWorkbenchInput" class="req-wb-input" placeholder="粘贴你的 PRD 内容，或用一句话描述需要设计的一批卡片…">${escapeHtml(reqWorkbenchDraft)}</textarea>
+              <textarea id="reqWorkbenchInput" class="req-wb-input" placeholder="粘贴你的 PRD 内容，或用一句话描述需要设计的一批卡片…" ${reqWorkbenchImporting ? 'disabled' : ''}>${escapeHtml(reqWorkbenchDraft)}</textarea>
               <div class="req-wb-actions">
-                <button class="req-wb-submit" id="reqWorkbenchSubmitBtn" onclick="submitReqWorkbenchInput()" ${reqWorkbenchDecomposing ? 'disabled' : ''}>${reqWorkbenchDecomposing ? '拆解中...' : '开始拆解生成'}</button>
+                <button class="req-wb-submit" id="reqWorkbenchSubmitBtn" onclick="submitReqWorkbenchInput()" ${(reqWorkbenchDecomposing || reqWorkbenchImporting) ? 'disabled' : ''}>${reqWorkbenchImporting ? '正在读取 PDF...' : (reqWorkbenchDecomposing ? '拆解中...' : '开始拆解生成')}</button>
                 <div class="req-wb-tip">先拆清任务，再以 2 并发生成卡片，避免接口限流。</div>
               </div>
             </div>
@@ -5569,6 +5618,7 @@
       reqWorkbenchJobs = [];
       reqWorkbenchDraft = '';
       reqWorkbenchDecomposing = false;
+      reqWorkbenchImporting = false;
       reqWorkbenchQueueActive = 0;
       reqWorkbenchActiveJobId = null;
       renderReqWorkbench();

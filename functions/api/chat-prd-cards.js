@@ -45,20 +45,35 @@ const API_CANDIDATES = [
   {
     url: "https://crs.chenge.ink/api/v1/messages",
     headers: { Authorization: `Bearer ${CRS_KEY}`, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
-    buildBody: (input) => JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1400, system: SYSTEM_PROMPT, messages: [{ role: 'user', content: input }] }),
+    supportsDocument: true,
+    buildBody: (input, document) => JSON.stringify({
+      model: 'claude-sonnet-4-6', max_tokens: 1400, system: SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: document ? [
+        { type: 'document', source: { type: 'base64', media_type: document.mediaType, data: document.base64 } },
+        { type: 'text', text: input },
+      ] : input }],
+    }),
     parseText: (d) => d.content?.[0]?.text || '',
     label: 'crs-claude',
   },
   {
     url: "https://admin.nickcloud.xyz/v1/messages",
     headers: { Authorization: `Bearer ${NICK_KEY}`, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
-    buildBody: (input) => JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1400, system: SYSTEM_PROMPT, messages: [{ role: 'user', content: input }] }),
+    supportsDocument: true,
+    buildBody: (input, document) => JSON.stringify({
+      model: 'claude-sonnet-4-6', max_tokens: 1400, system: SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: document ? [
+        { type: 'document', source: { type: 'base64', media_type: document.mediaType, data: document.base64 } },
+        { type: 'text', text: input },
+      ] : input }],
+    }),
     parseText: (d) => d.content?.[0]?.text || '',
     label: 'nickcloud',
   },
   {
     url: "https://crs.chenge.ink/openai/v1/chat/completions",
     headers: { Authorization: `Bearer ${CRS_KEY}`, 'Content-Type': 'application/json' },
+    supportsDocument: false,
     buildBody: (input) => JSON.stringify({ model: 'gpt-4.1', max_tokens: 1400, messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: input }] }),
     parseText: (d) => d.choices?.[0]?.message?.content || '',
     label: 'crs-gpt',
@@ -97,17 +112,21 @@ export async function onRequestPost({ request }) {
   }
 
   const input = (body?.input || '').trim();
+  const document = body?.documentBase64 && body?.documentMediaType
+    ? { base64: String(body.documentBase64), mediaType: String(body.documentMediaType) }
+    : null;
   if (!input) {
     return new Response(JSON.stringify({ ok: false, error: 'input required' }), { status: 400, headers });
   }
 
   let lastError = 'all candidates failed';
   for (const cand of API_CANDIDATES) {
+    if (document && !cand.supportsDocument) continue;
     try {
       const res = await fetch(cand.url, {
         method: 'POST',
         headers: cand.headers,
-        body: cand.buildBody(input),
+        body: cand.buildBody(input, document),
       });
       const data = await res.json();
       if (!res.ok) {
