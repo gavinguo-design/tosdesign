@@ -1,31 +1,54 @@
 const CRS_KEY = "cr_3a07c6ba66da659eaae348c5782ac9934507be57af7c040220bbc1af67bc1b49";
 const NICK_KEY = "sk-151c42f6f5dcea5cb53e1434f9390cbc4b88dd71babf58456de6b99514494079";
+const TOKEN_SECRET = 'tosdesign-secret-2024';
+
+function parseSseTextResponse(raw) {
+  if (!raw) return '';
+  let text = '';
+  for (const line of String(raw).split(/\r?\n/)) {
+    if (!line.startsWith('data: ')) continue;
+    const payload = line.slice(6).trim();
+    if (!payload || payload === '[DONE]') continue;
+    try {
+      const chunk = JSON.parse(payload);
+      text += chunk.choices?.[0]?.delta?.content || '';
+    } catch {
+      // Ignore malformed SSE fragments and keep collecting text.
+    }
+  }
+  return text.trim();
+}
 
 // API candidates: tried in order until one succeeds
 const API_CANDIDATES = [
   {
     url: "https://crs.chenge.ink/api/v1/messages",
     headers: { 'Authorization': `Bearer ${CRS_KEY}`, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
-    buildBody: (msgs) => JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1024, system: SYSTEM_PROMPT, messages: msgs }),
+    buildBody: (msgs) => JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1400, system: SYSTEM_PROMPT, messages: msgs }),
     parseText: (d) => d.content?.[0]?.text || '',
     label: 'crs-claude',
   },
   {
+    url: "https://crs.chenge.ink/api/v1/chat/completions",
+    headers: { 'Authorization': `Bearer ${CRS_KEY}`, 'Content-Type': 'application/json' },
+    responseType: 'text',
+    buildBody: (msgs) => JSON.stringify({
+      model: 'gpt-5.6-sol',
+      max_tokens: 1400,
+      stream: true,
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...msgs],
+    }),
+    parseText: parseSseTextResponse,
+    label: 'crs-gpt-56',
+  },
+  {
     url: "https://admin.nickcloud.xyz/v1/messages",
     headers: { 'Authorization': `Bearer ${NICK_KEY}`, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
-    buildBody: (msgs) => JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1024, system: SYSTEM_PROMPT, messages: msgs }),
+    buildBody: (msgs) => JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1400, system: SYSTEM_PROMPT, messages: msgs }),
     parseText: (d) => d.content?.[0]?.text || '',
     label: 'nickcloud',
   },
-  {
-    url: "https://crs.chenge.ink/openai/v1/chat/completions",
-    headers: { 'Authorization': `Bearer ${CRS_KEY}`, 'Content-Type': 'application/json' },
-    buildBody: (msgs) => JSON.stringify({ model: 'gpt-4.1', max_tokens: 1024, messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...msgs] }),
-    parseText: (d) => d.choices?.[0]?.message?.content || '',
-    label: 'crs-gpt',
-  },
 ];
-const TOKEN_SECRET = 'tosdesign-secret-2024';
 
 async function verifyToken(token) {
   if (!token) return false;
@@ -90,23 +113,44 @@ export async function onRequestPost({ request, env }) {
     return new Response(JSON.stringify({ ok: false, error: 'messages required' }), { status: 400, headers });
   }
   let lastError = 'all candidates failed';
+  const REQUEST_TIMEOUT_MS = 20000;
   for (const cand of API_CANDIDATES) {
-    try {
-      const res = await fetch(cand.url, {
-        method: 'POST',
-        headers: cand.headers,
-        body: cand.buildBody(messages),
-      });
-      const data = await res.json();
-      if (!res.ok) { lastError = `${cand.label}: ${data.error?.message || JSON.stringify(data)}`; continue; }
-      const text = cand.parseText(data);
-      if (!text) { lastError = `${cand.label}: empty response`; continue; }
-      return new Response(JSON.stringify({ ok: true, text, via: cand.label }), { headers });
-    } catch (e) {
-      lastError = `${cand.label}: ${e.message}`;
+    const attempts = (cand.label === 'crs-claude' || cand.label === 'crs-gpt-56') ? 2 : 1;
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+      try {
+        const res = await fetch(cand.url, {
+          method: 'POST',
+          headers: cand.headers,
+          body: cand.buildBody(messages),
+          signal: controller.signal,
+        });
+        const payload = cand.responseType === 'text' ? await res.text() : await res.json();
+        if (!res.ok) {
+          if (cand.responseType === 'text') {
+            lastError = `${cand.label}: ${payload || `http ${res.status}`}`;
+          } else {
+            lastError = `${cand.label}: ${payload.error?.message || JSON.stringify(payload)}`;
+          }
+          continue;
+        }
+        const text = cand.parseText(payload);
+        if (!text) {
+          lastError = `${cand.label}: empty response`;
+          continue;
+        }
+        return new Response(JSON.stringify({ ok: true, text, via: cand.label }), { headers });
+      } catch (e) {
+        lastError = e.name === 'AbortError'
+          ? `${cand.label}: request timeout after ${REQUEST_TIMEOUT_MS}ms`
+          : `${cand.label}: ${e.message}`;
+      } finally {
+        clearTimeout(timer);
+      }
     }
   }
-  return new Response(JSON.stringify({ ok: false, error: lastError }), { status: 500, headers });
+  return new Response(JSON.stringify({ ok: false, error: `暂时无法生成，请稍后重试（${lastError}）` }), { status: 500, headers });
 }
 
 export async function onRequestOptions() {
