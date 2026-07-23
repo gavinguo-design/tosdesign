@@ -4410,10 +4410,11 @@
             `overflow:hidden;white-space:nowrap;display:flex;align-items:center;gap:4px;`,
             '');
           const hi = document.createElement('span');
-          hi.style.cssText = 'font-size:16px;line-height:1;';
+          hi.style.cssText = 'font-size:16px;line-height:1;flex-shrink:0;';
           applyHeaderIcon(hi, data.headerIcon, dark);
           dh.appendChild(hi);
           const dt = document.createElement('span');
+          dt.style.cssText = 'overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0;';
           dt.textContent = data.title;
           dh.appendChild(dt);
           dualCol.appendChild(dh);
@@ -4449,16 +4450,17 @@
           triHeader.appendChild(hi);
         }
         const ht = document.createElement('span');
+        ht.style.cssText = 'overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0;';
         ht.textContent = data.header || data.title;
         triHeader.appendChild(ht);
         wrap.appendChild(triHeader);
         wrap.appendChild(mk(
           `position:absolute;left:14px;top:${triTop + 16}px;width:110px;height:24px;` +
-          `font-size:${fitFontSize(data.value, 20, 110)}px;font-weight:600;color:${(data.userColorOk&&data.accentColor)||tc};overflow:hidden;white-space:nowrap;`,
+          `font-size:${fitFontSize(data.value, 20, 110)}px;font-weight:600;color:${(data.userColorOk&&data.accentColor)||tc};overflow:hidden;white-space:nowrap;text-overflow:ellipsis;`,
           data.value || ''));
         wrap.appendChild(mk(
           `position:absolute;left:14px;top:${triTop + 42}px;width:110px;height:12px;` +
-          `font-size:${fitFontSize(data.subtitle, 10, 110)}px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;`,
+          `font-size:${fitFontSize(data.subtitle, 10, 110)}px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;text-overflow:ellipsis;`,
           data.subtitle || ''));
       } else if (layout === 'big') {
         const bigHeadSize = fitFontSize(data.header || data.title, 12, data.headerIcon ? 92 : 110);
@@ -4473,6 +4475,7 @@
           bigHeader.appendChild(hi);
         }
         const bt = document.createElement('span');
+        bt.style.cssText = 'overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0;';
         bt.textContent = data.header || data.title;
         bigHeader.appendChild(bt);
         wrap.appendChild(bigHeader);
@@ -4499,11 +4502,11 @@
           const onlyOneLine = data.subtitle && !data.subtitle2;
           if (data.subtitle) wrap.appendChild(mk(
             `position:absolute;left:14px;top:${onlyOneLine ? 112 : 98}px;width:110px;height:12px;` +
-            `font-size:${fitFontSize(data.subtitle, 10, 110)}px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;`,
+            `font-size:${fitFontSize(data.subtitle, 10, 110)}px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;text-overflow:ellipsis;`,
             data.subtitle));
           if (data.subtitle2) wrap.appendChild(mk(
             `position:absolute;left:14px;top:112px;width:110px;height:12px;` +
-            `font-size:${fitFontSize(data.subtitle2, 10, 110)}px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;`,
+            `font-size:${fitFontSize(data.subtitle2, 10, 110)}px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;text-overflow:ellipsis;`,
             data.subtitle2));
         }
       }
