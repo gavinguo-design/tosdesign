@@ -5553,6 +5553,31 @@
       return status === 'completed' ? 'completed' : status === 'failed' ? 'failed' : status === 'running' ? 'running' : 'waiting';
     }
 
+    // 修复 LLM 输出 JSON 字符串值内混入未转义英文直引号的问题（如 主操作为"立即续费"）
+    // 逐字符扫描：进入字符串后遇到 " ，向后瞰下一个非空白字符，若不是 , : } ] 之一，判定为字符串内容中的字面引号，转义为 \"
+    function repairJsonQuotes(str) {
+      let result = '';
+      let inString = false;
+      for (let i = 0; i < str.length; i++) {
+        const ch = str[i];
+        if (ch === '"' && str[i - 1] !== '\\') {
+          if (!inString) { inString = true; result += ch; continue; }
+          let j = i + 1;
+          while (j < str.length && /\s/.test(str[j])) j++;
+          const next = str[j];
+          if (next === ',' || next === ':' || next === '}' || next === ']' || j >= str.length) {
+            inString = false;
+            result += ch;
+          } else {
+            result += '\\"';
+          }
+          continue;
+        }
+        result += ch;
+      }
+      return result;
+    }
+
     function parseCodeBlockJson(text, blockName) {
       if (!text) return null;
       const patterns = [];
@@ -5562,8 +5587,10 @@
         const match = text.match(pattern);
         if (!match) continue;
         try { return JSON.parse(match[1]); } catch (error) {}
+        try { return JSON.parse(repairJsonQuotes(match[1])); } catch (error) {}
       }
-      try { return JSON.parse(text); } catch (error) { return null; }
+      try { return JSON.parse(text); } catch (error) {}
+      try { return JSON.parse(repairJsonQuotes(text)); } catch (error) { return null; }
     }
 
     function buildReqThumbNode(cardData) {

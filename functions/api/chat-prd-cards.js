@@ -25,6 +25,11 @@ Quality bar for brief:
 - Keep it to one sentence.
 - Do not mention implementation details or JSON.
 
+CRITICAL JSON SAFETY RULE:
+- Inside any string value (name/scene/brief), NEVER use straight double quotes (") to quote UI text, button labels, or field names.
+- Use Chinese corner brackets「」instead, e.g. write 主操作为「立即续费」 not 主操作为"立即续费".
+- This rule is mandatory because straight double quotes inside a JSON string value break JSON parsing.
+
 Example output:
 \`\`\`json
 [
