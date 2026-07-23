@@ -2630,8 +2630,6 @@
       height: 138px;
       position: absolute;
       inset: 0;
-      transform: scale(0.78);
-      transform-origin: top left;
       pointer-events: none;
     }
     .req-wb-thumb-skeleton {
@@ -3994,6 +3992,8 @@
     let reqWorkbenchJobSeq = 0;
     let wbEnteredFromReqWorkbench = false;
     let reqWorkbenchActiveJobId = null;
+    let currentCardToneRows = [];
+    let currentCardToneSummary = '';
     const REQ_WORKBENCH_MAX_CONCURRENCY = 2;
     const REQ_WORKBENCH_TOTAL_STEPS = 4;
 
@@ -5780,6 +5780,8 @@
           progressStep: 0,
           error: '',
           cardData: null,
+          toneRows: [],
+          toneSummary: '',
           attempts: 0,
         }));
       } catch (error) {
@@ -5801,6 +5803,17 @@
       ].join('\n');
     }
 
+    function parseToneAnalysis(reply) {
+      const text = String(reply || '');
+      const names = { VA: '视觉吸引力', IS: '信息显著性', AA: '行动权威性' };
+      const rows = ['VA', 'IS', 'AA'].map((axis) => {
+        const match = text.match(new RegExp(axis + '(\\d)[\\s·]*' + names[axis] + '[::：]\\s*([^\\n]+)'));
+        return match ? { ax: axis, level: match[1], reason: match[2].trim() } : null;
+      }).filter(Boolean);
+      const summary = (text.match(/综合调性\s*[:：]?\s*([^\n]+)/) || [])[1] || '';
+      return { rows, summary: summary.trim() };
+    }
+
     async function generateReqWorkbenchJob(job) {
       const token = localStorage.getItem('tos_token') || '';
       const res = await fetch('/api/chat', {
@@ -5810,6 +5823,7 @@
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || '卡片生成失败');
+      const tone = parseToneAnalysis(data.text);
       const cardMatches = [...String(data.text || '').matchAll(/```card-update\n([\s\S]*?)```/g)];
       if (!cardMatches.length) throw new Error('没有解析到 card-update 结果');
       let parsed = null;
@@ -5821,6 +5835,9 @@
       }
       if (!parsed) throw new Error('card-update JSON 解析失败');
       const { reason, ...cardData } = parsed;
+      // 保留这张卡的 AI 调性结论，工作台与任务缩略图必须使用同一份生成上下文。
+      job.toneRows = tone.rows;
+      job.toneSummary = tone.summary;
       if (cardData.illustPrompt && !cardData.bgImage) {
         job.progressStep = 3;
         renderReqWorkbench();
@@ -5850,7 +5867,7 @@
           currentCardData = cardData;
           setWbLoading(false);
           renderWbCard(cardData);
-          renderWbAnalysis(cardData);
+          renderWbAnalysis(cardData, job.toneRows, job.toneSummary);
           renderWbSpec(cardData);
         }
       } catch (error) {
@@ -5903,7 +5920,11 @@
       wbEnteredFromReqWorkbench = true;
       reqWorkbenchActiveJobId = job.id;
       updateReqWorkbenchReturnBtn();
-      if (job.cardData) currentCardData = job.cardData;
+      if (job.cardData) {
+        currentCardData = job.cardData;
+        currentCardToneRows = job.toneRows || [];
+        currentCardToneSummary = job.toneSummary || '';
+      }
       showWorkbench(job.status === 'running' && !job.cardData);
     }
 
@@ -6053,7 +6074,7 @@
       } else if (currentCardData) {
         setWbLoading(false);
         renderWbCard(currentCardData);
-        renderWbAnalysis(currentCardData);
+        renderWbAnalysis(currentCardData, currentCardToneRows, currentCardToneSummary);
         renderWbSpec(currentCardData);
       } else {
         setWbLoading(false);
@@ -6671,13 +6692,17 @@
       updateWbCodeView(data);
     }
 
-    function renderWbAnalysis(data) {
+    function renderWbAnalysis(data, toneRows = currentCardToneRows, toneSummary = currentCardToneSummary) {
+      renderWbTone(toneRows || [], toneSummary || '');
       const scroll = document.getElementById('wb-analysis-scroll');
       scroll.innerHTML = '';
 
-      // 1. 调性分析
-      const tone = data._tone || '现代简约 · 科技感';
-      scroll.appendChild(makeWbCard('调性分析', `<span class="wb-tag">现代简约</span><span class="wb-tag">科技感</span><br><span style="font-size:0.72rem;color:var(--muted)">视觉平衡,信息清晰</span>`));
+      // 1. 调性分析：优先展示本次生成时 AI 输出的逐轴结论，避免进入工作台后退回等待态。
+      const tone = data._tone || toneSummary || '现代简约 · 科技感';
+      const toneHtml = toneRows && toneRows.length
+        ? toneRows.map((row) => `<span class="wb-tag">${row.ax}${row.level} ${row.ax === 'VA' ? '视觉吸引力' : row.ax === 'IS' ? '信息显著性' : '行动权威性'}</span><br><span style="font-size:0.72rem;color:var(--muted)">${escapeHtml(row.reason)}</span>`).join('<br>')
+        : `<span class="wb-tag">${escapeHtml(tone)}</span><br><span style="font-size:0.72rem;color:var(--muted)">视觉平衡,信息清晰</span>`;
+      scroll.appendChild(makeWbCard('调性分析', toneHtml));
 
       // 2. 配色方案
       const swatchColors = [];
@@ -7380,17 +7405,23 @@
       _wbTyperTimers.set(el, timer);
     }
 
-    function renderWbTone(toneRows) {
+    function renderWbTone(toneRows, toneSummary = '') {
       const el = document.getElementById('wb-tone-content-left');
-      if (!el || !toneRows || !toneRows.length) return;
+      if (!el) return;
       const AXIS_NAMES = { VA: '视觉吸引力', IS: '信息显著性', AA: '行动权威性' };
+      if (!toneRows || !toneRows.length) {
+        el.innerHTML = toneSummary
+          ? `<div class="wb-tone-reason">${escapeHtml(toneSummary)}</div>`
+          : '<span class="wb-bottom-empty">本次生成未返回调性结论</span>';
+        return;
+      }
       const html = toneRows.map(r =>
         `<div class="wb-tone-row">
           <div class="wb-tone-row-header">
             <span class="wb-tone-badge ${r.ax.toLowerCase()}">${r.ax}${r.level}</span>
             <span class="wb-tone-name">${AXIS_NAMES[r.ax] || r.ax}</span>
           </div>
-          <div class="wb-tone-reason">${r.reason}</div>
+          <div class="wb-tone-reason">${escapeHtml(r.reason)}</div>
         </div>`
       ).join('');
       typewriteHTML(el, html, 10);
