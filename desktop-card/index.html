@@ -1419,6 +1419,25 @@
     .welcome-chips { display: none; }
     .welcome-chip { display: none; }
 
+    /* 欢迎页拖拽上传：遮罩默认隐藏，仅在 #welcomeState 挂上 .welcome-dragover 时显示 */
+    .welcome-drop-overlay {
+      position: absolute; inset: 12px;
+      z-index: 30;
+      display: none; align-items: center; justify-content: center;
+      background: rgba(124,92,252,0.08);
+      border: 2px dashed var(--accent);
+      border-radius: 20px;
+      pointer-events: none;
+      transition: opacity 0.15s;
+    }
+    #welcomeState.welcome-dragover .welcome-drop-overlay { display: flex; }
+    .welcome-drop-overlay-text {
+      font-size: 15px; font-weight: 500; color: var(--accent);
+      background: rgba(255,255,255,0.92);
+      padding: 10px 22px; border-radius: 999px;
+      box-shadow: 0 4px 20px rgba(124,92,252,0.18);
+    }
+
     /* Hide top nav -- sidebar replaces it */
     nav { display: none; }
 
@@ -3398,6 +3417,7 @@
       <input type="file" id="welcomeFileInput" accept=".pdf,.doc,.docx,.txt,.md" style="display:none" onchange="handleWelcomeFileSelect(this)" />
       <div id="welcomeUploadChipArea"></div>
       <p class="welcome-powered">Powered by 🎨 TOS Design</p>
+      <div class="welcome-drop-overlay" id="welcomeDropOverlay"><span class="welcome-drop-overlay-text">松开鼠标上传文档</span></div>
     </div>
 
     <!-- GALLERY VIEW: 灵感剧场 / 最佳案例 -->
@@ -5064,10 +5084,29 @@
     }
 
     // 欢迎页（新建创作）上传文档：复用同一个 uploadedFile 状态，提交时随 welcome 文本一起带到 sendMessage
+    // 支持的文档后缀（与 input[accept] 保持一致，拖拽上传时用来做类型拦截）
+    const WELCOME_UPLOAD_ALLOWED_EXT = ['.pdf', '.doc', '.docx', '.txt', '.md'];
+
+    function isWelcomeUploadTypeAllowed(file) {
+      const lowerName = (file.name || '').toLowerCase();
+      return WELCOME_UPLOAD_ALLOWED_EXT.some(ext => lowerName.endsWith(ext));
+    }
+
     function handleWelcomeFileSelect(input) {
       const file = input.files[0];
       if (!file) return;
-      if (file.size > 5 * 1024 * 1024) { alert('文件不能超过 5MB'); input.value = ''; return; }
+      processWelcomeFile(file);
+      input.value = '';
+    }
+
+    // 拿到 file 对象之后的共用处理逻辑：点击选择(handleWelcomeFileSelect)、拖拽上传(drop 事件)都走这里，避免两处重复
+    function processWelcomeFile(file) {
+      if (!file) return;
+      if (!isWelcomeUploadTypeAllowed(file)) {
+        alert('暂不支持该文件类型，请上传 PDF / Word / TXT / Markdown 文档');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) { alert('文件不能超过 5MB'); return; }
       const reader = new FileReader();
       reader.onload = () => {
         uploadedFile = { name: file.name, type: file.type };
@@ -5088,13 +5127,42 @@
       } else {
         reader.readAsDataURL(file);
       }
-      input.value = '';
     }
 
     function clearWelcomeUpload() {
       uploadedFile = null;
       const area = document.getElementById('welcomeUploadChipArea');
       if (area) area.innerHTML = '';
+    }
+
+    // ─── 欢迎页拖拽上传 ───
+    // dragover 也必须 preventDefault，否则浏览器会拒绝触发 drop 事件（默认行为是直接打开文件/导航离开页面）
+    function initWelcomeDragDrop() {
+      const ws = document.getElementById('welcomeState');
+      if (!ws) return;
+      let dragDepth = 0; // 用计数而不是布尔处理 dragenter/dragleave 在子元素间的乱序问题
+
+      ws.addEventListener('dragenter', (e) => {
+        e.preventDefault();
+        dragDepth++;
+        ws.classList.add('welcome-dragover');
+      });
+      ws.addEventListener('dragover', (e) => {
+        e.preventDefault(); // 关键：不 preventDefault 就拿不到 drop 事件
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+      });
+      ws.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dragDepth = Math.max(0, dragDepth - 1);
+        if (dragDepth === 0) ws.classList.remove('welcome-dragover');
+      });
+      ws.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dragDepth = 0;
+        ws.classList.remove('welcome-dragover');
+        const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if (file) processWelcomeFile(file);
+      });
     }
 
     function importFeishuDoc() {
@@ -5460,6 +5528,7 @@
 
 
     initAuth();
+    initWelcomeDragDrop();
     // ─── INIT ─────────────────────────────────────────────
     // Empty state (methodology intro) shown until first card is generated
     document.getElementById('cardPreviewWrapper').classList.add('hidden');
