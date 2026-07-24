@@ -7,254 +7,338 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  /* ══════════════════════════════════════════════════════════
+     以下 CSS 变量与 desktop-card/index.html #welcomeState 区域
+     （约 line 10-19 / 1334-1436）逐值照抄，未新造配色。
+     ══════════════════════════════════════════════════════════ */
   :root {
-    --bg: #0b0b12;
-    --surface: rgba(255,255,255,0.06);
-    --surface2: rgba(255,255,255,0.1);
-    --border: rgba(255,255,255,0.12);
+    --bg: #e8e8ef;
+    --surface: rgba(255,255,255,0.75);
+    --surface2: rgba(255,255,255,0.9);
+    --border: rgba(0,0,0,0.08);
     --accent: #7C5CFC;
     --accent2: #4ecca3;
-    --text: #f2f1f7;
-    --muted: #9a97ab;
-    --muted2: #5c5970;
+    --text: #1a1a1a;
+    --muted: #888892;
+    --muted2: #bbbbc4;
   }
 
-  html, body {
-    height: 100%;
+  html, body { height: 100%; }
+
+  /* body 背景：与 index.html body（line 21-27）以及 #welcomeState（line 1339-1342）
+     的三层 radial-gradient + #eeecf1 完全一致 */
+  body {
     background:
-      radial-gradient(ellipse 60% 50% at 85% 0%, rgba(124,92,252,0.18), transparent),
-      radial-gradient(ellipse 55% 45% at 10% 100%, rgba(78,204,163,0.10), transparent),
-      var(--bg);
+      radial-gradient(ellipse 65% 55% at 92% 5%, rgba(230,210,205,0.70), transparent),
+      radial-gradient(ellipse 70% 65% at 5% 100%, rgba(205,225,195,0.65), transparent),
+      #eeecf1;
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
     overflow-x: hidden;
+    overflow-y: auto;
   }
 
-  .page {
-    max-width: 980px;
-    margin: 0 auto;
-    padding: 2.2rem 1.5rem 4rem;
-  }
-
-  .top-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.72rem;
-    color: var(--accent);
+  /* 测试标记：不占用主流布局位置，固定右上角悬浮，不破坏欢迎页版式 */
+  .test-badge {
+    position: fixed;
+    top: 16px; right: 18px;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 11.5px; color: var(--accent);
     background: rgba(124,92,252,0.12);
-    border: 1px solid rgba(124,92,252,0.35);
-    padding: 0.3rem 0.7rem;
-    border-radius: 999px;
-    margin-bottom: 1rem;
+    border: 1px solid rgba(124,92,252,0.28);
+    padding: 5px 12px; border-radius: 999px;
     letter-spacing: 0.02em;
+    z-index: 50;
   }
 
-  h1 {
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin-bottom: 0.4rem;
+  /* ── 页面外壳：模拟 #welcomeState 的 flex column + align-center 布局逻辑，
+     padding-top 从 38vh 压缩为 6vh，为三元图组件腾出空间，
+     其余排版语言（居中、间距节奏）保持一致 ── */
+  .welcome-shell {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    padding: 2rem;
+    padding-top: 6vh;
+    padding-bottom: 5vh;
   }
 
-  .sub {
-    font-size: 0.85rem;
-    color: var(--muted);
-    margin-bottom: 2rem;
-  }
-
-  /* ===== 三张权重卡片 ===== */
+  /* ═══ 三张权重卡片：直接复用 index.html 的 .wb-acard 卡片规格
+     （line 2046-2058：width/background/border/radius/padding/shadow/gap 逐值照抄）═══ */
   .cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin-bottom: 2.4rem;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
   }
 
   .weight-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-radius: 1rem;
-    padding: 1.1rem 1.2rem;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.15s, background 0.15s;
-  }
-
-  .weight-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, var(--dot-color, var(--accent)) 0%, transparent 60%);
-    opacity: var(--glow, 0.08);
-    pointer-events: none;
-    transition: opacity 0.1s;
-  }
-
-  .weight-card .dim-name {
+    width: 190px;
+    background: rgba(255,255,255,0.92);
+    border: 1px solid rgba(0,0,0,0.07);
+    border-radius: 13px;
+    padding: 13px 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,1);
     display: flex;
-    align-items: center;
-    gap: 0.45rem;
-    font-size: 0.78rem;
-    color: var(--muted);
-    margin-bottom: 0.55rem;
+    flex-direction: column;
+    gap: 7px;
+    min-height: 100px;
+    transition: box-shadow 0.15s;
   }
 
-  .weight-card .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--dot-color, var(--accent));
-    box-shadow: 0 0 8px var(--dot-color, var(--accent));
-    flex-shrink: 0;
+  .weight-card-head {
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* 徽标配色 = index.html .wb-tone-badge .va/.is/.aa 三色（line 2151-2154）逐值照抄
+     IS=信息显著性→绿 #22c55e / VA=视觉吸引力→紫 #7C5CFC / AA=行动权威性→橙 #f59e0b
+     这是生产代码里本来就用来标注这三个维度的配色，不是新发明的 */
+  .tone-badge {
+    font-size: 11px; font-weight: 700; padding: 2px 8px;
+    border-radius: 999px; font-family: monospace; flex-shrink: 0;
+  }
+  .tone-badge.is { background: #e8f5ee; color: #22c55e; }
+  .tone-badge.va { background: #f0ebff; color: #7C5CFC; }
+  .tone-badge.aa { background: #fff4e5; color: #f59e0b; }
+
+  .weight-card-name {
+    font-size: 12px; font-weight: 600; color: var(--text);
   }
 
   .weight-card .pct {
-    font-size: 1.9rem;
+    font-size: 1.7rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.02em;
-    margin-bottom: 0.4rem;
+    letter-spacing: -0.02em; /* 与 .welcome-title letter-spacing 保持一致语言 */
+    color: var(--text);
   }
 
+  /* 描述文案字号/颜色照抄 .csp-widget-sub（line 604） */
   .weight-card .desc {
-    font-size: 0.74rem;
-    color: var(--muted2);
+    font-size: 11px; color: var(--muted);
     line-height: 1.5;
+    margin-top: 1px;
   }
 
-  /* ===== 三角形容器 ===== */
+  /* ═══ 三角形容器卡片：直接复用 index.html #wb-top-card 玻璃卡片规格
+     （line 1789-1799：background/backdrop-filter/border-radius/box-shadow 逐值照抄）═══ */
   .triangle-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-radius: 1.4rem;
-    padding: 2.2rem 1.5rem 1.6rem;
+    width: 100%;
+    max-width: 620px;
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 14px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
+    padding: 26px 24px 18px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-bottom: 32px;
   }
 
   #ternary-container {
     position: relative;
     width: 100%;
-    max-width: 560px;
+    max-width: 480px;
     aspect-ratio: 1 / 0.92;
     touch-action: none;
     user-select: none;
   }
 
-  #ternary-svg {
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-  }
+  #ternary-svg { width: 100%; height: 100%; overflow: visible; }
 
-  .vertex-label {
-    font-size: 13px;
-    font-weight: 600;
-    fill: var(--text);
-  }
-
-  .vertex-label .sub-label {
-    font-size: 10px;
-    fill: var(--muted);
-  }
+  .vertex-label { font-size: 13px; font-weight: 600; fill: var(--text); }
 
   #handle {
     cursor: grab;
-    filter: drop-shadow(0 0 10px rgba(124,92,252,0.85));
+    /* 阴影色值照抄 .welcome-drop-overlay-text box-shadow 用到的 rgba(124,92,252,0.18)（line 1436） */
+    filter: drop-shadow(0 2px 6px rgba(124,92,252,0.35));
   }
   #handle:active { cursor: grabbing; }
 
+  /* hint 文案字号/颜色照抄 .welcome-input-hint（line 1387） */
   .hint {
-    margin-top: 1.2rem;
+    margin-top: 14px;
     font-size: 0.72rem;
     color: var(--muted2);
     text-align: center;
   }
 
-  footer.note {
-    text-align: center;
-    font-size: 0.7rem;
-    color: var(--muted2);
-    margin-top: 2rem;
+  /* ═══ 以下欢迎页标题/输入框/快捷按钮/底部文案区块
+     与 index.html #welcomeState 内 .welcome-title / .welcome-input-box /
+     .welcome-textarea / .welcome-send-btn / .welcome-quick-actions /
+     .welcome-quick-btn / .welcome-powered （line 1345-1420）逐值照抄，
+     只删掉了与后端上传解析相关的逻辑分支 ═══ */
+  .welcome-title {
+    font-size: 40px; font-weight: 300; color: #1a1a1a;
+    letter-spacing: -0.02em; margin-bottom: 28px; text-align: center;
+  }
+
+  .welcome-input-box {
+    width: 100%; max-width: 680px;
+    background: rgba(255,255,255,0.92); border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 999px; padding: 10px 10px 10px 26px;
+    height: 64px;
+    display: flex; flex-direction: row; align-items: center; gap: 0;
+    box-shadow: 0 2px 24px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,0.95);
+    transition: border-color 0.25s, box-shadow 0.25s;
+  }
+  .welcome-input-box:focus-within {
+    border-color: rgba(0,0,0,0.1);
+    box-shadow: 0 4px 32px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.95);
+  }
+  .welcome-textarea {
+    flex: 1; background: transparent; border: none; outline: none;
+    color: var(--text); font-size: 0.95rem; resize: none;
+    height: 40px; max-height: 40px; font-family: inherit; line-height: 40px; padding: 0;
+    overflow: hidden;
+  }
+  .welcome-textarea::placeholder { color: #b8b8c0; }
+  .welcome-send-btn {
+    display: flex; align-items: center; gap: 0.4rem;
+    padding: 0 22px; border-radius: 999px; height: 40px;
+    background: linear-gradient(180deg, #fff 0%, #f5f5f7 100%);
+    border: 1px solid rgba(0,0,0,0.07); color: #333;
+    font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s;
+    flex-shrink: 0; white-space: nowrap;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .welcome-send-btn:hover { background: linear-gradient(180deg, #fafafa 0%, #f0f0f2 100%); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+  .welcome-quick-actions {
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px; margin-top: 16px;
+  }
+  .welcome-quick-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 15px; border-radius: 999px;
+    background: rgba(255,255,255,0.5);
+    border: 1px solid rgba(0,0,0,0.06);
+    color: #9a9aa2; font-size: 12.5px; font-weight: 450;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .welcome-quick-btn svg { opacity: 0.7; flex-shrink: 0; }
+  .welcome-quick-btn:hover {
+    background: rgba(255,255,255,0.85);
+    border-color: rgba(0,0,0,0.09);
+    color: #6b6b74;
+  }
+  .welcome-quick-btn:hover svg { opacity: 0.9; }
+
+  .welcome-powered {
+    font-size: 13px; color: #999; text-align: center; margin-top: 20px;
   }
 
   @media (max-width: 720px) {
-    .cards { grid-template-columns: 1fr; }
+    .cards { flex-direction: column; align-items: center; }
+    .weight-card { width: 100%; max-width: 320px; }
   }
 </style>
 </head>
 <body>
-  <div class="page">
-    <span class="top-tag">🧪 实验组件 · 不影响正式流程</span>
-    <h1>三元图交互组件</h1>
-    <p class="sub">拖拽中心把手，实时换算「信息显著性 / 视觉吸引力 / 行动权威性」三个维度的权重占比（重心坐标，三者之和恒等于 100%）</p>
 
+  <span class="test-badge">🧪 实验组件 · 视觉对齐 tosdesign 欢迎页</span>
+
+  <div class="welcome-shell">
+
+    <!-- ═══ 三张权重卡片：结构照抄 index.html .wb-acard，配色照抄 .wb-tone-badge ═══ -->
     <div class="cards" id="cards-container">
-      <div class="weight-card" id="card-info" style="--dot-color:#7C5CFC">
-        <div class="dim-name"><span class="dot"></span>信息显著性</div>
+      <div class="weight-card" id="card-info">
+        <div class="weight-card-head">
+          <span class="tone-badge is">IS</span>
+          <span class="weight-card-name">信息显著性</span>
+        </div>
         <div class="pct" id="pct-info">33.3%</div>
-        <div class="desc">标题、数据点、关键信息一眼可见，用户在3秒内抓住重点</div>
+        <div class="desc">标题、数据点、关键信息一眼可见</div>
       </div>
-      <div class="weight-card" id="card-visual" style="--dot-color:#4ecca3">
-        <div class="dim-name"><span class="dot"></span>视觉吸引力</div>
+      <div class="weight-card" id="card-visual">
+        <div class="weight-card-head">
+          <span class="tone-badge va">VA</span>
+          <span class="weight-card-name">视觉吸引力</span>
+        </div>
         <div class="pct" id="pct-visual">33.3%</div>
-        <div class="desc">配色、留白、视觉焦点营造的设计张力，第一眼被吸引</div>
+        <div class="desc">配色、留白、视觉焦点的设计张力</div>
       </div>
-      <div class="weight-card" id="card-action" style="--dot-color:#ff9f5a">
-        <div class="dim-name"><span class="dot"></span>行动权威性</div>
+      <div class="weight-card" id="card-action">
+        <div class="weight-card-head">
+          <span class="tone-badge aa">AA</span>
+          <span class="weight-card-name">行动权威性</span>
+        </div>
         <div class="pct" id="pct-action">33.3%</div>
-        <div class="desc">CTA按钮的说服力与信任感，引导用户完成下一步动作</div>
+        <div class="desc">CTA 的说服力与引导下一步的信任感</div>
       </div>
     </div>
 
+    <!-- ═══ 三角形交互区：卡片外壳照抄 index.html #wb-top-card ═══ -->
     <div class="triangle-wrap">
       <div id="ternary-container">
         <svg id="ternary-svg" viewBox="0 0 560 500">
           <defs>
             <linearGradient id="edgeGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#7C5CFC" stop-opacity="0.9"/>
-              <stop offset="50%" stop-color="#4ecca3" stop-opacity="0.7"/>
-              <stop offset="100%" stop-color="#ff9f5a" stop-opacity="0.9"/>
+              <stop offset="0%" stop-color="#22c55e" stop-opacity="0.85"/>
+              <stop offset="50%" stop-color="#7C5CFC" stop-opacity="0.7"/>
+              <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.85"/>
             </linearGradient>
-            <filter id="glowFilter" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="3" result="blur"/>
-              <feMerge>
-                <feMergeNode in="blur"/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
-            </filter>
           </defs>
 
-          <!-- 内部细密网格线（重心坐标等分线） -->
-          <g id="grid-lines" stroke="rgba(255,255,255,0.06)" stroke-width="1"></g>
+          <!-- 内部细密网格线（重心坐标等分线），颜色照抄 .welcome-quick-btn 边框透明度 rgba(0,0,0,0.06) -->
+          <g id="grid-lines" stroke="rgba(0,0,0,0.06)" stroke-width="1"></g>
 
-          <!-- 三角形主线框 -->
-          <polygon id="triangle-outline" points="" fill="rgba(124,92,252,0.04)"
-            stroke="url(#edgeGlow)" stroke-width="1.6" filter="url(#glowFilter)" />
+          <!-- 三角形主线框，填充色照抄 .welcome-drop-overlay 的 rgba(124,92,252,0.08) -->
+          <polygon id="triangle-outline" points="" fill="rgba(124,92,252,0.05)"
+            stroke="url(#edgeGlow)" stroke-width="1.6" />
 
-          <!-- 顶点圆点 -->
-          <circle id="vA" r="4" fill="#7C5CFC" filter="url(#glowFilter)"/>
-          <circle id="vB" r="4" fill="#4ecca3" filter="url(#glowFilter)"/>
-          <circle id="vC" r="4" fill="#ff9f5a" filter="url(#glowFilter)"/>
+          <!-- 顶点圆点：三色对应 tone-badge 三色 -->
+          <circle id="vA" r="4" fill="#22c55e"/>
+          <circle id="vB" r="4" fill="#7C5CFC"/>
+          <circle id="vC" r="4" fill="#f59e0b"/>
 
           <!-- 顶点 label -->
           <text id="labelA" class="vertex-label" text-anchor="middle">信息显著性</text>
-          <text id="labelB" class="vertex-label" text-anchor="start">视觉吸引力</text>
-          <text id="labelC" class="vertex-label" text-anchor="end">行动权威性</text>
+          <text id="labelB" class="vertex-label" text-anchor="middle">视觉吸引力</text>
+          <text id="labelC" class="vertex-label" text-anchor="middle">行动权威性</text>
 
-          <!-- 拖拽把手 -->
-          <circle id="handle" r="11" fill="#fff" stroke="var(--accent)" stroke-width="3"/>
+          <!-- 拖拽把手：白底 + var(--accent) 描边，照抄 index.html 里 accent 用法 -->
+          <circle id="handle" r="11" fill="#fff" stroke="#7C5CFC" stroke-width="3"/>
         </svg>
       </div>
       <p class="hint">拖拽中心白色把手 → 靠近某个顶点，该维度权重趋近 100%；正中心时三者约各占 33.3%</p>
     </div>
 
-    <footer class="note">Ternary Plot 测试组件 · 纯前端 SVG + 原生 JS 实现，无外部依赖</footer>
+    <!-- ═══ 欢迎页标题 + 输入框 + 快捷按钮 + 底部文案：结构与样式逐值照抄 index.html #welcomeState ═══ -->
+    <div class="welcome-title">你想创作什么？</div>
+    <div class="welcome-input-box">
+      <textarea
+        class="welcome-textarea"
+        id="welcomeInput"
+        placeholder="描述你想要的桌面卡片..."
+        rows="1"
+        onkeydown="handleWelcomeKey(event)"
+        oninput="autoResizeWelcome(this)"
+      ></textarea>
+      <button class="welcome-send-btn" onclick="submitWelcome()">创作</button>
+    </div>
+    <div class="welcome-quick-actions">
+      <button class="welcome-quick-btn" onclick="fillDemoText('上传文档')">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6.5 1v7.5M3.2 5.3L6.5 2l3.3 3.3"/>
+          <path d="M2 9.5v1.3c0 .66.54 1.2 1.2 1.2h6.6c.66 0 1.2-.54 1.2-1.2V9.5"/>
+        </svg>
+        上传文档
+      </button>
+      <button class="welcome-quick-btn" onclick="fillDemoText('导入飞书文档')">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="1.3" width="9" height="10.4" rx="1.3"/>
+          <path d="M4.3 4.3h4.4M4.3 6.5h4.4M4.3 8.7h2.6"/>
+        </svg>
+        导入飞书文档
+      </button>
+    </div>
+    <p class="welcome-powered">Powered by 🎨 TOS Design</p>
+
   </div>
 
 <script>
@@ -265,6 +349,7 @@
   var VIEW_W = 560, VIEW_H = 500;
 
   // 三角形顶点坐标（在 viewBox 坐标系中）：A=顶部(信息显著性) B=左下(视觉吸引力) C=右下(行动权威性)
+  // 以下重心坐标计算逻辑完全复用旧版 ternary-test.html，未作改动
   var PAD_TOP = 50, PAD_BOTTOM = 60, PAD_SIDE = 60;
   var A = { x: VIEW_W / 2, y: PAD_TOP };
   var B = { x: PAD_SIDE, y: VIEW_H - PAD_BOTTOM };
@@ -289,25 +374,20 @@
     var labelB = document.getElementById('labelB');
     labelB.setAttribute('x', B.x - 14);
     labelB.setAttribute('y', B.y + 26);
-    labelB.setAttribute('text-anchor', 'middle');
 
     var labelC = document.getElementById('labelC');
     labelC.setAttribute('x', C.x + 14);
     labelC.setAttribute('y', C.y + 26);
-    labelC.setAttribute('text-anchor', 'middle');
 
     // 内部等分网格线（25% / 50% / 75% 三条等值线，简化为三组平行线）
     var gridG = document.getElementById('grid-lines');
     var frac = [0.25, 0.5, 0.75];
     var lerp = function (p1, p2, t) { return { x: p1.x + (p2.x - p1.x) * t, y: p1.y + (p2.y - p1.y) * t }; };
     frac.forEach(function (t) {
-      // 平行于 BC 的线（对应 A 权重的等值线）
       var p1 = lerp(A, B, t), p2 = lerp(A, C, t);
       addLine(gridG, p1, p2);
-      // 平行于 AC 的线（对应 B 权重的等值线）
       var p3 = lerp(B, A, t), p4 = lerp(B, C, t);
       addLine(gridG, p3, p4);
-      // 平行于 AB 的线（对应 C 权重的等值线）
       var p5 = lerp(C, A, t), p6 = lerp(C, B, t);
       addLine(gridG, p5, p6);
     });
@@ -320,8 +400,7 @@
     parent.appendChild(line);
   }
 
-  // ===== 重心坐标计算 =====
-  // 给定三角形顶点 A,B,C 与内部点 P，求 P 关于 A,B,C 的重心坐标 (wA, wB, wC)
+  // ===== 重心坐标计算（复用旧版逻辑，未改动）=====
   function cartesianToBarycentric(P, A, B, C) {
     var detT = (B.y - C.y) * (A.x - C.x) + (C.x - B.x) * (A.y - C.y);
     var wA = ((B.y - C.y) * (P.x - C.x) + (C.x - B.x) * (P.y - C.y)) / detT;
@@ -337,7 +416,6 @@
     };
   }
 
-  // 将任意点 clamp 到三角形内部（若重心坐标出现负值，clamp 为 0 再归一化）
   function clampToTriangle(P) {
     var w = cartesianToBarycentric(P, A, B, C);
     var wA = Math.max(0, w.wA);
@@ -353,9 +431,6 @@
   var pctInfo = document.getElementById('pct-info');
   var pctVisual = document.getElementById('pct-visual');
   var pctAction = document.getElementById('pct-action');
-  var cardInfo = document.getElementById('card-info');
-  var cardVisual = document.getElementById('card-visual');
-  var cardAction = document.getElementById('card-action');
 
   var currentW = { wA: 1 / 3, wB: 1 / 3, wC: 1 / 3 };
 
@@ -372,10 +447,6 @@
     pctInfo.textContent = pA + '%';
     pctVisual.textContent = pB + '%';
     pctAction.textContent = pC + '%';
-
-    cardInfo.style.setProperty('--glow', (0.06 + w.wA * 0.3).toFixed(3));
-    cardVisual.style.setProperty('--glow', (0.06 + w.wB * 0.3).toFixed(3));
-    cardAction.style.setProperty('--glow', (0.06 + w.wC * 0.3).toFixed(3));
   }
 
   function getSvgPoint(clientX, clientY) {
@@ -428,7 +499,6 @@
   window.addEventListener('mouseup', onPointerUp);
   window.addEventListener('touchend', onPointerUp);
 
-  // 也允许直接点击三角形内部任意位置，把手瞬移过去
   document.getElementById('triangle-outline').addEventListener('mousedown', function (e) {
     dragging = true;
     moveTo(e);
@@ -436,6 +506,30 @@
 
   setupStaticGeometry();
   updateUI(currentW);
+
+  // ===== 欢迎页输入框：纯视觉交互，不做真实上传解析 =====
+  window.handleWelcomeKey = function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      submitWelcome();
+    }
+  };
+
+  window.autoResizeWelcome = function () {};
+
+  window.submitWelcome = function () {
+    var input = document.getElementById('welcomeInput');
+    if (input.value.trim()) {
+      alert('（测试组件）已收到创作描述：' + input.value.trim());
+    }
+  };
+
+  // 快捷按钮：仅做点击模拟填充文字，不接后端
+  window.fillDemoText = function (label) {
+    var input = document.getElementById('welcomeInput');
+    input.value = '（' + label + ' · 模拟交互，未接入真实解析）';
+    input.focus();
+  };
 })();
 </script>
 </body>
