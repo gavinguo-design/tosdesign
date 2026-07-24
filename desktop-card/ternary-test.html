@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>三元图交互组件 · 测试 · TOS Design</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0b0b12;
+    --surface: rgba(255,255,255,0.06);
+    --surface2: rgba(255,255,255,0.1);
+    --border: rgba(255,255,255,0.12);
+    --accent: #7C5CFC;
+    --accent2: #4ecca3;
+    --text: #f2f1f7;
+    --muted: #9a97ab;
+    --muted2: #5c5970;
+  }
+
+  html, body {
+    height: 100%;
+    background:
+      radial-gradient(ellipse 60% 50% at 85% 0%, rgba(124,92,252,0.18), transparent),
+      radial-gradient(ellipse 55% 45% at 10% 100%, rgba(78,204,163,0.10), transparent),
+      var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    overflow-x: hidden;
+  }
+
+  .page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 2.2rem 1.5rem 4rem;
+  }
+
+  .top-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    color: var(--accent);
+    background: rgba(124,92,252,0.12);
+    border: 1px solid rgba(124,92,252,0.35);
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+    letter-spacing: 0.02em;
+  }
+
+  h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+
+  .sub {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+
+  /* ===== 三张权重卡片 ===== */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2.4rem;
+  }
+
+  .weight-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 1rem;
+    padding: 1.1rem 1.2rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .weight-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--dot-color, var(--accent)) 0%, transparent 60%);
+    opacity: var(--glow, 0.08);
+    pointer-events: none;
+    transition: opacity 0.1s;
+  }
+
+  .weight-card .dim-name {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 0.55rem;
+  }
+
+  .weight-card .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--dot-color, var(--accent));
+    box-shadow: 0 0 8px var(--dot-color, var(--accent));
+    flex-shrink: 0;
+  }
+
+  .weight-card .pct {
+    font-size: 1.9rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.4rem;
+  }
+
+  .weight-card .desc {
+    font-size: 0.74rem;
+    color: var(--muted2);
+    line-height: 1.5;
+  }
+
+  /* ===== 三角形容器 ===== */
+  .triangle-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 1.4rem;
+    padding: 2.2rem 1.5rem 1.6rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #ternary-container {
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    aspect-ratio: 1 / 0.92;
+    touch-action: none;
+    user-select: none;
+  }
+
+  #ternary-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .vertex-label {
+    font-size: 13px;
+    font-weight: 600;
+    fill: var(--text);
+  }
+
+  .vertex-label .sub-label {
+    font-size: 10px;
+    fill: var(--muted);
+  }
+
+  #handle {
+    cursor: grab;
+    filter: drop-shadow(0 0 10px rgba(124,92,252,0.85));
+  }
+  #handle:active { cursor: grabbing; }
+
+  .hint {
+    margin-top: 1.2rem;
+    font-size: 0.72rem;
+    color: var(--muted2);
+    text-align: center;
+  }
+
+  footer.note {
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--muted2);
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 720px) {
+    .cards { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <span class="top-tag">🧪 实验组件 · 不影响正式流程</span>
+    <h1>三元图交互组件</h1>
+    <p class="sub">拖拽中心把手，实时换算「信息显著性 / 视觉吸引力 / 行动权威性」三个维度的权重占比（重心坐标，三者之和恒等于 100%）</p>
+
+    <div class="cards" id="cards-container">
+      <div class="weight-card" id="card-info" style="--dot-color:#7C5CFC">
+        <div class="dim-name"><span class="dot"></span>信息显著性</div>
+        <div class="pct" id="pct-info">33.3%</div>
+        <div class="desc">标题、数据点、关键信息一眼可见，用户在3秒内抓住重点</div>
+      </div>
+      <div class="weight-card" id="card-visual" style="--dot-color:#4ecca3">
+        <div class="dim-name"><span class="dot"></span>视觉吸引力</div>
+        <div class="pct" id="pct-visual">33.3%</div>
+        <div class="desc">配色、留白、视觉焦点营造的设计张力，第一眼被吸引</div>
+      </div>
+      <div class="weight-card" id="card-action" style="--dot-color:#ff9f5a">
+        <div class="dim-name"><span class="dot"></span>行动权威性</div>
+        <div class="pct" id="pct-action">33.3%</div>
+        <div class="desc">CTA按钮的说服力与信任感，引导用户完成下一步动作</div>
+      </div>
+    </div>
+
+    <div class="triangle-wrap">
+      <div id="ternary-container">
+        <svg id="ternary-svg" viewBox="0 0 560 500">
+          <defs>
+            <linearGradient id="edgeGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#7C5CFC" stop-opacity="0.9"/>
+              <stop offset="50%" stop-color="#4ecca3" stop-opacity="0.7"/>
+              <stop offset="100%" stop-color="#ff9f5a" stop-opacity="0.9"/>
+            </linearGradient>
+            <filter id="glowFilter" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="3" result="blur"/>
+              <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+
+          <!-- 内部细密网格线（重心坐标等分线） -->
+          <g id="grid-lines" stroke="rgba(255,255,255,0.06)" stroke-width="1"></g>
+
+          <!-- 三角形主线框 -->
+          <polygon id="triangle-outline" points="" fill="rgba(124,92,252,0.04)"
+            stroke="url(#edgeGlow)" stroke-width="1.6" filter="url(#glowFilter)" />
+
+          <!-- 顶点圆点 -->
+          <circle id="vA" r="4" fill="#7C5CFC" filter="url(#glowFilter)"/>
+          <circle id="vB" r="4" fill="#4ecca3" filter="url(#glowFilter)"/>
+          <circle id="vC" r="4" fill="#ff9f5a" filter="url(#glowFilter)"/>
+
+          <!-- 顶点 label -->
+          <text id="labelA" class="vertex-label" text-anchor="middle">信息显著性</text>
+          <text id="labelB" class="vertex-label" text-anchor="start">视觉吸引力</text>
+          <text id="labelC" class="vertex-label" text-anchor="end">行动权威性</text>
+
+          <!-- 拖拽把手 -->
+          <circle id="handle" r="11" fill="#fff" stroke="var(--accent)" stroke-width="3"/>
+        </svg>
+      </div>
+      <p class="hint">拖拽中心白色把手 → 靠近某个顶点，该维度权重趋近 100%；正中心时三者约各占 33.3%</p>
+    </div>
+
+    <footer class="note">Ternary Plot 测试组件 · 纯前端 SVG + 原生 JS 实现，无外部依赖</footer>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+
+  var svg = document.getElementById('ternary-svg');
+  var VIEW_W = 560, VIEW_H = 500;
+
+  // 三角形顶点坐标（在 viewBox 坐标系中）：A=顶部(信息显著性) B=左下(视觉吸引力) C=右下(行动权威性)
+  var PAD_TOP = 50, PAD_BOTTOM = 60, PAD_SIDE = 60;
+  var A = { x: VIEW_W / 2, y: PAD_TOP };
+  var B = { x: PAD_SIDE, y: VIEW_H - PAD_BOTTOM };
+  var C = { x: VIEW_W - PAD_SIDE, y: VIEW_H - PAD_BOTTOM };
+
+  function setupStaticGeometry() {
+    document.getElementById('triangle-outline').setAttribute(
+      'points', A.x + ',' + A.y + ' ' + B.x + ',' + B.y + ' ' + C.x + ',' + C.y
+    );
+
+    document.getElementById('vA').setAttribute('cx', A.x);
+    document.getElementById('vA').setAttribute('cy', A.y);
+    document.getElementById('vB').setAttribute('cx', B.x);
+    document.getElementById('vB').setAttribute('cy', B.y);
+    document.getElementById('vC').setAttribute('cx', C.x);
+    document.getElementById('vC').setAttribute('cy', C.y);
+
+    var labelA = document.getElementById('labelA');
+    labelA.setAttribute('x', A.x);
+    labelA.setAttribute('y', A.y - 16);
+
+    var labelB = document.getElementById('labelB');
+    labelB.setAttribute('x', B.x - 14);
+    labelB.setAttribute('y', B.y + 26);
+    labelB.setAttribute('text-anchor', 'middle');
+
+    var labelC = document.getElementById('labelC');
+    labelC.setAttribute('x', C.x + 14);
+    labelC.setAttribute('y', C.y + 26);
+    labelC.setAttribute('text-anchor', 'middle');
+
+    // 内部等分网格线（25% / 50% / 75% 三条等值线，简化为三组平行线）
+    var gridG = document.getElementById('grid-lines');
+    var frac = [0.25, 0.5, 0.75];
+    var lerp = function (p1, p2, t) { return { x: p1.x + (p2.x - p1.x) * t, y: p1.y + (p2.y - p1.y) * t }; };
+    frac.forEach(function (t) {
+      // 平行于 BC 的线（对应 A 权重的等值线）
+      var p1 = lerp(A, B, t), p2 = lerp(A, C, t);
+      addLine(gridG, p1, p2);
+      // 平行于 AC 的线（对应 B 权重的等值线）
+      var p3 = lerp(B, A, t), p4 = lerp(B, C, t);
+      addLine(gridG, p3, p4);
+      // 平行于 AB 的线（对应 C 权重的等值线）
+      var p5 = lerp(C, A, t), p6 = lerp(C, B, t);
+      addLine(gridG, p5, p6);
+    });
+  }
+
+  function addLine(parent, p1, p2) {
+    var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
+    line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
+    parent.appendChild(line);
+  }
+
+  // ===== 重心坐标计算 =====
+  // 给定三角形顶点 A,B,C 与内部点 P，求 P 关于 A,B,C 的重心坐标 (wA, wB, wC)
+  function cartesianToBarycentric(P, A, B, C) {
+    var detT = (B.y - C.y) * (A.x - C.x) + (C.x - B.x) * (A.y - C.y);
+    var wA = ((B.y - C.y) * (P.x - C.x) + (C.x - B.x) * (P.y - C.y)) / detT;
+    var wB = ((C.y - A.y) * (P.x - C.x) + (A.x - C.x) * (P.y - C.y)) / detT;
+    var wC = 1 - wA - wB;
+    return { wA: wA, wB: wB, wC: wC };
+  }
+
+  function barycentricToCartesian(wA, wB, wC, A, B, C) {
+    return {
+      x: wA * A.x + wB * B.x + wC * C.x,
+      y: wA * A.y + wB * B.y + wC * C.y
+    };
+  }
+
+  // 将任意点 clamp 到三角形内部（若重心坐标出现负值，clamp 为 0 再归一化）
+  function clampToTriangle(P) {
+    var w = cartesianToBarycentric(P, A, B, C);
+    var wA = Math.max(0, w.wA);
+    var wB = Math.max(0, w.wB);
+    var wC = Math.max(0, w.wC);
+    var sum = wA + wB + wC;
+    if (sum === 0) { wA = wB = wC = 1 / 3; sum = 1; }
+    wA /= sum; wB /= sum; wC /= sum;
+    return { wA: wA, wB: wB, wC: wC };
+  }
+
+  var handle = document.getElementById('handle');
+  var pctInfo = document.getElementById('pct-info');
+  var pctVisual = document.getElementById('pct-visual');
+  var pctAction = document.getElementById('pct-action');
+  var cardInfo = document.getElementById('card-info');
+  var cardVisual = document.getElementById('card-visual');
+  var cardAction = document.getElementById('card-action');
+
+  var currentW = { wA: 1 / 3, wB: 1 / 3, wC: 1 / 3 };
+
+  function updateUI(w) {
+    currentW = w;
+    var pos = barycentricToCartesian(w.wA, w.wB, w.wC, A, B, C);
+    handle.setAttribute('cx', pos.x);
+    handle.setAttribute('cy', pos.y);
+
+    var pA = (w.wA * 100).toFixed(1);
+    var pB = (w.wB * 100).toFixed(1);
+    var pC = (w.wC * 100).toFixed(1);
+
+    pctInfo.textContent = pA + '%';
+    pctVisual.textContent = pB + '%';
+    pctAction.textContent = pC + '%';
+
+    cardInfo.style.setProperty('--glow', (0.06 + w.wA * 0.3).toFixed(3));
+    cardVisual.style.setProperty('--glow', (0.06 + w.wB * 0.3).toFixed(3));
+    cardAction.style.setProperty('--glow', (0.06 + w.wC * 0.3).toFixed(3));
+  }
+
+  function getSvgPoint(clientX, clientY) {
+    var pt = svg.createSVGPoint();
+    pt.x = clientX;
+    pt.y = clientY;
+    var ctm = svg.getScreenCTM().inverse();
+    var svgP = pt.matrixTransform(ctm);
+    return { x: svgP.x, y: svgP.y };
+  }
+
+  var dragging = false;
+
+  function onPointerDown(e) {
+    dragging = true;
+    handle.setAttribute('r', 13);
+    moveTo(e);
+    e.preventDefault();
+  }
+
+  function onPointerMove(e) {
+    if (!dragging) return;
+    moveTo(e);
+    e.preventDefault();
+  }
+
+  function onPointerUp() {
+    dragging = false;
+    handle.setAttribute('r', 11);
+  }
+
+  function moveTo(e) {
+    var clientX, clientY;
+    if (e.touches && e.touches.length) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    var svgP = getSvgPoint(clientX, clientY);
+    var w = clampToTriangle(svgP);
+    updateUI(w);
+  }
+
+  handle.addEventListener('mousedown', onPointerDown);
+  handle.addEventListener('touchstart', onPointerDown, { passive: false });
+  window.addEventListener('mousemove', onPointerMove);
+  window.addEventListener('touchmove', onPointerMove, { passive: false });
+  window.addEventListener('mouseup', onPointerUp);
+  window.addEventListener('touchend', onPointerUp);
+
+  // 也允许直接点击三角形内部任意位置，把手瞬移过去
+  document.getElementById('triangle-outline').addEventListener('mousedown', function (e) {
+    dragging = true;
+    moveTo(e);
+  });
+
+  setupStaticGeometry();
+  updateUI(currentW);
+})();
+</script>
+</body>
+</html>
