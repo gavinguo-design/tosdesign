@@ -145,18 +145,70 @@
     aspect-ratio: 1 / 0.92;
     touch-action: none;
     user-select: none;
+    border-radius: 18px;
+    overflow: hidden;
+    /* 深色背景挡板：发光粒子需要暗背景才能出现 rim glow 对比度，与外层白色毛玻璃卡片形成层次 */
+    background:
+      radial-gradient(ellipse 70% 60% at 50% 40%, rgba(75,55,140,0.32), transparent 65%),
+      linear-gradient(160deg, #17162b 0%, #0f0e1e 55%, #0b0a17 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), inset 0 0 40px rgba(0,0,0,0.35);
   }
 
   #ternary-svg { width: 100%; height: 100%; overflow: visible; }
 
-  .vertex-label { font-size: 13px; font-weight: 600; fill: var(--text); }
+  /* 标签改为浅色，适配新的深色背景校板 */
+  .vertex-label { font-size: 13px; font-weight: 600; fill: #eef0f8; }
 
-  #handle {
-    cursor: grab;
-    /* 阴影色值照抄 .welcome-drop-overlay-text box-shadow 用到的 rgba(124,92,252,0.18)（line 1436） */
-    filter: drop-shadow(0 2px 6px rgba(124,92,252,0.35));
+  /* ═══ 粒子发光效果：三角形边线由离散发光粒子构成，替代原来的裸线框 ═══ */
+  @keyframes particleBreathe {
+    0%, 100% { opacity: 0.4;  transform: scale(0.8); }
+    50%      { opacity: 1;    transform: scale(1.35); }
   }
-  #handle:active { cursor: grabbing; }
+  .particle {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation-name: particleBreathe;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    pointer-events: none;
+  }
+
+  /* 顶点呢吹呼吸动画：比普通粒子更慢、幅度更大，强调其锚点地位 */
+  @keyframes vertexPulse {
+    0%, 100% { opacity: 0.75; transform: scale(1); }
+    50%      { opacity: 1;    transform: scale(1.22); }
+  }
+  .vertex-dot {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: vertexPulse 2.6s ease-in-out infinite;
+  }
+
+  #handleGroup { cursor: grab; }
+  #handleGroup.dragging { cursor: grabbing; }
+
+  /* 把手外圈光晴呼吸动画：持续缓慢脉动，让把手看起来是“活的” */
+  @keyframes haloBreathe {
+    0%, 100% { opacity: 0.55; transform: scale(1); }
+    50%      { opacity: 0.95; transform: scale(1.12); }
+  }
+  #handleHalo, #handleHaloOuter, #handleHaloFar {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: haloBreathe 2.8s ease-in-out infinite;
+    transition: fill 0.15s ease;
+  }
+  #handleHaloOuter { animation-delay: -1.4s; }
+  #handleHaloFar { animation-delay: -0.7s; animation-duration: 3.6s; }
+  #handleCore {
+    transition: filter 0.15s ease, stroke 0.15s ease;
+    filter: drop-shadow(0 0 6px rgba(255,255,255,0.9)) drop-shadow(0 0 14px rgba(201,184,255,0.85));
+  }
+  #handleRing {
+    filter: drop-shadow(0 0 4px rgba(255,255,255,0.8));
+  }
+
+  .trail-dot { pointer-events: none; }
 
   /* hint 文案字号/颜色照抄 .welcome-input-hint（line 1387） */
   .hint {
@@ -282,27 +334,125 @@
               <stop offset="50%" stop-color="#7C5CFC" stop-opacity="0.7"/>
               <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.85"/>
             </linearGradient>
+
+            <!-- 粒子发光滤镜：三层模糊叠加做更强的 bloom rim glow（加大模糊半径+提亮，让粒子群整体像发光光带） -->
+            <filter id="particleGlow" x="-600%" y="-600%" width="1300%" height="1300%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur1"/>
+              <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur2"/>
+              <feGaussianBlur in="SourceGraphic" stdDeviation="13" result="blur3"/>
+              <feColorMatrix in="blur3" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1.6 0" result="blur3boost"/>
+              <feMerge>
+                <feMergeNode in="blur3boost"/>
+                <feMergeNode in="blur2"/>
+                <feMergeNode in="blur1"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+
+            <!-- 把手光晴滤镜：强模糊做外圈光晴 -->
+            <filter id="haloBlur" x="-250%" y="-250%" width="600%" height="600%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="9"/>
+            </filter>
+
+            <!-- 顶点光晴滤镜：比粒子更强的光晴，突出三个端点 -->
+            <filter id="vertexGlow" x="-500%" y="-500%" width="1100%" height="1100%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="blur1"/>
+              <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur2"/>
+              <feGaussianBlur in="SourceGraphic" stdDeviation="14" result="blur3"/>
+              <feMerge>
+                <feMergeNode in="blur3"/>
+                <feMergeNode in="blur2"/>
+                <feMergeNode in="blur1"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+
+            <!-- 把手核心径向渐变：白色高光 → 紫色边缘 -->
+            <radialGradient id="handleCoreGrad" cx="38%" cy="32%" r="70%">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="55%" stop-color="#ffffff"/>
+              <stop offset="100%" stop-color="#d8c9ff"/>
+            </radialGradient>
+
+            <!-- 把手外圈光晴径向渐变：中心紫色 → 透明（不依赖 filter 模糊，直接用多步渐变做出软边光晴，确保跨环境稳定渲染） -->
+            <radialGradient id="handleHaloGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#e8dcff" stop-opacity="1"/>
+              <stop offset="25%" stop-color="#c9b6ff" stop-opacity="0.9"/>
+              <stop offset="55%" stop-color="#a480ff" stop-opacity="0.55"/>
+              <stop offset="100%" stop-color="#7C5CFC" stop-opacity="0"/>
+            </radialGradient>
+
+            <!-- 三角形内部背景微光渐变：中心淡紫微光 → 四周深沩，营造能量场氛围 -->
+            <radialGradient id="innerFieldGrad" cx="50%" cy="48%" r="65%">
+              <stop offset="0%" stop-color="#7C5CFC" stop-opacity="0.16"/>
+              <stop offset="55%" stop-color="#7C5CFC" stop-opacity="0.06"/>
+              <stop offset="100%" stop-color="#7C5CFC" stop-opacity="0"/>
+            </radialGradient>
+
+            <!-- 顶点发光径向渐变：三套（绿/紫/橙），中心白色高光 → 本色核心 → 本色透明扩散，代替单一 filter 模糊，确保跨浏览器/截图环境都能稳定出现强发光 -->
+            <radialGradient id="vertexGlowA" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="20%" stop-color="#a8f5c4"/>
+              <stop offset="42%" stop-color="#4fdb85" stop-opacity="1"/>
+              <stop offset="70%" stop-color="#22c55e" stop-opacity="0.95"/>
+              <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="vertexGlowB" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="20%" stop-color="#d4c2ff"/>
+              <stop offset="42%" stop-color="#9d7dff" stop-opacity="1"/>
+              <stop offset="70%" stop-color="#7C5CFC" stop-opacity="0.9"/>
+              <stop offset="100%" stop-color="#7C5CFC" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="vertexGlowC" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="20%" stop-color="#ffdb96"/>
+              <stop offset="42%" stop-color="#ffb545" stop-opacity="1"/>
+              <stop offset="70%" stop-color="#f59e0b" stop-opacity="0.95"/>
+              <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+            </radialGradient>
           </defs>
 
-          <!-- 内部细密网格线（重心坐标等分线），颜色照抄 .welcome-quick-btn 边框透明度 rgba(0,0,0,0.06) -->
-          <g id="grid-lines" stroke="rgba(0,0,0,0.06)" stroke-width="1"></g>
+          <!-- 内部细密网格线（重心坐标等分线）：弱化为背景辅助线，深度让位给粒子（深色背景校板下改用淡白色低透明度） -->
+          <g id="grid-lines" stroke="rgba(255,255,255,0.07)" stroke-width="0.75"></g>
 
-          <!-- 三角形主线框，填充色照抄 .welcome-drop-overlay 的 rgba(124,92,252,0.08) -->
-          <polygon id="triangle-outline" points="" fill="rgba(124,92,252,0.05)"
-            stroke="url(#edgeGlow)" stroke-width="1.6" />
+          <!-- 三角形软填充作为拖拽命中区域，不再用描边线（边线交给粒子群表现），中心微光渐变营造“能量场”感 -->
+          <polygon id="triangle-outline" points="" fill="url(#innerFieldGrad)" stroke="none" />
 
-          <!-- 顶点圆点：三色对应 tone-badge 三色 -->
-          <circle id="vA" r="4" fill="#22c55e"/>
-          <circle id="vB" r="4" fill="#7C5CFC"/>
-          <circle id="vC" r="4" fill="#f59e0b"/>
+          <!-- 三条边的发光粒子群：由 JS 动态生成，沿边均匀分布 -->
+          <g id="particles-layer" filter="url(#particleGlow)"></g>
+
+          <!-- 拖尾轨迹层：拖拽时动态插入渐醒光点 -->
+          <g id="trail-layer"></g>
+
+          <!-- 顶点圆点：三色对应 tone-badge 三色，外圈大径向光晴 + 内层实心亮点 + 呼吸动画突出锚点地位 -->
+          <g id="vA-group" class="vertex-dot" filter="url(#vertexGlow)">
+            <circle r="42" fill="url(#vertexGlowA)"/>
+            <circle id="vA" r="9" fill="#eafff2"/>
+          </g>
+          <g id="vB-group" class="vertex-dot" filter="url(#vertexGlow)">
+            <circle r="42" fill="url(#vertexGlowB)"/>
+            <circle id="vB" r="9" fill="#f2edff"/>
+          </g>
+          <g id="vC-group" class="vertex-dot" filter="url(#vertexGlow)">
+            <circle r="42" fill="url(#vertexGlowC)"/>
+            <circle id="vC" r="9" fill="#fff6e8"/>
+          </g>
 
           <!-- 顶点 label -->
           <text id="labelA" class="vertex-label" text-anchor="middle">信息显著性</text>
           <text id="labelB" class="vertex-label" text-anchor="middle">视觉吸引力</text>
           <text id="labelC" class="vertex-label" text-anchor="middle">行动权威性</text>
 
-          <!-- 拖拽把手：白底 + var(--accent) 描边，照抄 index.html 里 accent 用法 -->
-          <circle id="handle" r="11" fill="#fff" stroke="#7C5CFC" stroke-width="3"/>
+          <!-- 拖拽把手：发光核心球体，多层外圈光晴（大径向渐变圆叠加） + 白色/紫色渐变核心 -->
+          <g id="handleGroup">
+            <circle id="handleHaloFar" r="88" fill="url(#handleHaloGrad)" opacity="0.3"/>
+            <circle id="handleHaloOuter" r="56" fill="url(#handleHaloGrad)" opacity="0.6"/>
+            <circle id="handleHalo" r="34" fill="url(#handleHaloGrad)" opacity="0.85"/>
+            <circle id="handleRing" r="22" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-opacity="1"/>
+            <circle id="handleCore" r="17" fill="url(#handleCoreGrad)" stroke="#ffffff" stroke-width="3"/>
+            <circle id="handle" r="16" fill="transparent"/>
+          </g>
         </svg>
       </div>
       <p class="hint">拖拽中心白色把手 → 靠近某个顶点，该维度权重趋近 100%；正中心时三者约各占 33.3%</p>
@@ -360,12 +510,10 @@
       'points', A.x + ',' + A.y + ' ' + B.x + ',' + B.y + ' ' + C.x + ',' + C.y
     );
 
-    document.getElementById('vA').setAttribute('cx', A.x);
-    document.getElementById('vA').setAttribute('cy', A.y);
-    document.getElementById('vB').setAttribute('cx', B.x);
-    document.getElementById('vB').setAttribute('cy', B.y);
-    document.getElementById('vC').setAttribute('cx', C.x);
-    document.getElementById('vC').setAttribute('cy', C.y);
+    // 顶点发光组（外圈光晴 + 内层亮点）位置同步：内层实心点和外层渐变圆共用一个 group，直接给 group 设 cx/cy 不合适（group 无此属性），改为分别设置组内两个 circle
+    setVertexGroupPos('vA-group', A.x, A.y);
+    setVertexGroupPos('vB-group', B.x, B.y);
+    setVertexGroupPos('vC-group', C.x, C.y);
 
     var labelA = document.getElementById('labelA');
     labelA.setAttribute('x', A.x);
@@ -390,6 +538,109 @@
       addLine(gridG, p3, p4);
       var p5 = lerp(C, A, t), p6 = lerp(C, B, t);
       addLine(gridG, p5, p6);
+    });
+
+    buildEdgeParticles();
+  }
+
+  // ===== 粒子生成：沿三条边均匀撑洒发光小圆点，颜色沿边从一个顶点色过渡到另一个顶点色 =====
+  var COLOR_A = { r: 0x22, g: 0xc5, b: 0x5e }; // 绿（IS）
+  var COLOR_B = { r: 0x7c, g: 0x5c, b: 0xfc }; // 紫（VA）
+  var COLOR_C = { r: 0xf5, g: 0x9e, b: 0x0b }; // 橙（AA）
+
+  function lerpColor(c1, c2, t) {
+    var r = Math.round(c1.r + (c2.r - c1.r) * t);
+    var g = Math.round(c1.g + (c2.g - c1.g) * t);
+    var b = Math.round(c1.b + (c2.b - c1.b) * t);
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
+  }
+
+  function buildEdgeParticles() {
+    var layer = document.getElementById('particles-layer');
+    layer.innerHTML = '';
+
+    var edges = [
+      { p1: A, p2: B, c1: COLOR_A, c2: COLOR_B },
+      { p1: B, p2: C, c1: COLOR_B, c2: COLOR_C },
+      { p1: C, p2: A, c1: COLOR_C, c2: COLOR_A }
+    ];
+
+    var PARTICLES_PER_EDGE = 42;
+
+    edges.forEach(function (edge) {
+      var dx = edge.p2.x - edge.p1.x;
+      var dy = edge.p2.y - edge.p1.y;
+      var len = Math.sqrt(dx * dx + dy * dy);
+      var nx = -dy / len, ny = dx / len; // 垂直于边的单位法向量，用于抖动撑洒
+
+      for (var i = 0; i <= PARTICLES_PER_EDGE; i++) {
+        var t = i / PARTICLES_PER_EDGE;
+        var baseX = edge.p1.x + dx * t;
+        var baseY = edge.p1.y + dy * t;
+
+        // 轻微随机抖动，让粒子不完全在一条直线上，更像自然散射的粒子群
+        var jitter = (Math.random() - 0.5) * 3.2;
+        var px = baseX + nx * jitter;
+        var py = baseY + ny * jitter;
+
+        var color = lerpColor(edge.c1, edge.c2, t);
+        var radius = 2.1 + Math.random() * 1.7;
+        var duration = (2 + Math.random() * 2).toFixed(2); // 2s ~ 4s
+        var delay = (Math.random() * 4).toFixed(2); // 错开起始相位，避免同步闪烁
+
+        // 背景软光晴层：不依赖 filter，直接用大径向低透明度同色圆做出硬光晴，确保跨环境都能看到发光扩散
+        var haloOuter = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        haloOuter.setAttribute('cx', px);
+        haloOuter.setAttribute('cy', py);
+        haloOuter.setAttribute('r', radius * 5);
+        haloOuter.setAttribute('fill', color);
+        haloOuter.setAttribute('opacity', '0.24');
+        haloOuter.setAttribute('class', 'particle');
+        haloOuter.style.animationDuration = duration + 's';
+        haloOuter.style.animationDelay = '-' + delay + 's';
+        layer.appendChild(haloOuter);
+
+        var haloInner = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        haloInner.setAttribute('cx', px);
+        haloInner.setAttribute('cy', py);
+        haloInner.setAttribute('r', radius * 2.2);
+        haloInner.setAttribute('fill', color);
+        haloInner.setAttribute('opacity', '0.55');
+        haloInner.setAttribute('class', 'particle');
+        haloInner.style.animationDuration = duration + 's';
+        haloInner.style.animationDelay = '-' + delay + 's';
+        layer.appendChild(haloInner);
+
+        var particle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        particle.setAttribute('cx', px);
+        particle.setAttribute('cy', py);
+        particle.setAttribute('r', radius);
+        particle.setAttribute('fill', '#ffffff');
+        particle.style.mixBlendMode = 'screen';
+        particle.setAttribute('class', 'particle');
+        particle.style.animationDuration = duration + 's';
+        particle.style.animationDelay = '-' + delay + 's';
+        layer.appendChild(particle);
+
+        var particleCore = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        particleCore.setAttribute('cx', px);
+        particleCore.setAttribute('cy', py);
+        particleCore.setAttribute('r', radius * 0.55);
+        particleCore.setAttribute('fill', color);
+        particleCore.setAttribute('class', 'particle');
+        particleCore.style.animationDuration = duration + 's';
+        particleCore.style.animationDelay = '-' + delay + 's';
+        layer.appendChild(particleCore);
+      }
+    });
+  }
+
+  function setVertexGroupPos(groupId, x, y) {
+    var group = document.getElementById(groupId);
+    var circles = group.querySelectorAll('circle');
+    circles.forEach(function (c) {
+      c.setAttribute('cx', x);
+      c.setAttribute('cy', y);
     });
   }
 
@@ -428,17 +679,35 @@
   }
 
   var handle = document.getElementById('handle');
+  var handleGroup = document.getElementById('handleGroup');
+  var handleHalo = document.getElementById('handleHalo');
+  var handleHaloOuter = document.getElementById('handleHaloOuter');
+  var handleHaloFar = document.getElementById('handleHaloFar');
+  var handleRing = document.getElementById('handleRing');
+  var handleCore = document.getElementById('handleCore');
   var pctInfo = document.getElementById('pct-info');
   var pctVisual = document.getElementById('pct-visual');
   var pctAction = document.getElementById('pct-action');
 
   var currentW = { wA: 1 / 3, wB: 1 / 3, wC: 1 / 3 };
+  var lastPos = null;
 
   function updateUI(w) {
     currentW = w;
     var pos = barycentricToCartesian(w.wA, w.wB, w.wC, A, B, C);
-    handle.setAttribute('cx', pos.x);
-    handle.setAttribute('cy', pos.y);
+
+    [handle, handleHalo, handleHaloOuter, handleHaloFar, handleRing, handleCore].forEach(function (el) {
+      el.setAttribute('cx', pos.x);
+      el.setAttribute('cy', pos.y);
+    });
+
+    if (dragging && lastPos) {
+      var dist = Math.hypot(pos.x - lastPos.x, pos.y - lastPos.y);
+      if (dist > 4) {
+        spawnTrailDot(lastPos.x, lastPos.y, w);
+      }
+    }
+    lastPos = pos;
 
     var pA = (w.wA * 100).toFixed(1);
     var pB = (w.wB * 100).toFixed(1);
@@ -447,6 +716,36 @@
     pctInfo.textContent = pA + '%';
     pctVisual.textContent = pB + '%';
     pctAction.textContent = pC + '%';
+  }
+
+  // ===== 拖拽拖尾粒子：路径上留下逐渐消失的小光点，以当前重心颜色混合为色 =====
+  function currentBlendColor(w) {
+    var r = COLOR_A.r * w.wA + COLOR_B.r * w.wB + COLOR_C.r * w.wC;
+    var g = COLOR_A.g * w.wA + COLOR_B.g * w.wB + COLOR_C.g * w.wC;
+    var b = COLOR_A.b * w.wA + COLOR_B.b * w.wB + COLOR_C.b * w.wC;
+    return 'rgb(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ')';
+  }
+
+  function spawnTrailDot(x, y, w) {
+    var trailLayer = document.getElementById('trail-layer');
+    var dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    dot.setAttribute('cx', x);
+    dot.setAttribute('cy', y);
+    dot.setAttribute('r', 4);
+    dot.setAttribute('fill', currentBlendColor(w));
+    dot.setAttribute('class', 'trail-dot');
+    dot.style.opacity = '0.75';
+    dot.style.transition = 'opacity 0.5s ease, r 0.5s ease';
+    trailLayer.appendChild(dot);
+
+    requestAnimationFrame(function () {
+      dot.style.opacity = '0';
+      dot.setAttribute('r', 0.5);
+    });
+
+    setTimeout(function () {
+      if (dot.parentNode) dot.parentNode.removeChild(dot);
+    }, 550);
   }
 
   function getSvgPoint(clientX, clientY) {
@@ -462,7 +761,11 @@
 
   function onPointerDown(e) {
     dragging = true;
-    handle.setAttribute('r', 13);
+    lastPos = null;
+    handleGroup.classList.add('dragging');
+    handleCore.setAttribute('r', 20);
+    handleHalo.setAttribute('r', 40);
+    handleHaloOuter.setAttribute('r', 64);
     moveTo(e);
     e.preventDefault();
   }
@@ -475,7 +778,11 @@
 
   function onPointerUp() {
     dragging = false;
-    handle.setAttribute('r', 11);
+    lastPos = null;
+    handleGroup.classList.remove('dragging');
+    handleCore.setAttribute('r', 17);
+    handleHalo.setAttribute('r', 34);
+    handleHaloOuter.setAttribute('r', 56);
   }
 
   function moveTo(e) {
