@@ -1,297 +1,59 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<meta name="color-scheme" content="light" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
 <title>TOS Design — Ternary Study</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#F0EFEB;--ink:#1C1C1A;--muted:#8F8E88;--faint:#C6C5BF;--grid:#DEDDD6;--l1:#4A4944;--l2:#6A6963;--l3:#B0AFA9}
-*{box-sizing:border-box} html{background:var(--bg)} body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,"PingFang SC","Hiragino Sans GB",sans-serif;-webkit-font-smoothing:antialiased}
-.page{width:min(1160px,calc(100% - 48px));margin:0 auto;padding:42px 0 64px}.mast{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid var(--ink);padding-bottom:23px;margin-bottom:22px}.kicker,.src,.field-label,.status-label{font-size:9.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase}.kicker{color:var(--muted);margin:0 0 9px}.mast h1{margin:0;font-size:25px;font-weight:700;letter-spacing:-.035em}.mast-note{width:245px;margin:0;color:var(--muted);font-size:11.5px;line-height:1.5;text-align:right}
-.card{background:var(--bg);border-radius:24px;padding:28px 28px 20px}.card-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}.card h2{margin:0 0 3px;font-size:16.5px;font-weight:700;letter-spacing:-.02em}.sub{margin:0;color:var(--muted);font-size:11.5px;line-height:1.45}.card-mark{padding-top:2px;color:var(--muted);white-space:nowrap}.chart-wrap{position:relative;margin-top:14px;min-height:510px}.chart{display:block;width:100%;height:510px;cursor:pointer;touch-action:none}.src{margin-top:8px;color:var(--faint)}
-.axis-readout{position:absolute;z-index:2;width:142px;pointer-events:none}.axis-readout .field-label{display:block;color:var(--muted);margin-bottom:5px}.axis-readout b{font-size:31px;font-weight:800;letter-spacing:-.065em;line-height:1;font-variant-numeric:tabular-nums}.axis-readout small{display:block;margin-top:6px;color:var(--muted);font-size:10px;line-height:1.35}.read-a{top:15px;left:50%;transform:translateX(-50%);text-align:center}.read-b{bottom:7px;left:2px}.read-c{bottom:7px;right:2px;text-align:right}.read-c small{max-width:142px;margin-left:auto}
-#ternary .grid{stroke:var(--grid);stroke-width:.75}#ternary .outline{fill:none;stroke:var(--ink);stroke-width:1.2}#ternary .tick{stroke:var(--faint);stroke-width:.8}#ternary .tick-label{fill:var(--muted);font-size:8px;font-weight:600;letter-spacing:.05em}#ternary .label{fill:var(--ink);font-size:11px;font-weight:700;letter-spacing:.04em}#ternary .field{fill:var(--grid);opacity:.28}#ternary .trace{fill:none;stroke:var(--l2);stroke-width:1;stroke-dasharray:2 4}#ternary .node-ring{fill:var(--bg);stroke:var(--ink);stroke-width:1.4}#ternary .node-core{fill:var(--ink)}#ternary .node-hit{fill:transparent;cursor:grab}#ternary.dragging .node-hit{cursor:grabbing}#ternary .guide{stroke:var(--l3);stroke-width:.7;stroke-dasharray:2 3}.state{display:flex;justify-content:space-between;gap:16px;border-top:1px solid var(--grid);margin-top:11px;padding-top:12px;color:var(--muted);font-size:10.5px;line-height:1.45}.state strong{font-weight:700;color:var(--ink)}
-.presets{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.preset{appearance:none;border:1px solid var(--grid);border-radius:999px;background:transparent;padding:7px 10px;color:var(--l2);cursor:pointer;font:600 10px/1 Inter,"PingFang SC",sans-serif;letter-spacing:.04em}.preset:hover,.preset[aria-pressed="true"]{border-color:var(--ink);color:var(--ink)}
-@media(max-width:680px){.page{width:min(100% - 32px,1160px);padding-top:28px}.mast{display:block}.mast h1{font-size:21px}.mast-note{width:auto;max-width:290px;margin-top:14px;text-align:left}.card{padding:20px 16px 16px}.card-head{display:block}.card-mark{margin-top:7px}.chart-wrap,.chart{min-height:290px;height:290px}.chart{transform:none}.axis-readout{width:88px}.axis-readout b{font-size:20px}.axis-readout small{font-size:8.5px}.axis-readout{display:none}.state{display:block}.state span+span{display:block;margin-top:4px}.src{font-size:8px;letter-spacing:.045em;overflow-wrap:anywhere}#ternary .label{font-size:17px}#ternary .tick-label{font-size:10px}}
+:root{--paper:#f2f2ee;--ink:#141413;--soft:#4f4f4a;--line:#c6c6be;--wash:#e2e2dc;--a:#c84f31;--b:#147c6d;--c:#315aa8;--ease:cubic-bezier(.22,.75,.22,1)}
+*{box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden}body{margin:0;background:radial-gradient(circle at 50% 42%,#fff 0,#f6f6f3 42%,#eeeee9 100%);color:var(--ink);font-family:"SF Pro Display","SF Pro Text","PingFang SC","Helvetica Neue",sans-serif;-webkit-font-smoothing:antialiased}
+.page{width:min(1320px,calc(100% - 64px));height:100svh;margin:auto;padding:clamp(22px,3.2vh,42px) 0 clamp(16px,2.5vh,30px);display:flex;flex-direction:column;gap:clamp(12px,2vh,24px)}
+.mast{display:flex;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--ink);padding-bottom:clamp(12px,1.8vh,20px);flex:none}.eyebrow,.micro{font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase}.eyebrow{color:var(--soft);margin:0 0 8px}.mast h1{font-size:clamp(22px,2vw,31px);line-height:1.04;letter-spacing:-.055em;margin:0;font-weight:700}.mast-note{max-width:310px;margin:0 0 2px;color:var(--soft);font-size:12px;line-height:1.5;text-align:right}
+.card{min-height:0;flex:1;border:1px solid rgba(23,23,22,.16);border-radius:28px;background:rgba(255,255,253,.9);box-shadow:0 20px 60px rgba(34,34,30,.09),inset 0 1px rgba(255,255,255,.9);padding:clamp(18px,2.25vh,28px) clamp(19px,2.5vw,34px) clamp(15px,1.7vh,22px);display:flex;flex-direction:column}.card-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;flex:none}.card h2{font-size:16px;letter-spacing:-.025em;margin:0 0 4px}.sub{margin:0;color:var(--soft);font-size:11.5px;line-height:1.45}.stamp{color:var(--soft);white-space:nowrap;padding-top:3px}
+.work{min-height:0;flex:1;display:grid;grid-template-columns:minmax(160px,1fr) minmax(420px,1.62fr) minmax(160px,1fr);align-items:center;gap:20px}.metric{position:relative;z-index:2}.metric.right{text-align:right}.metric .micro{color:var(--soft);display:block;margin-bottom:7px}.metric strong{display:block;font-size:clamp(31px,3vw,50px);line-height:.88;letter-spacing:-.075em;font-variant-numeric:tabular-nums}.metric p{max-width:150px;margin:9px 0 0;color:var(--soft);font-size:11px;line-height:1.4}.metric.right p{margin-left:auto}.accent{display:inline-block;width:19px;height:2px;margin:0 0 8px;background:var(--metric)}.metric-a{--metric:var(--a)}.metric-b{--metric:var(--b)}.metric-c{--metric:var(--c)}
+.field-wrap{position:relative;align-self:stretch;min-height:0;display:flex;align-items:center;justify-content:center}.field{width:min(100%,640px);height:100%;display:block;touch-action:none;cursor:crosshair}.field .grid{stroke:#b9b9b1;stroke-width:1}.field .outline{fill:rgba(255,255,255,.28);stroke:var(--ink);stroke-width:1.5}.field .axis-label{font-size:11px;letter-spacing:.1em;font-weight:700;fill:var(--ink)}.field .axis-code{font-size:8px;letter-spacing:.14em;font-weight:700;fill:var(--soft)}.field .guide{stroke:#aaa9a2;stroke-width:.9;stroke-dasharray:3 4}.field .node-halo{fill:#fff;fill-opacity:.9;stroke:var(--ink);stroke-opacity:.25}.field .node{fill:var(--ink);stroke:#fff;stroke-width:2}.field .hit{fill:transparent;cursor:grab}.field.dragging .hit{cursor:grabbing}.field .particle-canvas{pointer-events:none}
+.bottom{display:grid;grid-template-columns:1fr auto;gap:22px;align-items:end;border-top:1px solid var(--line);padding-top:12px;flex:none}.state{font-size:11px;color:var(--soft);line-height:1.42;max-width:660px}.state strong{color:var(--ink)}.presets{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}.preset{appearance:none;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--soft);font:700 10px/1 inherit;padding:8px 10px;cursor:pointer;transition:background .2s var(--ease),color .2s var(--ease),border-color .2s var(--ease)}.preset:hover,.preset[aria-pressed=true]{color:white;background:var(--ink);border-color:var(--ink)}.source{margin-top:9px;color:#787871;font-size:9px;font-weight:700;letter-spacing:.09em;flex:none}
+@media(max-width:720px){.page{width:calc(100% - 28px);padding:14px 0 10px;gap:8px}.mast{display:block;padding-bottom:9px}.eyebrow{font-size:7px;margin-bottom:4px}.mast h1{font-size:21px}.mast-note{font-size:9px;max-width:335px;text-align:left;margin-top:6px;line-height:1.35}.card{border-radius:20px;padding:12px 11px 9px}.card-head{display:block}.card h2{font-size:12.5px;margin-bottom:2px}.sub{font-size:8.5px;line-height:1.3}.stamp{font-size:7px;margin-top:4px}.work{grid-template-columns:1fr;grid-template-rows:18px minmax(190px,1fr) 22px;gap:0}.metric{display:flex;align-items:baseline;gap:6px}.metric .micro{display:inline;margin:0;order:2;font-size:7px}.metric .accent{display:none}.metric strong{font-size:21px;order:1}.metric p{display:none}.metric-a{grid-row:3;justify-content:flex-start}.metric-b{grid-row:1;justify-content:center}.metric-c{grid-row:3;justify-content:flex-end;text-align:right}.field-wrap{grid-row:2;min-height:0}.field{height:100%;max-height:250px}.field .axis-label{font-size:9px;letter-spacing:.075em}.field .axis-code{font-size:6px}.bottom{display:block;padding-top:6px}.state{font-size:8.5px;line-height:1.28}.presets{justify-content:flex-start;margin-top:5px;gap:4px}.preset{font-size:7.5px;padding:6px 7px}.source{font-size:6px;letter-spacing:.05em;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:clip}}
+@media(max-height:720px) and (min-width:721px){.page{padding-top:16px;padding-bottom:12px;gap:10px}.mast{padding-bottom:10px}.mast h1{font-size:22px}.card{padding-top:16px}.metric strong{font-size:34px}.source{margin-top:6px}}
+@media(prefers-reduced-motion:no-preference){.card{animation:arrive .55s var(--ease) both}.metric{animation:fade .65s .12s var(--ease) both}@keyframes arrive{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}@keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}}
 </style>
 </head>
 <body>
 <main class="page">
-  <header class="mast">
-    <div><p class="kicker">TOS Design / experimental component</p><h1>三元平衡，先看结构，再谈风格。</h1></div>
-    <p class="mast-note">不是装饰性 3D。每个位置都对应三项真实权重，三者始终合计 100%。</p>
-  </header>
-
-  <section class="card" aria-labelledby="title">
-    <div class="card-head"><div><h2 id="title">一张卡片的表达重心，可以被精确定位</h2><p class="sub">拖动节点改变三项权重 · 位置 = 配比 · 三条虚线 = 向各轴投影</p></div><span class="card-mark status-label">Live composition / 01</span></div>
-    <div class="chart-wrap">
-      <div class="axis-readout read-a"><span class="field-label">Information salience</span><b id="value-a">33.3%</b><small>信息是否立即可读</small></div>
-      <div class="axis-readout read-b"><span class="field-label">Visual appeal</span><b id="value-b">33.3%</b><small>是否形成清晰焦点</small></div>
-      <div class="axis-readout read-c"><span class="field-label">Action authority</span><b id="value-c">33.3%</b><small>下一步是否值得执行</small></div>
-      <svg class="chart" id="ternary" viewBox="0 0 900 510" role="img" aria-label="信息显著性、视觉吸引力和行动权威性的三元平衡图"></svg>
-    </div>
-    <div class="state"><span><strong id="state-title">平衡态</strong> <span id="state-copy">三种力量彼此让位，适合需要兼顾理解、感受与行动的卡片。</span></span><span>1 NODE = 1 COMPOSITION · SUM = <strong id="sum">100.0%</strong></span></div>
-    <div class="presets" aria-label="预设构图"><button class="preset" data-a=".333" data-b=".333" data-c=".334" aria-pressed="true">平衡</button><button class="preset" data-a=".70" data-b=".18" data-c=".12">信息优先</button><button class="preset" data-a=".16" data-b=".68" data-c=".16">视觉优先</button><button class="preset" data-a=".14" data-b=".20" data-c=".66">行动优先</button></div>
-    <div class="src">TERNARY COMPOSITION · L7 BRAND SPECTRUM ADAPTATION · TOS DESIGN TEST</div>
-  </section>
-</main>
+<header class="mast"><div><p class="eyebrow">TOS Design / experimental component</p><h1>三轴平衡，先看结构，再谈风格。</h1></div><p class="mast-note">不是装饰性 3D。每个位置都对应三项真实权重，三者始终合计 100%。</p></header>
+<section class="card" aria-labelledby="title">
+<div class="card-head"><div><h2 id="title">一张卡片的表达重心，可以被精确定位</h2><p class="sub">拖动节点改变三项权重 · 位置 = 配比 · 粒子密度与流向 = 当前构图的力量分配</p></div><span class="stamp micro">Live composition / 01</span></div>
+<div class="work">
+<div class="metric metric-a"><i class="accent"></i><span class="micro">Visual appeal</span><strong id="value-a">33.3%</strong><p>是否形成清晰焦点</p></div>
+<div class="field-wrap"><svg class="field" id="ternary" viewBox="0 0 640 430" role="img" aria-label="视觉吸引力、信息显著性和行动权威性的三轴平衡图"></svg></div>
+<div class="metric metric-c right"><i class="accent"></i><span class="micro">Action authority</span><strong id="value-c">33.4%</strong><p>下一步是否值得执行</p></div>
+<div class="metric metric-b"><i class="accent"></i><span class="micro">Information salience</span><strong id="value-b">33.3%</strong><p>信息是否立即可读</p></div>
+</div>
+<div class="bottom"><div class="state"><strong id="state-title">平衡态</strong> <span id="state-copy">三种力量彼此让位，适合需要兼顾理解、感受与行动的卡片。</span> &nbsp;·&nbsp; <span class="micro">Sum = <b id="sum">100.0%</b></span></div><div class="presets" aria-label="预设构图"><button class="preset" data-w=".333,.333,.334" aria-pressed="true">平衡</button><button class="preset" data-w=".18,.70,.12">信息优先</button><button class="preset" data-w=".68,.16,.16">视觉优先</button><button class="preset" data-w=".20,.14,.66">行动优先</button></div></div>
+<div class="source">TERNARY PARTICLE FIELD · L7 BRAND SPECTRUM ADAPTATION · TOS DESIGN TEST</div>
+</section></main>
 <script>
-/* ═══════════════════════════════════════════════════════════════
-   MONO TOKENS — 风格的唯一正本
-   所有 mono 图表（Chart.js / ECharts / 手写 SVG）共享这一份。
-   任何文件里出现与本文件冲突的颜色、字体、动画参数，以本文件为准。
-   用法：<script src="mono-tokens.js"><\/script>，全部挂在 window.MONO 上；
-   也可以直接把本文件内容内联进单文件 HTML（开源分发时推荐内联）。
-   ═══════════════════════════════════════════════════════════════ */
-(function (global) {
-  'use strict';
-
-  /* ── 1 · 色板 ──────────────────────────────────────────────
-     纸灰底 + 炭黑墨。没有彩色。明度即数据：最重要 = 最黑。   */
-  const INK   = '#1C1C1A';   // 墨：主数据、标题、强调
-  const PAPER = '#F0EFEB';   // 纸：页面底色 = 浅卡底色（卡片无边框，靠留白分卡）
-  const MUTED = '#8F8E88';   // 次级文字、副标题
-  const FAINT = '#C6C5BF';   // 来源行、辅助刻度
-  const GRID  = '#DEDDD6';   // 网格线、发丝线
-
-  // 7 级灰阶 ladder：多系列时按重要性从黑到浅分配
-  const L   = ['#1C1C1A', '#4A4944', '#6A6963', '#8F8E88', '#B0AFA9', '#C6C5BF', '#D8D7D1'];
-  // 5 级简版（waffle 等少系列场景）
-  const LAD = ['#1C1C1A', '#4A4944', '#8F8E88', '#B0AFA9', '#D8D7D1'];
-
-  // 暗卡（dark card）专用：底 #1C1C1A，其上的"墨"反转为纸色
-  const DARK = {
-    bg: '#1C1C1A',
-    ink: '#F0EFEB',          // 暗卡上的主数据色
-    muted: '#8F8E88',
-    faint: '#55554F',        // 暗卡来源行
-    grid: '#2E2D29',         // 暗卡网格 / 发丝线
-    gridSoft: '#2A2925',
-    ladder: ['#F0EFEB', '#DCDAD2', '#C9C7BD', '#B3B0A4', '#8F8E88', '#6A6963', '#4A4944'],
-  };
-
-  /* ── 2 · 字体 ────────────────────────────────────────────── */
-  const FONT = {
-    family: 'Inter',
-    // Google Fonts 引入行（放 <head>）：
-    link: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap',
-    title:    { size: 16.5, weight: 700, spacing: '-.02em' },  // 卡内 h2
-    titleBig: { size: 19,   weight: 700, spacing: '-.02em' },  // 独立大图 h2
-    sub:      { size: 11.5, weight: 400 },                     // 副标题（图例说明写在这里）
-    src:      { size: 9.5,  weight: 500, spacing: '.08em' },   // 来源行，全大写
-    value:    { weight: 800 },                                 // 图内数值一律 800
-    axis:     { size: 9.5,  weight: 600 },                     // 轴标签
-    // SVG 内最小字号下限：半宽卡 6.5px，通栏/大图 5.5px。低于下限改 hover 出。
-    minHalf: 6.5, minWide: 5.5,
-  };
-
-  /* ── 3 · 形状 ────────────────────────────────────────────── */
-  const SHAPE = {
-    cardRadius: 24,          // 卡片圆角
-    cardPad: '28px 28px 20px',
-    barRadius: 99,           // 柱端胶囊圆角（竖柱只圆上端，横柱只圆外端）
-    tooltipRadius: 12,
-  };
-
-  /* ── 4 · 动画性格 ────────────────────────────────────────
-     快进快停，quarticOut / cubicOut，不弹跳（elasticOut 只给波浪入场）。 */
-  const MOTION = {
-    enter: 900,              // 常规入场 ms
-    enterSlow: 1200,         // 大元素 / 关系图
-    easing: 'quarticOut',
-    staggerDot: 12,          // 点阵逐个延迟 ms（8–15 区间）
-    staggerBar: 100,         // 条形逐根延迟 ms（80–130 区间）
-    // CSS 动画类（手写 SVG 用）：pop 缩放入场 / fade 淡入 / draw 描线
-    css: `
-  .pop{transform-box:fill-box;transform-origin:center;animation:pop .5s cubic-bezier(.2,.7,.3,1.3) both}
-  @keyframes pop{from{transform:scale(0)}to{transform:none}}
-  .fade{animation:fade .9s ease both}
-  @keyframes fade{from{opacity:0}}
-  .draw{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1s cubic-bezier(.4,0,.2,1) both}
-  @keyframes draw{to{stroke-dashoffset:0}}
-  @media (prefers-reduced-motion:reduce){
-    .pop,.fade{animation:none}
-    .draw{animation:none;stroke-dasharray:none;stroke-dashoffset:0}
-  }`,
-  };
-
-  /* ── 5 · Tooltip ─────────────────────────────────────────
-     浅卡用黑底纸字，暗卡用纸底黑字。ECharts 直接展开这两个对象。 */
-  const tipLight = { backgroundColor: INK, borderWidth: 0, padding: [10, 14],
-    textStyle: { color: PAPER, fontFamily: 'Inter', fontSize: 12 } };
-  const tipDark  = { backgroundColor: PAPER, borderWidth: 0, padding: [10, 14],
-    textStyle: { color: INK, fontFamily: 'Inter', fontSize: 12 } };
-
-  /* ── 6 · 确定性伪随机 ────────────────────────────────────
-     演示数据一律用它，不用 Math.random()——刷新必须长一样，
-     否则截图 / 录屏 / 回归对比全部失效。                       */
-  const rnd = (i, k) => Math.abs(((i * 73856093) ^ (k * 19349663)) % 1000) / 1000;
-
-  /* ── 7 · 几何 ────────────────────────────────────────────── */
-  const D2R = Math.PI / 180;
-  const pol = (cx, cy, r, deg) => [cx + r * Math.cos(deg * D2R), cy + r * Math.sin(deg * D2R)];
-  // 环形扇区 path（cornerRadius 自己在调用处用 ECharts sector 或手动倒角）
-  const sect = (cx, cy, r0, r1, a0, a1) => {
-    const big = a1 - a0 > 180 ? 1 : 0;
-    const [xa, ya] = pol(cx, cy, r1, a0), [xb, yb] = pol(cx, cy, r1, a1);
-    const [xc, yc] = pol(cx, cy, r0, a1), [xd, yd] = pol(cx, cy, r0, a0);
-    return `M${xa} ${ya} A${r1} ${r1} 0 ${big} 1 ${xb} ${yb} L${xc} ${yc} A${r0} ${r0} 0 ${big} 0 ${xd} ${yd} Z`;
-  };
-  // 手绘感圆（editorial 系气泡用）：圆周叠两个慢波 + 噪声，seed 定形
-  const blob = (x, y, r, seed) => {
-    const n = Math.max(14, Math.round(r * 1.6)), pts = [];
-    for (let t = 0; t < n; t++) {
-      const a = t / n * Math.PI * 2;
-      const w = 1 + .055 * Math.sin(a * 2 + seed * 7) + .04 * Math.sin(a * 3 + seed * 13)
-              + (rnd(seed + t, 3) - .5) * .03;
-      pts.push([x + Math.cos(a) * r * w, y + Math.sin(a) * r * w]);
-    }
-    let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
-    for (let t = 0; t < n; t++) {
-      const p = pts[t], q = pts[(t + 1) % n];
-      d += ` Q${p[0].toFixed(1)} ${p[1].toFixed(1)} ${((p[0]+q[0])/2).toFixed(1)} ${((p[1]+q[1])/2).toFixed(1)}`;
-    }
-    return d + ' Z';
-  };
-
-  /* ── 8 · SVG 快捷 ────────────────────────────────────────── */
-  const NS = 'http://www.w3.org/2000/svg';
-  const el  = (p, t, a) => { const n = document.createElementNS(NS, t);
-    for (const k in a) n.setAttribute(k, a[k]); p.appendChild(n); return n; };
-  const txt = (p, a, s) => { const n = el(p, 'text', a); n.textContent = s; return n; };
-  const tip = (n, s) => { const t = document.createElementNS(NS, 'title');
-    t.textContent = s; n.appendChild(t); };
-
-  /* ── 9 · 统一 reveal：滚入视野才播，点击重播 ──────────────
-     带 timer 登记（keep），重播前清干净，防动画叠加。          */
-  const timers = {};
-  const keep = (id, t) => { (timers[id] = timers[id] || []).push(t); };
-  const obsReveal = (id, fn) => {
-    const n = document.getElementById(id);
-    const go = () => {
-      (timers[id] || []).forEach(clearInterval); timers[id] = [];
-      if (n.tagName === 'svg' || n.tagName === 'SVG') n.innerHTML = '';
-      fn(n);
-    };
-    const io = new IntersectionObserver(es => {
-      if (es[0].isIntersecting) { go(); io.disconnect(); }
-    }, { threshold: .3 });
-    io.observe(n);
-    n.style.cursor = 'pointer';
-    n.addEventListener('click', go);
-  };
-  // ECharts 版 reveal
-  const eReveal = (id, opt) => obsReveal(id, elDom => {
-    const g = echarts.getInstanceByDom(elDom) || echarts.init(elDom);
-    g.clear(); g.setOption(opt);
-  });
-
-  /* ── 10 · 卡片骨架（生成新图时照抄这个结构） ──────────────
-     <div class="card [dark] [wide]">
-       <h2>结论式标题</h2>
-       <div class="sub">副标题 · 图例说明 · 时间范围</div>
-       <div class="ch" id="xx"></div>  或  <svg id="xx" viewBox="0 0 400 320">
-       <div class="src">图型名 · 系列名 · 数据来源（全大写）</div>
-     </div>                                                        */
-  const CARD_CSS = `
-  :root{--bg:${PAPER};--dark:${DARK.bg};--ink:${INK};--muted:${MUTED};--faint:${FAINT};--grid:${GRID}}
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{background:var(--bg);font-family:'Inter',sans-serif;color:var(--ink);padding:40px;-webkit-font-smoothing:antialiased}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px;max-width:1400px;margin:0 auto}
-  .card{background:var(--bg);border-radius:${SHAPE.cardRadius}px;padding:${SHAPE.cardPad}}
-  .card.dark{background:var(--dark);color:${PAPER}}
-  .card.dark .sub{color:${MUTED}}
-  .card.dark .src{color:${DARK.faint}}
-  .card.wide{grid-column:1/-1}
-  h2{font-weight:${FONT.title.weight};font-size:${FONT.title.size}px;letter-spacing:${FONT.title.spacing};margin-bottom:3px}
-  .sub{font-size:${FONT.sub.size}px;color:var(--muted);margin-bottom:14px}
-  .src{font-size:${FONT.src.size}px;color:var(--faint);margin-top:10px;letter-spacing:${FONT.src.spacing};font-weight:${FONT.src.weight}}
-  .ch{height:320px}
-  svg text{font-family:'Inter',sans-serif}` + MOTION.css;
-
-  global.MONO = { INK, PAPER, MUTED, FAINT, GRID, L, LAD, DARK,
-    FONT, SHAPE, MOTION, tipLight, tipDark,
-    rnd, pol, sect, blob, el, txt, tip, obsReveal, eReveal, keep, CARD_CSS };
-})(typeof window !== 'undefined' ? window : globalThis);
-
-(function(){
-'use strict';
-const {INK,PAPER,MUTED,FAINT,GRID,L,el,txt,tip}=MONO;
-// This page must stay interactive while the underlying position changes, so it uses the same Mono primitives without one-shot reveal redraws.
-function obsReveal(id, fn) { const n = document.getElementById(id); const go = () => { n.innerHTML = ''; fn(n); }; go(); n.addEventListener('click', () => { if (!drag) go(); }); }
-const svg=document.getElementById('ternary');
-const V={a:document.getElementById('value-a'),b:document.getElementById('value-b'),c:document.getElementById('value-c')};
-const A={x:450,y:120},B={x:186,y:408},C={x:714,y:408};
-let W={a:.333,b:.333,c:.334},drag=false,history=[];
-const lerp=(p,q,t)=>({x:p.x+(q.x-p.x)*t,y:p.y+(q.y-p.y)*t});
-const pos=w=>({x:w.a*A.x+w.b*B.x+w.c*C.x,y:w.a*A.y+w.b*B.y+w.c*C.y});
-function weights(p){
- const d=(B.y-C.y)*(A.x-C.x)+(C.x-B.x)*(A.y-C.y);
- let a=((B.y-C.y)*(p.x-C.x)+(C.x-B.x)*(p.y-C.y))/d;
- let b=((C.y-A.y)*(p.x-C.x)+(A.x-C.x)*(p.y-C.y))/d;
- let c=1-a-b;a=Math.max(0,a);b=Math.max(0,b);c=Math.max(0,c);const s=a+b+c||1;return {a:a/s,b:b/s,c:c/s};
-}
-function points(){return [[A,B,C],[B,C,A],[C,A,B]]}
-function project(w){
- const p=pos(w);return [
-   lerp(B,C,w.c/(w.b+w.c||1)),
-   lerp(C,A,w.a/(w.c+w.a||1)),
-   lerp(A,B,w.b/(w.a+w.b||1)),p
- ];
-}
-function state(w){
- const high=Math.max(w.a,w.b,w.c), key=high===w.a?'a':high===w.b?'b':'c';
- const copy={a:['信息优先','先让用户理解重点，视觉与行动为信息服务。'],b:['视觉优先','先建立情绪与焦点，适合强调感受与品牌印象。'],c:['行动优先','先消除犹豫、推动下一步，适合任务和决策场景。']}[key];
- if(high<.45)return ['平衡态','三种力量彼此让位，适合需要兼顾理解、感受与行动的卡片。'];return copy;
-}
-function draw(){
- obsReveal('ternary',s=>{
-   const g=el(s,'g',{});
-   // L7 Brand Spectrum adaption: hairline axis furniture first, then the measured node.
-   [.2,.4,.6,.8].forEach((t,i)=>{
-     points().forEach(([p,q,r])=>{const u=lerp(p,q,t),v=lerp(p,r,t);el(g,'line',{x1:u.x,y1:u.y,x2:v.x,y2:v.y,class:'grid fade',style:`animation-delay:${(i*.06)}s`});});
-   });
-   el(g,'polygon',{points:`${A.x},${A.y} ${B.x},${B.y} ${C.x},${C.y}`,class:'field fade'});
-   el(g,'polygon',{points:`${A.x},${A.y} ${B.x},${B.y} ${C.x},${C.y}`,class:'outline draw',pathLength:1,style:'animation-duration:.9s'});
-   const compact=window.matchMedia('(max-width:680px)').matches;
-   const labels=compact
-     ?[[A,'信息显著性','IS',A.x,A.y-17,'middle'],[B,'视觉吸引力','VA',B.x+9,B.y-12,'start'],[C,'行动权威性','AA',C.x-9,C.y-12,'end']]
-     :[[A,'信息显著性','IS',A.x,A.y-17,'middle'],[B,'视觉吸引力','VA',B.x,B.y+18,'end'],[C,'行动权威性','AA',C.x,C.y+18,'start']];
-   labels.forEach(([p,name,code,x,y,anchor])=>{
-     txt(g,{x,y,'text-anchor':anchor,class:'label fade',style:'animation-delay:.25s'},name);
-     const codeY=p===A?y-15:y+14;
-     txt(g,{x,y:codeY,'text-anchor':anchor,class:'tick-label fade',style:'animation-delay:.32s'},code);
-   });
-   const ring=el(g,'g',{});[[A,B],[B,C],[C,A]].forEach(([p,q])=>{[.25,.5,.75].forEach(t=>{const x=lerp(p,q,t);const dx=q.y-p.y,dy=p.x-q.x,len=Math.hypot(dx,dy);el(ring,'line',{x1:x.x-dx/len*3,y1:x.y-dy/len*3,x2:x.x+dx/len*3,y2:x.y+dy/len*3,class:'tick fade',style:'animation-delay:.38s'});});});
-   renderData(g);
- });
-}
-function renderData(g){
- const p=pos(W),pr=project(W);
- if(history.length>1)el(g,'path',{d:history.map((q,i)=>(i?'L':'M')+q.x.toFixed(1)+' '+q.y.toFixed(1)).join(' '),class:'trace'});
- pr.slice(0,3).forEach(q=>el(g,'line',{x1:p.x,y1:p.y,x2:q.x,y2:q.y,class:'guide fade',style:'animation-delay:.45s'}));
- const gg=el(g,'g',{transform:`translate(${p.x} ${p.y})`,class:'pop'});
- const outer=el(gg,'circle',{r:16,fill:'none',stroke:FAINT,'stroke-width':.8,'stroke-dasharray':'2 3'});
- const ring=el(gg,'circle',{r:8,class:'node-ring'}); const core=el(gg,'circle',{r:3.1,class:'node-core'}); const hit=el(gg,'circle',{r:21,class:'node-hit'});
- tip(hit,`信息 ${Math.round(W.a*1000)/10}% · 视觉 ${Math.round(W.b*1000)/10}% · 行动 ${Math.round(W.c*1000)/10}%`);
- hit.addEventListener('pointerdown',down);
-}
-function update(record=true){
- const p=pos(W);if(record){history.push(p);if(history.length>16)history.shift();}
- V.a.textContent=(W.a*100).toFixed(1)+'%';V.b.textContent=(W.b*100).toFixed(1)+'%';V.c.textContent=(W.c*100).toFixed(1)+'%';document.getElementById('sum').textContent=((W.a+W.b+W.c)*100).toFixed(1)+'%';const [title,copy]=state(W);document.getElementById('state-title').textContent=title;document.getElementById('state-copy').textContent=copy;draw();
-}
-function pointer(e){const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const m=pt.matrixTransform(svg.getScreenCTM().inverse());return {x:m.x,y:m.y}}
-function down(e){drag=true;history=[];svg.classList.add('dragging');svg.setPointerCapture(e.pointerId);move(e);e.preventDefault()}
-function move(e){if(!drag)return;W=weights(pointer(e));update(true);e.preventDefault()}
-function up(){drag=false;svg.classList.remove('dragging')}
-function responsiveViewBox(){svg.setAttribute('viewBox',window.matchMedia('(max-width:680px)').matches?'40 52 820 390':'0 0 900 510');}
-responsiveViewBox();window.addEventListener('resize',()=>{responsiveViewBox();draw();});
-svg.addEventListener('pointermove',move);svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);svg.addEventListener('pointerdown',e=>{if(e.target===svg){drag=true;history=[];svg.setPointerCapture(e.pointerId);move(e)} });
-document.querySelectorAll('.preset').forEach(btn=>btn.addEventListener('click',()=>{W={a:+btn.dataset.a,b:+btn.dataset.b,c:+btn.dataset.c};history=[];document.querySelectorAll('.preset').forEach(x=>x.setAttribute('aria-pressed','false'));btn.setAttribute('aria-pressed','true');update(false)}));
-update(false);
+(()=>{'use strict';
+const svg=document.querySelector('#ternary'),NS='http://www.w3.org/2000/svg';
+const A={x:320,y:47},B={x:115,y:367},C={x:525,y:367}; // A visual, B information, C action
+const colors=['#d96a4a','#2d9b89','#466fbd']; let W=[.333,.333,.334],drag=false,raf;
+const el=(tag,attrs={},parent=svg)=>{const n=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));parent.append(n);return n};
+const text=(s,attrs,parent)=>{const n=el('text',attrs,parent);n.textContent=s;return n};
+const mix=(p,q,t)=>({x:p.x+(q.x-p.x)*t,y:p.y+(q.y-p.y)*t});
+const pos=w=>({x:w[0]*A.x+w[1]*B.x+w[2]*C.x,y:w[0]*A.y+w[1]*B.y+w[2]*C.y});
+const random=i=>{const x=Math.sin(i*78.233)*43758.5453;return x-Math.floor(x)};
+function makeCanvas(){const f=el('foreignObject',{x:0,y:0,width:640,height:430,class:'particle-canvas'});const c=document.createElement('canvas');c.width=1280;c.height=860;c.style.cssText='width:640px;height:430px;display:block';f.append(c);return c}
+function particleField(canvas){const ctx=canvas.getContext('2d'),scale=2;ctx.clearRect(0,0,1280,860);ctx.scale(scale,scale);const p=pos(W);ctx.save();ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);ctx.lineTo(C.x,C.y);ctx.closePath();ctx.clip();
+// Each of 240 deterministic particles belongs to one axis; channel population is exactly proportional to its live weight.
+const count=250, cut1=Math.round(W[0]*count),cut2=cut1+Math.round(W[1]*count);for(let i=0;i<count;i++){let channel=i<cut1?0:i<cut2?1:2, target=[A,B,C][channel],r1=random(i*3+1),r2=random(i*3+2);if(r1+r2>1){r1=1-r1;r2=1-r2}const base={x:A.x+(B.x-A.x)*r1+(C.x-A.x)*r2,y:A.y+(B.y-A.y)*r1+(C.y-A.y)*r2};const pull=.13+.52*W[channel];const x=base.x+(target.x-base.x)*pull,y=base.y+(target.y-base.y)*pull;const flowX=(p.x-x)*.09+(target.x-x)*.035,flowY=(p.y-y)*.09+(target.y-y)*.035;ctx.strokeStyle=colors[channel];ctx.globalAlpha=.08+.25*W[channel];ctx.lineWidth=.65;ctx.beginPath();ctx.moveTo(x-flowX*1.8,y-flowY*1.8);ctx.quadraticCurveTo(x+flowX*.15,y+flowY*.15,x+flowX*1.3,y+flowY*1.3);ctx.stroke();ctx.fillStyle=colors[channel];ctx.globalAlpha=.18+.38*W[channel];ctx.beginPath();ctx.arc(x,y,.7+W[channel]*1.2,0,Math.PI*2);ctx.fill()}ctx.restore();ctx.setTransform(1,0,0,1,0,0)}
+function barycentric(point){const d=(B.y-C.y)*(A.x-C.x)+(C.x-B.x)*(A.y-C.y);let a=((B.y-C.y)*(point.x-C.x)+(C.x-B.x)*(point.y-C.y))/d,b=((C.y-A.y)*(point.x-C.x)+(A.x-C.x)*(point.y-C.y))/d,c=1-a-b;a=Math.max(0,a);b=Math.max(0,b);c=Math.max(0,c);const sum=a+b+c;return[a/sum,b/sum,c/sum]}
+function status(){const m=Math.max(...W),i=W.indexOf(m);if(m<.45)return['平衡态','三种力量彼此让位，适合需要兼顾理解、感受与行动的卡片。'];return [['视觉优先','先建立情绪与焦点，适合强调感受与品牌印象。'],['信息优先','先让用户理解重点，视觉与行动为信息服务。'],['行动优先','先消除犹豫、推动下一步，适合任务和决策场景。']][i]}
+function draw(){svg.replaceChildren();const g=el('g');for(const t of [.2,.4,.6,.8])[[A,B,C],[B,C,A],[C,A,B]].forEach(([p,q,r])=>{const u=mix(p,q,t),v=mix(p,r,t);el('line',{x1:u.x,y1:u.y,x2:v.x,y2:v.y,class:'grid'},g)});const canvas=makeCanvas();particleField(canvas);el('path',{d:`M${A.x} ${A.y}L${B.x} ${B.y}L${C.x} ${C.y}Z`,class:'outline'},g);
+[[A,'VISUAL APPEAL','VA','middle',A.x,A.y-18],[B,'INFORMATION SALIENCE','IS','end',B.x+62,B.y+21],[C,'ACTION AUTHORITY','AA','start',C.x-62,C.y+21]].forEach(([p,label,code,anchor,x,y])=>{text(label,{x,y,'text-anchor':anchor,class:'axis-label'},g);text(code,{x,y:y+12,'text-anchor':anchor,class:'axis-code'},g)});const p=pos(W);[[B,C,W[0]],[C,A,W[1]],[A,B,W[2]]].forEach(([x,y,t])=>{const q=mix(x,y,t);el('line',{x1:p.x,y1:p.y,x2:q.x,y2:q.y,class:'guide'},g)});el('circle',{cx:p.x,cy:p.y,r:13,class:'node-halo'},g);el('circle',{cx:p.x,cy:p.y,r:5.3,class:'node'},g);const hit=el('circle',{cx:p.x,cy:p.y,r:26,class:'hit'},g);hit.addEventListener('pointerdown',start);
+const s=status();document.querySelector('#state-title').textContent=s[0];document.querySelector('#state-copy').textContent=s[1];['a','b','c'].forEach((id,i)=>document.querySelector('#value-'+id).textContent=(W[i]*100).toFixed(1)+'%');document.querySelector('#sum').textContent=(W.reduce((a,b)=>a+b)*100).toFixed(1)+'%';document.querySelectorAll('.preset').forEach(b=>b.setAttribute('aria-pressed',b.dataset.w.split(',').every((x,i)=>Math.abs(+x-W[i])<.002)));}
+function point(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const q=p.matrixTransform(svg.getScreenCTM().inverse());return{x:q.x,y:q.y}}
+function start(e){drag=true;svg.classList.add('dragging');svg.setPointerCapture(e.pointerId);move(e);e.preventDefault()}function move(e){if(!drag)return;W=barycentric(point(e));cancelAnimationFrame(raf);raf=requestAnimationFrame(draw)}function end(){drag=false;svg.classList.remove('dragging')}svg.addEventListener('pointermove',move);svg.addEventListener('pointerup',end);svg.addEventListener('pointercancel',end);svg.addEventListener('pointerdown',e=>{if(e.target===svg)start(e)});document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>{W=b.dataset.w.split(',').map(Number);draw()}));draw();
 })();
 </script>
 </body></html>
