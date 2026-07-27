@@ -1,0 +1,40 @@
+{
+  "version": "2026-07-27-theater-va-v1",
+  "scope": "ternary-test.html VA backgrounds",
+  "sourceRoot": "desktop-card/gallery",
+  "construction": "Each background is the direct local Inspiration Theater gallery asset rendered with cover crop. The runtime adds only a directional readability veil; it does not generate or synthesize an image.",
+  "crossfade": "220ms ease-in-out opacity transition; no blur",
+  "roles": {
+    "Focus": {
+      "legalTiers": ["L2", "L3", "L4", "L5"],
+      "vaBands": {
+        "weak": {"formalTier": "L2", "templateId": "F-L2-EncouragementSymbol", "galleryAsset": "Group 2134130823.png", "theaterId": "T24", "safeZone": "left text field; clovers retained at top/right", "veil": "light"},
+        "subtle": {"formalTier": "L2", "templateId": "F-L2-AppCollage", "galleryAsset": "当地应用.png", "theaterId": "T26", "safeZone": "lower-left text field; app collage retained above", "veil": "light"},
+        "intermediate": {"formalTier": "L3", "templateId": "F-L3-MediaObject", "galleryAsset": "音乐推荐.png", "theaterId": "T10", "safeZone": "upper-left copy field; media object retained lower/right", "veil": "light"},
+        "strong": {"formalTier": "L4", "templateId": "F-L4-NightPlace", "galleryAsset": "Frame 2117132885.png", "theaterId": "T21", "safeZone": "upper-left text field; night city retained below/right", "veil": "dark"},
+        "hero": {"formalTier": "L5", "templateId": "F-L5-FestivalSculpture", "galleryAsset": "节日倒数日.png", "theaterId": "T08", "safeZone": "upper-left text field; festival sculpture retained center/bottom", "veil": "light"}
+      }
+    },
+    "Status": {
+      "legalTiers": ["L1", "L2", "L4", "L5"],
+      "vaBands": {
+        "weak": {"formalTier": "L1", "templateId": "S-L1-SoftSummary", "galleryAsset": "年度报告.png", "theaterId": "T01", "safeZone": "left text field; portrait retained upper-left", "veil": "light"},
+        "subtle": {"formalTier": "L2", "templateId": "S-L2-DataControl", "galleryAsset": "热点管理.png", "theaterId": "T06", "safeZone": "left data stack; control retained lower-right", "veil": "light"},
+        "intermediate": {"formalTier": "L2", "templateId": "S-L2-DataControl", "galleryAsset": "热点管理.png", "theaterId": "T06", "safeZone": "nearest legal tier: L2; no Status L3 family is audited", "veil": "light"},
+        "strong": {"formalTier": "L4", "templateId": "S-L4-AtmosphericBrief", "galleryAsset": "智能路况.png", "theaterId": "T03", "safeZone": "left copy field under dark readability veil; weather retained right/bottom", "veil": "dark"},
+        "hero": {"formalTier": "L5", "templateId": "S-L5-MinimalTransport", "galleryAsset": "航班提醒.png", "theaterId": "T28", "safeZone": "sparse left flight-state field; plane retained centrally", "veil": "dark"}
+      }
+    },
+    "Step": {
+      "legalTiers": ["L1", "L2", "L3"],
+      "vaBands": {
+        "weak": {"formalTier": "L1", "templateId": "P-L1-CodeCTA", "galleryAsset": "物流提醒.png", "theaterId": "T07", "safeZone": "left code stack and lower CTA band", "veil": "light"},
+        "subtle": {"formalTier": "L1", "templateId": "P-L1-PersonAction", "galleryAsset": "未接来电.png", "theaterId": "T04", "safeZone": "center identity with bottom action space", "veil": "light"},
+        "intermediate": {"formalTier": "L2", "templateId": "P-L2-UtilityIllustrated", "galleryAsset": "玩机技巧｜纯净通话.png", "theaterId": "T15", "safeZone": "upper-left text field; utility illustration retained lower-right", "veil": "light"},
+        "strong": {"formalTier": "L3", "templateId": "P-L3-SingleDecision", "galleryAsset": "闹钟延迟.png", "theaterId": "T09", "safeZone": "upper-left message and lower-left CTA; star field retained right", "veil": "dark"},
+        "hero": {"formalTier": "L3", "templateId": "P-L3-CountdownPlan", "galleryAsset": "20.png", "theaterId": "T11", "safeZone": "left count/CTA field; cake retained right", "veil": "light"}
+      }
+    }
+  },
+  "exclusions": ["desktop-card/assets/ternary/*.svg", "desktop-card/assets/ternary-realistic/*", "all synthetic or generic background scenes"]
+}
