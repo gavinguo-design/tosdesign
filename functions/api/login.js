@@ -1,8 +1,5 @@
-async function hashPassword(password) {
-  const enc = new TextEncoder();
-  const buf = await crypto.subtle.digest('SHA-256', enc.encode(password));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
+const SITE_EMAIL = 'gavin@tosdesign';
+const SITE_PASSWORD = '12345ga';
 
 async function makeToken(email) {
   const payload = btoa(JSON.stringify({ email, ts: Date.now() }));
@@ -23,17 +20,13 @@ export async function onRequestPost({ request, env }) {
   const { email, password } = body;
   if (!email || !password) return new Response(JSON.stringify({ ok: false, error: '请填写邮箱和密码' }), { status: 400, headers });
 
-  const user = await env.DB.prepare('SELECT * FROM users WHERE email = ?').bind(email.toLowerCase()).first();
-  if (!user) return new Response(JSON.stringify({ ok: false, error: '账号不存在，请先注册' }), { status: 401, headers });
+  // 全站统一登录：只有这一组账号密码可以登录
+  if (email.trim().toLowerCase() !== SITE_EMAIL || password !== SITE_PASSWORD) {
+    return new Response(JSON.stringify({ ok: false, error: '账号或密码错误' }), { status: 401, headers });
+  }
 
-  const hash = await hashPassword(password);
-  if (hash !== user.password_hash) return new Response(JSON.stringify({ ok: false, error: '密码错误' }), { status: 401, headers });
-
-  if (user.status === 'pending') return new Response(JSON.stringify({ ok: false, error: '账号待审批，请等待管理员通过' }), { status: 403, headers });
-  if (user.status === 'rejected') return new Response(JSON.stringify({ ok: false, error: '账号已被拒绝' }), { status: 403, headers });
-
-  const token = await makeToken(user.email);
-  return new Response(JSON.stringify({ ok: true, user: { name: user.name, email: user.email }, token }), { headers });
+  const token = await makeToken(SITE_EMAIL);
+  return new Response(JSON.stringify({ ok: true, user: { name: 'gavin', email: SITE_EMAIL }, token }), { headers });
 }
 
 export async function onRequestOptions() {
