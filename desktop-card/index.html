@@ -2418,6 +2418,8 @@
       display: none;
       flex-direction: column;
       z-index: 26;
+      padding: 12px 12px 0;
+      gap: 12px;
       background:
         radial-gradient(ellipse 60% 55% at 96% 0%, rgba(124,92,252,0.20), transparent),
         radial-gradient(ellipse 68% 58% at 0% 100%, rgba(140,215,182,0.22), transparent),
@@ -2430,9 +2432,10 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
-      padding: 16px 28px 0;
-      border-bottom: 1px solid var(--border);
-      background: rgba(255,255,255,0.72);
+      padding: 18px 28px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.9);
+      box-shadow: 0 2px 16px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
       backdrop-filter: blur(18px);
     }
     .req-wb-header-top { display: flex; align-items: baseline; gap: 14px; }
