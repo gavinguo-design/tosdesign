@@ -2428,13 +2428,14 @@
     .req-wb-header {
       flex-shrink: 0;
       display: flex;
-      align-items: baseline;
-      gap: 14px;
-      padding: 20px 28px;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px 28px 0;
       border-bottom: 1px solid var(--border);
       background: rgba(255,255,255,0.72);
       backdrop-filter: blur(18px);
     }
+    .req-wb-header-top { display: flex; align-items: baseline; gap: 14px; }
     .req-wb-title { font-size: 18px; font-weight: 600; color: var(--text); letter-spacing: 0.01em; }
     .req-wb-sub { font-size: 12px; color: var(--muted); margin-left: 2px; }
     .req-wb-meta {
@@ -2446,6 +2447,8 @@
       background: rgba(255,255,255,0.66);
       border: 1px solid rgba(0,0,0,0.06);
     }
+    .req-wb-tabs-row { display: flex; align-items: center; }
+    .req-wb-tabs-row.hidden { display: none; }
     .req-wb-body {
       flex: 1;
       min-height: 0;
@@ -2644,6 +2647,32 @@
       overflow: hidden;
       box-shadow: 0 8px 18px rgba(0,0,0,0.12);
     }
+    /* 列表视图 */
+    .req-wb-list { display: flex; flex-direction: column; gap: 10px; }
+    .req-wb-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border-radius: 16px;
+      padding: 12px 16px;
+      border: 1px solid rgba(255,255,255,0.7);
+      background: rgba(255,255,255,0.78);
+      box-shadow: 0 8px 20px rgba(18,16,38,0.06);
+      backdrop-filter: blur(18px);
+      transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    }
+    .req-wb-row.is-clickable { cursor: pointer; }
+    .req-wb-row.is-clickable:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 26px rgba(18,16,38,0.1);
+      border-color: rgba(124,92,252,0.28);
+    }
+    .req-wb-row .req-wb-row-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+    .req-wb-row .req-wb-name { min-height: 0; }
+    .req-wb-row .req-wb-brief { min-height: 0; -webkit-line-clamp: 1; }
+    .req-wb-thumb-sm { flex-shrink: 0; margin-top: 0; width: 64px; height: 64px; }
+    .req-wb-thumb-sm .req-wb-thumb-card { width: 56px; height: 56px; border-radius: 12px; }
+    .req-wb-thumb-sm .req-wb-thumb-scale { width: 56px; height: 56px; }
     .req-wb-thumb-scale {
       width: 138px;
       height: 138px;
@@ -3424,9 +3453,15 @@
     <!-- LIBRARY VIEW: 卡片库 -->
     <div id="req-workbench-view">
       <div class="req-wb-header">
-        <span class="req-wb-title">需求工作台</span>
-        <span class="req-wb-sub">一份 PRD，拆成一组可追踪的卡片任务</span>
-        <span class="req-wb-meta" id="reqWorkbenchMeta">等待新的需求</span>
+        <div class="req-wb-header-top">
+          <span class="req-wb-title">需求工作台</span>
+          <span class="req-wb-sub">一份 PRD，拆成一组可追踪的卡片任务</span>
+          <span class="req-wb-meta" id="reqWorkbenchMeta">等待新的需求</span>
+        </div>
+        <div class="req-wb-tabs-row hidden wb-view-tabs" id="reqWbTabsRow">
+          <button class="wb-view-tab active" id="reqWbTabGrid" onclick="switchReqWbView('grid')">看板视图</button>
+          <button class="wb-view-tab" id="reqWbTabList" onclick="switchReqWbView('list')">列表视图</button>
+        </div>
       </div>
       <div class="req-wb-body" id="reqWorkbenchBody"></div>
     </div>
@@ -4005,6 +4040,7 @@
     let activeVersionIdx = -1;
     let pendingVariants = null; // [dataA, dataB] awaiting user pick
     let reqWorkbenchDraft = '';
+    let reqWbViewMode = 'grid'; // 'grid' | 'list'
     let reqWorkbenchJobs = [];
     let reqWorkbenchDecomposing = false;
     let reqWorkbenchImporting = false;
@@ -5665,7 +5701,7 @@
       try { return JSON.parse(repairJsonQuotes(text)); } catch (error) { return null; }
     }
 
-    function buildReqThumbNode(cardData) {
+    function buildReqThumbNode(cardData, small) {
       const thumb = document.createElement('div');
       thumb.className = 'req-wb-thumb-card';
       let bg = cardData.bg || (cardData.dark ? '#1c1c1e' : '#ffffff');
@@ -5678,6 +5714,13 @@
       thumb.style.background = bg;
       const scale = document.createElement('div');
       scale.className = 'req-wb-thumb-scale';
+      if (small) {
+        thumb.style.width = '56px';
+        thumb.style.height = '56px';
+        thumb.style.borderRadius = '12px';
+        scale.style.transform = 'scale(0.4058)';
+        scale.style.transformOrigin = 'top left';
+      }
       scale.appendChild(buildCardInner(cardData));
       thumb.appendChild(scale);
       return thumb;
@@ -5688,7 +5731,10 @@
       const meta = document.getElementById('reqWorkbenchMeta');
       if (!body || !meta) return;
 
+      const tabsRowEarly = document.getElementById('reqWbTabsRow');
+
       if (reqWorkbenchImporting) {
+        if (tabsRowEarly) tabsRowEarly.classList.add('hidden');
         meta.textContent = '正在读取 PDF 文档…';
         body.innerHTML = `
           <div class="req-wb-loading-state">
@@ -5700,6 +5746,7 @@
       }
 
       if (!reqWorkbenchJobs.length) {
+        if (tabsRowEarly) tabsRowEarly.classList.add('hidden');
         meta.textContent = '暂无任务';
         body.innerHTML = `
           <div class="req-wb-blank">
@@ -5719,6 +5766,15 @@
       const running = reqWorkbenchJobs.filter((job) => job.status === 'running').length;
       const failed = reqWorkbenchJobs.filter((job) => job.status === 'failed').length;
       meta.textContent = `${completed}/${reqWorkbenchJobs.length} 已完成${running ? ` · ${running} 生成中` : ''}${failed ? ` · ${failed} 失败` : ''}`;
+
+      const tabsRow = document.getElementById('reqWbTabsRow');
+      if (tabsRow) tabsRow.classList.remove('hidden');
+      const tabGrid = document.getElementById('reqWbTabGrid');
+      const tabList = document.getElementById('reqWbTabList');
+      if (tabGrid) tabGrid.classList.toggle('active', reqWbViewMode === 'grid');
+      if (tabList) tabList.classList.toggle('active', reqWbViewMode === 'list');
+
+      const isList = reqWbViewMode === 'list';
       body.innerHTML = `
         <div class="req-wb-grid-state">
           <div class="req-wb-toolbar">
@@ -5730,7 +5786,7 @@
               <button class="req-wb-ghost-btn" onclick="resetReqWorkbench()">新建一份需求</button>
             </div>
           </div>
-          <div class="req-wb-grid" id="reqWorkbenchGrid"></div>
+          <div class="${isList ? 'req-wb-list' : 'req-wb-grid'}" id="reqWorkbenchGrid"></div>
         </div>`;
 
       const grid = document.getElementById('reqWorkbenchGrid');
@@ -5743,7 +5799,7 @@
       reqWorkbenchJobs.forEach((job) => {
         const tile = document.createElement('div');
         const clickable = !!job.cardData || job.status === 'running';
-        tile.className = 'req-wb-tile' + (clickable ? ' is-clickable' : '');
+        tile.className = (isList ? 'req-wb-row' : 'req-wb-tile') + (clickable ? ' is-clickable' : '');
         if (clickable) tile.onclick = () => openReqWorkbenchJob(job.id);
 
         const scene = getReqSceneMeta(job.scene);
@@ -5752,33 +5808,59 @@
         const statusHtml = job.status === 'running'
           ? `<span class="req-wb-spinner"></span>${getReqJobStatusText(job)}`
           : getReqJobStatusText(job);
-        tile.innerHTML = `
-          <div class="req-wb-tile-top">
-            <span class="csp-badge req-wb-scene">${scene.emoji} ${scene.label}</span>
-            <span class="req-wb-status ${statusClass}">${statusHtml}</span>
-          </div>
-          <div class="req-wb-name">${escapeHtml(job.name)}</div>
-          <div class="req-wb-brief">${escapeHtml(job.brief)}</div>
-          <div class="req-wb-progress">
-            <div class="req-wb-progress-text">${escapeHtml(progress.text)}</div>
-            <div class="req-wb-progress-track"><div class="req-wb-progress-bar" style="width:${progress.pct}%"></div></div>
-          </div>
-        `;
 
         const thumb = document.createElement('div');
-        thumb.className = 'req-wb-thumb';
+        thumb.className = isList ? 'req-wb-thumb req-wb-thumb-sm' : 'req-wb-thumb';
         if (job.status === 'failed') {
           thumb.innerHTML = `<div class="req-wb-error"><div>${escapeHtml(job.error || '生成失败，请重试')}</div><button class="req-wb-retry-btn" onclick="event.stopPropagation();retryReqWorkbenchJob('${job.id}')">重试</button></div>`;
         } else if (job.cardData) {
-          thumb.appendChild(buildReqThumbNode(job.cardData));
+          thumb.appendChild(buildReqThumbNode(job.cardData, isList));
         } else {
           const skel = document.createElement('div');
           skel.className = 'req-wb-thumb-skeleton';
           thumb.appendChild(skel);
         }
-        tile.appendChild(thumb);
+
+        if (isList) {
+          const info = document.createElement('div');
+          info.className = 'req-wb-row-info';
+          info.innerHTML = `
+            <div class="req-wb-tile-top">
+              <span class="csp-badge req-wb-scene">${scene.emoji} ${scene.label}</span>
+              <span class="req-wb-status ${statusClass}">${statusHtml}</span>
+            </div>
+            <div class="req-wb-name">${escapeHtml(job.name)}</div>
+            <div class="req-wb-brief">${escapeHtml(job.brief)}</div>
+            <div class="req-wb-progress">
+              <div class="req-wb-progress-text">${escapeHtml(progress.text)}</div>
+              <div class="req-wb-progress-track"><div class="req-wb-progress-bar" style="width:${progress.pct}%"></div></div>
+            </div>
+          `;
+          tile.appendChild(thumb);
+          tile.appendChild(info);
+        } else {
+          tile.innerHTML = `
+            <div class="req-wb-tile-top">
+              <span class="csp-badge req-wb-scene">${scene.emoji} ${scene.label}</span>
+              <span class="req-wb-status ${statusClass}">${statusHtml}</span>
+            </div>
+            <div class="req-wb-name">${escapeHtml(job.name)}</div>
+            <div class="req-wb-brief">${escapeHtml(job.brief)}</div>
+            <div class="req-wb-progress">
+              <div class="req-wb-progress-text">${escapeHtml(progress.text)}</div>
+              <div class="req-wb-progress-track"><div class="req-wb-progress-bar" style="width:${progress.pct}%"></div></div>
+            </div>
+          `;
+          tile.appendChild(thumb);
+        }
         grid.appendChild(tile);
       });
+    }
+
+    function switchReqWbView(mode) {
+      if (mode !== 'grid' && mode !== 'list') return;
+      reqWbViewMode = mode;
+      renderReqWorkbench();
     }
 
     function updateReqWorkbenchReturnBtn() {
