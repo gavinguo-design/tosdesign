@@ -3270,12 +3270,12 @@
       border:1px solid rgba(0,0,0,0.06);
       border-radius:28px;
       box-shadow:0 2px 24px rgba(0,0,0,0.07),inset 0 1px 0 rgba(255,255,255,0.95);
-      padding:14px 20px 12px;
-      margin-top:8px;
+      padding:10px 20px 8px;
+      margin-top:6px;
       flex-shrink:0;
     }
     #ternary-panel .tp-header {
-      display:flex;align-items:start;justify-content:space-between;gap:12px;margin-bottom:8px;
+      display:flex;align-items:start;justify-content:space-between;gap:12px;margin-bottom:6px;
     }
     #ternary-panel .tp-title { font-size:12.5px;font-weight:600;color:var(--text);letter-spacing:-0.02em; }
     #ternary-panel .tp-sub { font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.4; }
@@ -3424,7 +3424,7 @@
     .suggestion-card[data-ink="light"] .action.short,.suggestion-card[data-ink="light"] .action.long { background:rgba(255,255,255,.17); }
     /* Ternary panel footer */
     #ternary-panel .tp-footer {
-      border-top:1px solid rgba(0,0,0,0.07);padding-top:7px;margin-top:8px;
+      border-top:1px solid rgba(0,0,0,0.07);padding-top:5px;margin-top:6px;
       display:flex;align-items:center;gap:10px;flex-wrap:wrap;
     }
     #ternary-panel .tp-state { flex:1;color:var(--muted);font-size:10px;line-height:1.5;min-width:0; }
@@ -3481,6 +3481,40 @@
       .suggestion-card { width:100%;aspect-ratio:1; }
       #ternary-panel .tp-footer { flex-wrap:wrap;gap:8px; }
       #ternary-panel .tp-cache { white-space:normal;line-height:1.4; }
+    }
+    /* Desktop split layout (>680px): triangle controller left (enlarged), 3 suggestion
+       cards stacked vertically on the right (shrunk). Kept in its own min-width query so
+       it never leaks into the <=680px stacked/mobile rules above.
+       Suggestion cards are laid out by JS as fixed 188x188px canvases (absolute-positioned
+       text/icons sized in px for that exact box). Shrinking the box itself via width/height
+       would clip or overflow that fixed-px content, so each card keeps its native 188x188
+       size and is visually shrunk with transform:scale() inside a same-aspect wrapper
+       (.tp-card-scale) that reserves the smaller on-screen footprint — same technique this
+       file already uses for .version-thumb / compare-card previews. */
+    @media (min-width:681px) {
+      #ternary-panel .tp-stage {
+        display:flex;flex-direction:row;align-items:stretch;gap:18px;
+      }
+      #ternary-panel .tp-left {
+        flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:8px;
+      }
+      #ternary-panel .tp-controller {
+        flex:1 1 auto;height:auto;min-height:260px;
+      }
+      #ternary-panel .tp-card-previews {
+        flex:0 0 138px;width:138px;max-width:138px;margin:0;
+        display:flex;flex-direction:column;gap:8px;align-items:stretch;justify-content:flex-start;
+      }
+      #ternary-panel .tp-card-scale {
+        width:138px;height:138px;overflow:hidden;border-radius:20px;
+        box-shadow:0 8px 22px rgba(31,31,28,0.14);
+      }
+      #ternary-panel .tp-card-scale .suggestion-card {
+        width:188px;height:188px;
+        transform:scale(calc(138/188));transform-origin:top left;
+        box-shadow:none;border-radius:20px;
+      }
+      #ternary-panel .tp-card-scale .suggestion-card:hover { transform:scale(calc(138/188)); }
     }
   </style>
 </head>
@@ -3683,30 +3717,32 @@
           <span class="tp-stamp">LIVE · VA / IS / AA</span>
         </div>
         <div class="tp-stage">
-          <aside class="tp-metrics">
-            <div class="tp-metric va">
-              <div class="tp-metric-head"><span>VISUAL</span><i class="tp-dot"></i></div>
-              <strong id="va">33.3%</strong>
-              <p>视觉叙事模板</p>
+          <div class="tp-left">
+            <aside class="tp-metrics">
+              <div class="tp-metric va">
+                <div class="tp-metric-head"><span>VISUAL</span><i class="tp-dot"></i></div>
+                <strong id="va">33.3%</strong>
+                <p>视觉叙事模板</p>
+              </div>
+              <div class="tp-metric is">
+                <div class="tp-metric-head"><span>INFO</span><i class="tp-dot"></i></div>
+                <strong id="is">33.3%</strong>
+                <p>层级与可读性</p>
+              </div>
+              <div class="tp-metric aa">
+                <div class="tp-metric-head"><span>ACTION</span><i class="tp-dot"></i></div>
+                <strong id="aa">33.4%</strong>
+                <p>指向与下一步</p>
+              </div>
+            </aside>
+            <div class="tp-controller">
+              <svg id="ternary" viewBox="0 0 620 430" role="img" aria-label="VA、IS、AA 三轴粒子控制器"></svg>
             </div>
-            <div class="tp-metric is">
-              <div class="tp-metric-head"><span>INFO</span><i class="tp-dot"></i></div>
-              <strong id="is">33.3%</strong>
-              <p>层级与可读性</p>
-            </div>
-            <div class="tp-metric aa">
-              <div class="tp-metric-head"><span>ACTION</span><i class="tp-dot"></i></div>
-              <strong id="aa">33.4%</strong>
-              <p>指向与下一步</p>
-            </div>
-          </aside>
-          <div class="tp-controller">
-            <svg id="ternary" viewBox="0 0 620 430" role="img" aria-label="VA、IS、AA 三轴粒子控制器"></svg>
           </div>
           <section class="tp-card-previews">
-            <article class="suggestion-card tone-focus" id="focus-card" aria-label="插画焦点卡"></article>
-            <article class="suggestion-card tone-status" id="status-card" aria-label="即时状态卡"></article>
-            <article class="suggestion-card tone-step" id="step-card" aria-label="下一步卡"></article>
+            <div class="tp-card-scale"><article class="suggestion-card tone-focus" id="focus-card" aria-label="插画焦点卡"></article></div>
+            <div class="tp-card-scale"><article class="suggestion-card tone-status" id="status-card" aria-label="即时状态卡"></article></div>
+            <div class="tp-card-scale"><article class="suggestion-card tone-step" id="step-card" aria-label="下一步卡"></article></div>
           </section>
         </div>
         <div class="tp-footer">
