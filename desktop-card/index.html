@@ -4956,10 +4956,12 @@
         if (text !== undefined) el.textContent = text;
         return el;
       };
-      const tc = 'rgba(0,0,0,0.9)';
-      const sc = 'rgba(0,0,0,0.6)';
-      const accent = data.chartColor || tc;
       const chartType = data.chartType;
+      // The Weather card uses Figma's dark weather-background instance, so its text paints are white.
+      const isWeather = chartType === 'denseBar';
+      const tc = isWeather ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)';
+      const sc = isWeather ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)';
+      const accent = data.chartColor || tc;
 
       // 双值对比（IOT电量）无独立标题/数值/副文本三行结构，整卡就是两个纵向堆叠的环形进度行
       if (chartType === 'dualRing') {
@@ -5096,8 +5098,8 @@
         return `<svg viewBox="0 0 110 48" width="110" height="48">${tracks}${bars}</svg>`;
       }
       if (chartType === 'denseBar') {
-        // Figma规范：Weather 密集柱状图 29 根 w2 cornerRadius5，x/y/h 精确取自 API 数据(1:456-1:484)，
-        // 渐变 rgba(255,49,134,1)→rgba(255,49,49,1) 90deg；容器高度改为40（CHART_AREA_RECT.denseBar.height）
+        // Figma node 1:455：Weather 密集柱状图 29 根 w2 cornerRadius5，
+        // 填充为 rgba(114,204,255,1)→rgba(190,230,255,1) 的纵向线性渐变。
         const bars29 = [
           [0,14,2],[4,14,2],[8,14,2],[12,13,3],[16,8,8],[20,9.6,6.4],[24,10.73,5.27],[28,10.73,5.27],
           [32,8,8],[36,6.4,9.6],[40,8,8],[44,6.4,9.6],[48,0,16],[52,0,16],[56,1.6,14.4],[60,4.8,11.2],
@@ -5107,8 +5109,8 @@
         const bars = bars29.map(([x,y,h]) => `<rect x="${x}" y="${y}" width="2" height="${h}" rx="1" fill="url(#tplDenseGrad)"/>`).join('');
         return `<svg viewBox="0 0 116 16" width="110" height="40" preserveAspectRatio="none">` +
           `<defs><linearGradient id="tplDenseGrad" x1="0" y1="0" x2="0" y2="1">` +
-          `<stop offset="0%" stop-color="rgba(255,49,134,1)"/>` +
-          `<stop offset="100%" stop-color="rgba(255,49,49,1)"/>` +
+          `<stop offset="0%" stop-color="rgba(114,204,255,1)"/>` +
+          `<stop offset="100%" stop-color="rgba(190,230,255,1)"/>` +
           `</linearGradient></defs>${bars}</svg>`;
       }
       if (chartType === 'progress') {
@@ -7033,19 +7035,15 @@
 
     // chart 7种 = 每个图表类型对应一个真实使用场景(潮伟哥要求:图表不是无差别堆砌,而是先看卡片数据类型/场景是否需要图表;
     // 数值/坐标/颜色严格来自 /tmp/openclaw/figma_chart_specs.md「Bottom 图表类型 legend blocks」一节的官方场景描述文案,逐一对应)
-    // 问题B：5种卡片(trend/bar/denseBar/progress/timeline)白底叠加主题色 GRADIENT_LINEAR(90deg)，按 Figma stops 顺序换算成 CSS 180deg方向
-    // (Figma handle[0]->handle[1] 从顶部y≈0到底部y≈1，即 stop0=顶部，stop1=底部)，并用截图验证了方向符合描述
+    // Figma 的容器渐变是白色底层加 GRADIENT_LINEAR 画笔；CSS alpha 已合并 Figma paint.opacity。
+    // handles (0.5,0)->(0.5,1) 对应由上至下的 CSS 180deg。
     const CHART_BG_GRADIENT = {
-      // stops=[0:rgba(255,95,15,1)顶部, 1:rgba(255,95,15,0)底部] → 橙色从顶部深向底部淡出
-      trend: 'linear-gradient(180deg, rgba(255,95,15,1) 0%, rgba(255,95,15,0) 100%), #ffffff',
-      // stops=[0:rgba(0,121,254,1)顶部, 1:rgba(0,121,254,0)底部] → 蓝色从顶部深向底部淡出
-      bar: 'linear-gradient(180deg, rgba(0,121,254,1) 0%, rgba(0,121,254,0) 100%), #ffffff',
-      // stops=[0:rgba(255,95,15,1)顶部, 1:rgba(255,95,15,0)底部]（Weather卡本身还叠了一层天气背景图片，图片色彩API无法读取，保持现状，仅确认底层白卡渐变已叠加）
-      denseBar: 'linear-gradient(180deg, rgba(255,95,15,1) 0%, rgba(255,95,15,0) 100%), #ffffff',
-      // stops=[0:rgba(255,95,15,0)顶部, 1:rgba(255,95,15,1)底部] → 方向相反，橙色从底部浮现
-      progress: 'linear-gradient(180deg, rgba(255,95,15,0) 0%, rgba(255,95,15,1) 100%), #ffffff',
-      // stops=[0:rgba(0,121,254,0)顶部, 1:rgba(0,121,254,1)底部] → 蓝色从底部浮现
-      timeline: 'linear-gradient(180deg, rgba(0,121,254,0) 0%, rgba(0,121,254,1) 100%), #ffffff',
+      trend: 'linear-gradient(180deg, rgba(255,95,15,0.13) 0%, rgba(255,95,15,0) 100%), #ffffff',
+      bar: 'linear-gradient(180deg, rgba(0,121,254,0.10) 0%, rgba(0,121,254,0) 100%), #ffffff',
+      // Weather 卡有独立的天气背景实例；其线性底色在 Figma 中覆于淡橙容器渐变之上。
+      denseBar: 'linear-gradient(180deg, rgba(82,100,125,1) 0%, rgba(91,107,128,1) 100%), linear-gradient(180deg, rgba(255,95,15,0.13) 0%, rgba(255,95,15,0) 100%), #ffffff',
+      progress: 'linear-gradient(180deg, rgba(255,95,15,0) 0%, rgba(255,95,15,0.10) 100%), #ffffff',
+      timeline: 'linear-gradient(180deg, rgba(0,121,254,0) 0%, rgba(0,121,254,0.10) 100%), #ffffff',
     };
 
     function tplBuildChart() {
@@ -7059,7 +7057,7 @@
           label: '柱状图（数值对比：步数、热量消耗等）',
         },
         {
-          data: { ...TPL_BASE.chart, bg: CHART_BG_GRADIENT.denseBar, chartType: 'denseBar', title: 'Weather', value: '23°', subtitle: 'Next 1h Rain', chartColor: 'rgba(255,49,134,1)' },
+          data: { ...TPL_BASE.chart, bg: CHART_BG_GRADIENT.denseBar, chartType: 'denseBar', title: 'Weather', value: '23°', subtitle: 'Next 1h Rain', chartColor: 'rgba(255,255,255,1)' },
           label: '密集柱状图（密集数值趋势：降雨）',
         },
         {
