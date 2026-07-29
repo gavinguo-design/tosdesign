@@ -1,0 +1,44 @@
+{
+  "version": "2026-07-27-original-theater-inspired-va-v2",
+  "scope": "desktop-card/ternary-test.html VA backgrounds",
+  "construction": "Fifteen original, self-contained CSS recipes. Each recipe uses gradients, color fields, blurred light, circles, rounded slabs, and straight light bars generated in the browser. No raster image, SVG, canvas image draw, gallery URL, direct asset, text, number, UI icon, UI control, dotted arc, or path is used in a background.",
+  "inspiration": "Theater visual DNA is interpreted at a high level only: copy-safe left fields, an opposite-side compositional mass, material contrast, and role-appropriate intensity. This registry does not reproduce, crop, trace, embed, or reuse Inspiration Theater artwork.",
+  "assertions": {
+    "nonDirectGallery": true,
+    "galleryUrlPlumbingRemoved": true,
+    "galleryAssetsLoadedByVaRuntime": false,
+    "backgroundsContainTextNumbersIconsOrControls": false,
+    "backgroundsUseDottedArcOrPathFallback": false,
+    "cardCopyAndActionsRemainTernaryUi": true,
+    "crossfade": "220ms ease-in-out opacity transition; no blur transition"
+  },
+  "roles": {
+    "Focus": {
+      "vaBands": {
+        "weak": {"tier": "L2", "templateId": "F-L2-BotanicalBloom", "recipe": "focus-weak", "artDirection": "mint paper bloom with layered pale circles", "safeZone": "left copy column"},
+        "subtle": {"tier": "L2", "templateId": "F-L2-FieldCollage", "recipe": "focus-subtle", "artDirection": "green editorial blocks and a dark rounded mass", "safeZone": "left copy column"},
+        "intermediate": {"tier": "L3", "templateId": "F-L3-RecordBloom", "recipe": "focus-intermediate", "artDirection": "berry record-like radial pigment with angled cover slab", "safeZone": "upper-left copy column"},
+        "strong": {"tier": "L4", "templateId": "F-L4-NightGlow", "recipe": "focus-strong", "artDirection": "midnight field with warm horizon glints", "safeZone": "upper-left light-ink copy column"},
+        "hero": {"tier": "L5", "templateId": "F-L5-FestivalRadiance", "recipe": "focus-hero", "artDirection": "coral festival radiance with a faceted sun disk", "safeZone": "upper-left copy column"}
+      }
+    },
+    "Status": {
+      "vaBands": {
+        "weak": {"tier": "L1", "templateId": "S-L1-PaperWash", "recipe": "status-weak", "artDirection": "warm paper wash and restrained pastel form", "safeZone": "left copy column"},
+        "subtle": {"tier": "L2", "templateId": "S-L2-BlueReservoir", "recipe": "status-subtle", "artDirection": "powder-blue reservoir with concentric light", "safeZone": "left data column"},
+        "intermediate": {"tier": "L2", "templateId": "S-L2-TidalFold", "recipe": "status-intermediate", "artDirection": "aqua folded pigment and angled translucent bars", "safeZone": "left data column"},
+        "strong": {"tier": "L4", "templateId": "S-L4-RainAtmosphere", "recipe": "status-strong", "artDirection": "smoky rain-light bands over a blue-black field", "safeZone": "left light-ink copy column"},
+        "hero": {"tier": "L5", "templateId": "S-L5-NocturneHorizon", "recipe": "status-hero", "artDirection": "near-black nocturne with sparse horizon marks", "safeZone": "left light-ink copy column"}
+      }
+    },
+    "Step": {
+      "vaBands": {
+        "weak": {"tier": "L1", "templateId": "P-L1-TactileParcel", "recipe": "step-weak", "artDirection": "cool utility paper with tactile parcel-like forms", "safeZone": "left copy and action band"},
+        "subtle": {"tier": "L1", "templateId": "P-L1-SoftOrbit", "recipe": "step-subtle", "artDirection": "pale blue orbit and quiet lower bar", "safeZone": "left copy and action band"},
+        "intermediate": {"tier": "L2", "templateId": "P-L2-RouteBlocks", "recipe": "step-intermediate", "artDirection": "sunlit route blocks against a soft paper ground", "safeZone": "upper-left copy and lower action band"},
+        "strong": {"tier": "L3", "templateId": "P-L3-DecisionMoon", "recipe": "step-strong", "artDirection": "violet decision moon with a gold underline", "safeZone": "upper-left light-ink copy and lower action band"},
+        "hero": {"tier": "L3", "templateId": "P-L3-CelebrationGlow", "recipe": "step-hero", "artDirection": "peach celebration glow with layered warm orbs", "safeZone": "left copy and action band"}
+      }
+    }
+  }
+}
