@@ -430,15 +430,6 @@
       <div class="login-field"><label>密码</label><input type="password" id="loginPassword" placeholder="至少6位" /></div>
       <button class="login-btn" onclick="doLogin()">登录</button>
       <div class="login-err" id="loginErr"></div>
-      <div class="login-switch">还没有账号？<a onclick="showRegister()">立即注册</a></div>
-    </div>
-    <div id="registerForm" style="display:none">
-      <div class="login-field"><label>姓名</label><input type="text" id="regName" placeholder="你的名字" /></div>
-      <div class="login-field"><label>邮箱</label><input type="email" id="regEmail" placeholder="your@email.com" /></div>
-      <div class="login-field"><label>密码</label><input type="password" id="regPassword" placeholder="至少6位" /></div>
-      <button class="login-btn" onclick="doRegister()">注册</button>
-      <div class="login-err" id="registerErr"></div>
-      <div class="login-switch">已有账号？<a onclick="showLogin()">返回登录</a></div>
     </div>
   </div>
 </div>
@@ -634,41 +625,11 @@ async function doLogin() {
   finally { if (btn) { btn.textContent = '登录'; btn.disabled = false; } }
 }
 
-async function doRegister() {
-  const name = document.getElementById('regName').value.trim();
-  const email = document.getElementById('regEmail').value.trim();
-  const pwd = document.getElementById('regPassword').value;
-  const err = document.getElementById('registerErr');
-  err.textContent = '';
-  if (!name || !email || !pwd) { err.textContent = '请填写所有字段'; return; }
-  if (pwd.length < 6) { err.textContent = '密码至少6位'; return; }
-  const btn = document.querySelector('#registerForm .login-btn');
-  if (btn) { btn.textContent = '提交中...'; btn.disabled = true; }
-  try {
-    const res = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, password: pwd }) });
-    const data = await res.json();
-    if (!data.ok) { err.textContent = data.error || '注册失败'; return; }
-    err.style.color = '#01CB65';
-    err.textContent = '注册成功！等待管理员审批后可登录';
-  } catch (e) { err.textContent = '网络错误，请重试'; }
-  finally { if (btn) { btn.textContent = '注册'; btn.disabled = false; } }
-}
-
 function doLogout() {
   authToken = null; currentUser = null;
   localStorage.removeItem('tos_token'); localStorage.removeItem('tos_name');
   document.getElementById('loginOverlay').classList.remove('hidden');
   document.getElementById('sidebarLogout').style.display = 'none';
-  showLogin();
-}
-
-function showRegister() {
-  document.getElementById('loginForm').style.display = 'none';
-  document.getElementById('registerForm').style.display = 'block';
-}
-function showLogin() {
-  document.getElementById('loginForm').style.display = 'block';
-  document.getElementById('registerForm').style.display = 'none';
 }
 
 function updateUserUI() {
