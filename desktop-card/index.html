@@ -5477,7 +5477,7 @@
         chartColor: 'rgba(255,95,15,1)',
         chartRatio: 0.42,
         chartProgressLabel: '42% used',
-        bg: CHART_BG_GRADIENT.progress,
+        bg: getChartBackground('progress'),
         dark: false,
         illustPrompt: '',
         heroIcon: false,
@@ -7071,39 +7071,40 @@
       ];
     }
 
-    // chart 7种 = 每个图表类型对应一个真实使用场景(潮伟哥要求:图表不是无差别堆砌,而是先看卡片数据类型/场景是否需要图表;
-    // 数值/坐标/颜色严格来自 /tmp/openclaw/figma_chart_specs.md「Bottom 图表类型 legend blocks」一节的官方场景描述文案,逐一对应)
-    // Figma 的容器渐变是白色底层加 GRADIENT_LINEAR 画笔；CSS alpha 已合并 Figma paint.opacity。
-    // handles (0.5,0)->(0.5,1) 对应由上至下的 CSS 180deg。
-    const CHART_BG_GRADIENT = {
+    // Chart backgrounds are source-of-truth visual tokens shared by the template gallery and AI-routed chart cards.
+    // Values come from the Figma card fills: a white base with one vertical theme wash, plus the Weather image-instance base.
+    const CHART_BG_GRADIENT = Object.freeze({
       trend: 'linear-gradient(180deg, rgba(255,95,15,0.13) 0%, rgba(255,95,15,0) 100%), #ffffff',
       bar: 'linear-gradient(180deg, rgba(0,121,254,0.10) 0%, rgba(0,121,254,0) 100%), #ffffff',
-      // Weather 卡有独立的天气背景实例；其线性底色在 Figma 中覆于淡橙容器渐变之上。
-      denseBar: 'linear-gradient(180deg, rgba(82,100,125,1) 0%, rgba(91,107,128,1) 100%), linear-gradient(180deg, rgba(255,95,15,0.13) 0%, rgba(255,95,15,0) 100%), #ffffff',
+      denseBar: 'linear-gradient(180deg, #52647D 0%, #5B6B80 100%)',
       progress: 'linear-gradient(180deg, rgba(255,95,15,0) 0%, rgba(255,95,15,0.10) 100%), #ffffff',
       timeline: 'linear-gradient(180deg, rgba(0,121,254,0) 0%, rgba(0,121,254,0.10) 100%), #ffffff',
-    };
+    });
+
+    function getChartBackground(chartType) {
+      return CHART_BG_GRADIENT[chartType] || '#ffffff';
+    }
 
     function tplBuildChart() {
       return [
         {
-          data: { ...TPL_BASE.chart, bg: CHART_BG_GRADIENT.trend, chartType: 'trend', title: 'Stock Trend', value: '+2.8%', subtitle: 'Up Today', chartColor: 'rgba(255,95,15,1)' },
+          data: { ...TPL_BASE.chart, bg: getChartBackground('trend'), chartType: 'trend', title: 'Stock Trend', value: '+2.8%', subtitle: 'Up Today', chartColor: 'rgba(255,95,15,1)' },
           label: '趋势图（趋势走向：股票、汇率、票价范围）',
         },
         {
-          data: { ...TPL_BASE.chart, bg: CHART_BG_GRADIENT.bar, chartType: 'bar', title: 'Step Count', value: '2345', unit: 'steps', subtitle: '12AM-12PM', chartColor: 'rgba(0,121,254,1)' },
+          data: { ...TPL_BASE.chart, bg: getChartBackground('bar'), chartType: 'bar', title: 'Step Count', value: '2345', unit: 'steps', subtitle: '12AM-12PM', chartColor: 'rgba(0,121,254,1)' },
           label: '柱状图（数值对比：步数、热量消耗等）',
         },
         {
-          data: { ...TPL_BASE.chart, bg: CHART_BG_GRADIENT.denseBar, chartType: 'denseBar', title: 'Weather', value: '23°', subtitle: 'Next 1h Rain', chartColor: 'rgba(255,255,255,1)' },
+          data: { ...TPL_BASE.chart, bg: getChartBackground('denseBar'), chartType: 'denseBar', title: 'Weather', value: '23°', subtitle: 'Next 1h Rain', chartColor: 'rgba(255,255,255,1)' },
           label: '密集柱状图（密集数值趋势：降雨）',
         },
         {
-          data: { ...TPL_BASE.chart, bg: CHART_BG_GRADIENT.progress, chartType: 'progress', title: 'Data Left', value: '20', unit: 'hrs', subtitle: 'Daily 1GB', chartColor: 'rgba(255,95,15,1)', chartRatio: 0.145454545 },
+          data: { ...TPL_BASE.chart, bg: getChartBackground('progress'), chartType: 'progress', title: 'Data Left', value: '20', unit: 'hrs', subtitle: 'Daily 1GB', chartColor: 'rgba(255,95,15,1)', chartRatio: 0.145454545 },
           label: '进度条（剩余进度类：流量、话费剩余）',
         },
         {
-          data: { ...TPL_BASE.chart, bg: CHART_BG_GRADIENT.timeline, chartType: 'timeline', title: 'Food Delievery', value: '14:59', subtitle: 'Arrival Time', chartColor: 'rgba(0,121,254,1)' },
+          data: { ...TPL_BASE.chart, bg: getChartBackground('timeline'), chartType: 'timeline', title: 'Food Delievery', value: '14:59', subtitle: 'Arrival Time', chartColor: 'rgba(0,121,254,1)' },
           label: '时间轴（节点进度类：外卖/快递送达、打车）',
         },
         {
