@@ -3297,8 +3297,8 @@
     #ternary-panel .tp-metric.aa { --tone:#0079fe; }
     #ternary-panel .tp-metric-head {
       display:flex;align-items:center;gap:6px;
-      font:700 8px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;
-      letter-spacing:.09em;color:var(--muted);
+      font:700 10.5px/1.2 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;
+      letter-spacing:.02em;color:var(--muted);
     }
     #ternary-panel .tp-dot {
       width:6px;height:6px;border-radius:50%;background:var(--tone);
@@ -3323,8 +3323,8 @@
     #ternary .tp-outline { fill:rgba(255,255,255,0.7);stroke:#222;stroke-width:1.8; }
     #ternary .tp-grid { stroke:rgba(0,0,0,0.13);stroke-width:1.1; }
     #ternary .tp-guide { stroke:rgba(100,80,220,0.45);stroke-width:1.1;stroke-dasharray:3 4; }
-    #ternary .tp-axis { font-size:9px;font-weight:700;letter-spacing:.08em;fill:#333; }
-    #ternary .tp-code { font-size:7.5px;font-weight:700;letter-spacing:.12em;fill:var(--muted); }
+    #ternary .tp-axis { font-size:14px;font-weight:700;letter-spacing:.06em;fill:#333; }
+    #ternary .tp-code { font-size:10px;font-weight:700;letter-spacing:.1em;fill:var(--muted); }
     #ternary .tp-hit { fill:transparent;cursor:grab; }
     #ternary.tp-dragging .tp-hit { cursor:grabbing; }
     #ternary .tp-node-ring { fill:rgba(255,255,255,0.9);stroke:rgba(0,0,0,0.18); }
@@ -3496,8 +3496,17 @@
         display:flex;flex-direction:row;align-items:stretch;gap:18px;
       }
       #ternary-panel .tp-left {
-        flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:8px;
+        flex:1 1 auto;min-width:0;display:flex;flex-direction:row;align-items:stretch;gap:16px;
       }
+      #ternary-panel .tp-metrics {
+        flex:0 0 152px;width:152px;height:auto;
+        flex-direction:column;justify-content:flex-start;gap:10px;
+      }
+      #ternary-panel .tp-metric,#ternary-panel .tp-metric:last-child {
+        flex:none;width:100%;padding:10px 12px 9px;
+      }
+      #ternary-panel .tp-metric p { display:block; }
+      #ternary-panel .tp-metric strong { font-size:22px; }
       #ternary-panel .tp-controller {
         flex:1 1 auto;height:auto;min-height:260px;
       }
@@ -3720,17 +3729,17 @@
           <div class="tp-left">
             <aside class="tp-metrics">
               <div class="tp-metric va">
-                <div class="tp-metric-head"><span>VISUAL</span><i class="tp-dot"></i></div>
+                <div class="tp-metric-head"><span>视觉吸引力</span><i class="tp-dot"></i></div>
                 <strong id="va">33.3%</strong>
                 <p>视觉叙事模板</p>
               </div>
               <div class="tp-metric is">
-                <div class="tp-metric-head"><span>INFO</span><i class="tp-dot"></i></div>
+                <div class="tp-metric-head"><span>信息显著性</span><i class="tp-dot"></i></div>
                 <strong id="is">33.3%</strong>
                 <p>层级与可读性</p>
               </div>
               <div class="tp-metric aa">
-                <div class="tp-metric-head"><span>ACTION</span><i class="tp-dot"></i></div>
+                <div class="tp-metric-head"><span>行动权威性</span><i class="tp-dot"></i></div>
                 <strong id="aa">33.4%</strong>
                 <p>指向与下一步</p>
               </div>
