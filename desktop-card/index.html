@@ -5018,7 +5018,7 @@
         chartWrap.style.cssText = `position:absolute;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;`;
         chartWrap.appendChild(mk(
           `position:absolute;left:0;top:0;width:110px;height:12px;font-size:10px;font-weight:500;color:${sc};`,
-          '5%'));
+          data.chartProgressLabel || '5%'));
         const barWrap = document.createElement('div');
         barWrap.style.cssText = 'position:absolute;left:0;top:16px;width:110px;height:6px;';
         barWrap.innerHTML = buildChartSVG('progress', data.chartColor, data.chartRatio);
@@ -5409,10 +5409,12 @@
         displayReply = displayReply.replace(/综合调性[^\n]*\n?/g, '').trim();
 
         let cardData = null;
-        const parsed = [];
+        let parsed = [];
         cardMatches.forEach(m => {
           try { parsed.push(JSON.parse(m[1])); } catch(e) { console.warn('card parse error', e); }
         });
+        // Route measurable utility requests to the matching Figma chart template before rendering.
+        parsed = parsed.map(card => routeDataCardTemplate(card, text));
 
         // 预解析:拿到 cardData 但先不渲染卡片,用于提前刷左侧分析
         let preCardData = null;
@@ -5454,6 +5456,33 @@
         addMsg('网络错误,请重试', 'bot');
         ['analyze','tone','layout','color'].forEach(s => updateStep(s, 'error', null));
       }
+    }
+
+    function routeDataCardTemplate(card, requestText) {
+      const source = `${requestText || ''} ${card.header || ''} ${card.title || ''} ${card.subtitle || ''}`.toLowerCase();
+      const isTraffic = /流量|套餐|话费|mobile data|data usage|data plan|quota/.test(source);
+      if (!isTraffic || card.layout === 'chart') return card;
+
+      const value = String(card.value || '').match(/[0-9]+(?:\.[0-9]+)?/)?.[0] || '12.6';
+      const unit = card.unit || 'GB';
+      // No carrier connector exists yet, so this remains explicitly illustrative rather than pretending to refresh live.
+      return {
+        ...card,
+        layout: 'chart',
+        chartType: 'progress',
+        title: card.header || card.title || 'Data Usage',
+        value,
+        unit,
+        subtitle: card.subtitle || 'Sample · 30GB Plan',
+        chartColor: 'rgba(255,95,15,1)',
+        chartRatio: 0.42,
+        chartProgressLabel: '42% used',
+        bg: CHART_BG_GRADIENT.progress,
+        dark: false,
+        illustPrompt: '',
+        heroIcon: false,
+        reason: '流量监控自动调用进度条图表模板；当前为示例数据，未连接运营商实时数据。',
+      };
     }
 
     function sendSuggestion(el) {
