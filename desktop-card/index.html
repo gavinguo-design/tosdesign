@@ -4881,6 +4881,36 @@
     // 数值来源：/tmp/openclaw/figma_chart_specs.md（Figma REST API 精确解析），颜色/坐标/比例均有据可查。
     // 文字排版遵循任务约定的统一规范：标题 12px/500，核心数值 20px/600（图表主色），副文本 10px/500 黑0.6透明度，
     // 分别位于卡片上半区 (14,14) / (14,30) / (14,56)；图表区域位于 (14,72) 110×52（环形图表居右下 76,76 48×48）。
+    // 问题C：标题左侧图标底板颜色（12x12,radius3,x14,y15，相对卡片）。ring/dualRing 无图标，不在此表内
+    const CHART_ICON_PLATE = {
+      trend: 'rgba(255,95,15,1)',
+      bar: 'rgba(0,121,254,1)',
+      denseBar: 'rgba(255,255,255,0.25)',
+      progress: 'rgba(255,95,15,1)',
+      timeline: 'rgba(0,121,254,1)',
+    };
+
+    // 问题D：标题位置跟随图标腾出空间。timeline 虽然也有图标，但 Figma 原稿标题依然是 left:14（真实的原稿不一致，
+    // 不做「看起来更统一」的纠正，照抄原稿）；ring 本来就没有图标，标题维持 left:14。
+    const CHART_TITLE_INSET = {
+      trend: { left: 30, width: 94 },
+      bar: { left: 30, width: 94 },
+      denseBar: { left: 30, width: 94 },
+      progress: { left: 30, width: 94 },
+      timeline: { left: 14, width: 110 },
+      ring: { left: 14, width: 110 },
+    };
+
+    // 问题A：各图表类型图表区域真实坐标（Figma API 精确读取，不再统一沿用 72/52 这个「虚线占位框」坐标）
+    const CHART_AREA_RECT = {
+      trend: { left: 14, top: 80, width: 110, height: 44 },
+      bar: { left: 14, top: 76, width: 110, height: 48 },
+      denseBar: { left: 14, top: 84, width: 110, height: 40 },
+      progress: { left: 14, top: 92, width: 110, height: 22 },
+      timeline: { left: 14, top: 110, width: 110, height: 14 },
+      ring: { left: 76, top: 76, width: 48, height: 48 },
+    };
+
     function buildChartCardInner(data) {
       const container = document.createElement('div');
       container.style.cssText = 'position:absolute;inset:0;';
@@ -4893,16 +4923,31 @@
       const tc = 'rgba(0,0,0,0.9)';
       const sc = 'rgba(0,0,0,0.6)';
       const accent = data.chartColor || tc;
+      const chartType = data.chartType;
 
       // 双值对比（IOT电量）无独立标题/数值/副文本三行结构，整卡就是两个纵向堆叠的环形进度行
-      if (data.chartType === 'dualRing') {
+      if (chartType === 'dualRing') {
         container.appendChild(buildRingRow(14, data.ring1Value, data.ring1Ratio, data.chartColor));
         container.appendChild(buildRingRow(76, data.ring2Value, data.ring2Ratio, data.chartColor));
         return container;
       }
 
+      // 问题C：标题左侧图标底板。图标内部细节 Figma API 未返回矢量路径，用简化白色小圆点示意，
+      // 只精确还原底板颜色/位置(x14,y15)/圆角(3)
+      const plateColor = CHART_ICON_PLATE[chartType];
+      if (plateColor) {
+        const plate = document.createElement('div');
+        plate.style.cssText = `position:absolute;left:14px;top:15px;width:12px;height:12px;border-radius:3px;background:${plateColor};display:flex;align-items:center;justify-content:center;`;
+        const dot = document.createElement('div');
+        dot.style.cssText = 'width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,0.9);';
+        plate.appendChild(dot);
+        container.appendChild(plate);
+      }
+
+      // 问题D：标题位置随图标腾出空间(timeline例外，见上方注释)
+      const titleInset = CHART_TITLE_INSET[chartType] || { left: 14, width: 110 };
       container.appendChild(mk(
-        `position:absolute;left:14px;top:14px;width:110px;height:14px;` +
+        `position:absolute;left:${titleInset.left}px;top:14px;width:${titleInset.width}px;height:14px;` +
         `font-size:12px;font-weight:500;color:${tc};overflow:hidden;white-space:nowrap;text-overflow:ellipsis;`,
         data.title || ''));
 
@@ -4917,15 +4962,42 @@
         `font-size:10px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;text-overflow:ellipsis;`,
         data.subtitle || ''));
 
+      // 问题A：图表区域按每种图表类型的真实坐标定位(CHART_AREA_RECT)，不再统一 top:72/height:52
+      const rect = CHART_AREA_RECT[chartType] || CHART_AREA_RECT.bar;
       const chartWrap = document.createElement('div');
-      if (data.chartType === 'ring') {
-        // Figma规范：Phone Battery 环形进度区固定在 (76,76) 48×48
-        chartWrap.style.cssText = 'position:absolute;left:76px;top:76px;width:48px;height:48px;';
+
+      if (chartType === 'progress') {
+        // 问题F：进度条 group(14,92,110,22) 内部结构是「5% 小字」(顶部,10px/500/黑0.6)+ 轨道条(top:16,h:6)
+        chartWrap.style.cssText = `position:absolute;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;`;
+        chartWrap.appendChild(mk(
+          `position:absolute;left:0;top:0;width:110px;height:12px;font-size:10px;font-weight:500;color:${sc};`,
+          '5%'));
+        const barWrap = document.createElement('div');
+        barWrap.style.cssText = 'position:absolute;left:0;top:16px;width:110px;height:6px;';
+        barWrap.innerHTML = buildChartSVG('progress', data.chartColor, data.chartRatio);
+        chartWrap.appendChild(barWrap);
       } else {
-        chartWrap.style.cssText = 'position:absolute;left:14px;top:72px;width:110px;height:52px;display:flex;align-items:center;';
+        chartWrap.style.cssText = `position:absolute;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;display:flex;align-items:center;`;
+        chartWrap.innerHTML = buildChartSVG(chartType, data.chartColor, data.chartRatio);
       }
-      chartWrap.innerHTML = buildChartSVG(data.chartType, data.chartColor, data.chartRatio);
       container.appendChild(chartWrap);
+
+      // 问题G：趋势图额外细节——虚线基准线已内嵌在 buildChartSVG('trend') 里；这里补底部两端时间标签 + 右下角涨幅小字
+      if (chartType === 'trend') {
+        container.appendChild(mk(
+          `position:absolute;left:14px;top:114px;width:24px;height:10px;` +
+          `font-size:8px;font-weight:500;color:rgba(255,95,15,0.8);white-space:nowrap;`,
+          '09:30'));
+        container.appendChild(mk(
+          `position:absolute;left:104px;top:114px;width:24px;height:10px;` +
+          `font-size:8px;font-weight:500;color:rgba(255,95,15,0.8);white-space:nowrap;`,
+          '15:00'));
+        container.appendChild(mk(
+          `position:absolute;left:105px;top:102px;width:28px;height:7px;` +
+          `font-size:6px;font-weight:500;color:rgba(255,89,20,0.8);white-space:nowrap;`,
+          '+0.85%'));
+      }
+
       return container;
     }
 
@@ -4961,29 +5033,35 @@
       if (chartType === 'trend') {
         // Figma规范：Stroke 110×16，Gradient Fill 110×32，渐变 rgba(250,127,65,0.3)→rgba(250,127,65,0) 90deg
         // 注：Figma API 对 VECTOR 类型仅返回 bounding box，未返回具体折线路径点坐标，故折线形状为示意性还原
-        return `<svg viewBox="0 0 110 40" width="110" height="40" preserveAspectRatio="none">` +
+        // 问题G：新增 Dashed Line（虚线基准线，颜色 rgba(229,116,60,1)，strokeDashes=[2.62,1.31]），
+        // Figma API 未给出它与折线的精确对齐关系，按视觉合理性放在折线中段附近(y=16)
+        // 容器高度从52改为44（CHART_AREA_RECT.trend.height），viewBox保持原比例，用 height 属性拉伸至容器实际高度
+        return `<svg viewBox="0 0 110 40" width="110" height="44" preserveAspectRatio="none">` +
           `<defs><linearGradient id="tplTrendGrad" x1="0" y1="0" x2="0" y2="1">` +
           `<stop offset="0%" stop-color="rgba(250,127,65,0.3)"/>` +
           `<stop offset="85.7%" stop-color="rgba(250,127,65,0)"/>` +
           `</linearGradient></defs>` +
           `<path d="M0,28 L18,22 L36,26 L55,14 L73,18 L92,6 L110,8 L110,40 L0,40 Z" fill="url(#tplTrendGrad)"/>` +
           `<path d="M0,28 L18,22 L36,26 L55,14 L73,18 L92,6 L110,8" fill="none" stroke="${color}" stroke-width="1.4"/>` +
+          `<line x1="0" y1="16" x2="110" y2="16" stroke="rgba(229,116,60,1)" stroke-width="0.87" stroke-dasharray="2.62,1.31"/>` +
           `</svg>`;
       }
       if (chartType === 'bar') {
         // Figma规范：Step Count 绘图区 110×48，12根胶囊柱 w5 cornerRadius999，x/h 精确取自 API 数据
+        // 问题E：每根前景柱背后先画一根同x位置、固定48px满高、黑0.4透明度的轨道柱
         const heights = [17,10,23,17,11,23,31,27,21,31,24,11];
         const xs = [0,9.55,19.09,28.64,38.18,47.73,57.27,66.82,76.36,85.91,95.45,105];
+        const tracks = xs.map(x => `<rect x="${x.toFixed(2)}" y="0" width="5" height="48" rx="2.5" fill="rgba(0,0,0,0.4)"/>`).join('');
         const bars = xs.map((x,i) => {
           const h = heights[i];
           const y = 48 - h;
           return `<rect x="${x.toFixed(2)}" y="${y}" width="5" height="${h}" rx="2.5" fill="${color}"/>`;
         }).join('');
-        return `<svg viewBox="0 0 110 48" width="110" height="48">${bars}</svg>`;
+        return `<svg viewBox="0 0 110 48" width="110" height="48">${tracks}${bars}</svg>`;
       }
       if (chartType === 'denseBar') {
         // Figma规范：Weather 密集柱状图 29 根 w2 cornerRadius5，x/y/h 精确取自 API 数据(1:456-1:484)，
-        // 渐变 rgba(255,49,134,1)→rgba(255,49,49,1) 90deg
+        // 渐变 rgba(255,49,134,1)→rgba(255,49,49,1) 90deg；容器高度改为40（CHART_AREA_RECT.denseBar.height）
         const bars29 = [
           [0,14,2],[4,14,2],[8,14,2],[12,13,3],[16,8,8],[20,9.6,6.4],[24,10.73,5.27],[28,10.73,5.27],
           [32,8,8],[36,6.4,9.6],[40,8,8],[44,6.4,9.6],[48,0,16],[52,0,16],[56,1.6,14.4],[60,4.8,11.2],
@@ -4991,7 +5069,7 @@
           [92,2.82,13.18],[96,8.09,7.91],[100,13,3],[104,14,2],[108,14,2],[112,10.73,5.27]
         ];
         const bars = bars29.map(([x,y,h]) => `<rect x="${x}" y="${y}" width="2" height="${h}" rx="1" fill="url(#tplDenseGrad)"/>`).join('');
-        return `<svg viewBox="0 0 116 16" width="110" height="36" preserveAspectRatio="none">` +
+        return `<svg viewBox="0 0 116 16" width="110" height="40" preserveAspectRatio="none">` +
           `<defs><linearGradient id="tplDenseGrad" x1="0" y1="0" x2="0" y2="1">` +
           `<stop offset="0%" stop-color="rgba(255,49,134,1)"/>` +
           `<stop offset="100%" stop-color="rgba(255,49,49,1)"/>` +
@@ -5008,6 +5086,7 @@
       if (chartType === 'timeline') {
         // Figma规范：Food Delievery 底轨110×6黑0.2透明度，进度渐变 rgba(86,167,255,1)→rgba(0,121,254,1)，
         // 3个14×14圆点节点：起点(x0)蓝色已达、中点(x48)蓝色已达、终点(x96)灰色rgba(217,217,217,1)未达
+        // 问题H：三个节点内嵌小图标，Figma API 未返回矢量细节，用白色小圆点/小方块示意（不还原精确图标形状）
         return `<svg viewBox="0 0 110 14" width="110" height="14">` +
           `<defs><linearGradient id="tplTimelineGrad" x1="0" y1="0" x2="1" y2="0">` +
           `<stop offset="0%" stop-color="rgba(86,167,255,1)"/>` +
@@ -5016,8 +5095,11 @@
           `<rect x="0" y="4" width="110" height="6" rx="3" fill="rgba(0,0,0,0.2)"/>` +
           `<rect x="0" y="4" width="81" height="6" rx="3" fill="url(#tplTimelineGrad)"/>` +
           `<circle cx="7" cy="7" r="7" fill="rgba(0,121,254,1)"/>` +
+          `<rect x="3" y="4.5" width="8" height="5" rx="1.5" fill="rgba(255,255,255,0.9)"/>` +
           `<circle cx="55" cy="7" r="7" fill="rgba(0,121,254,1)"/>` +
+          `<rect x="50.5" y="4.5" width="9" height="5" rx="1.5" fill="rgba(255,255,255,0.9)"/>` +
           `<circle cx="103" cy="7" r="7" fill="rgba(217,217,217,1)"/>` +
+          `<rect x="99" y="4.5" width="8" height="5" rx="1.5" fill="rgba(255,255,255,0.9)"/>` +
           `</svg>`;
       }
       if (chartType === 'ring') {
@@ -6915,26 +6997,41 @@
 
     // chart 7种 = 每个图表类型对应一个真实使用场景(潮伟哥要求:图表不是无差别堆砌,而是先看卡片数据类型/场景是否需要图表;
     // 数值/坐标/颜色严格来自 /tmp/openclaw/figma_chart_specs.md「Bottom 图表类型 legend blocks」一节的官方场景描述文案,逐一对应)
+    // 问题B：5种卡片(trend/bar/denseBar/progress/timeline)白底叠加主题色 GRADIENT_LINEAR(90deg)，按 Figma stops 顺序换算成 CSS 180deg方向
+    // (Figma handle[0]->handle[1] 从顶部y≈0到底部y≈1，即 stop0=顶部，stop1=底部)，并用截图验证了方向符合描述
+    const CHART_BG_GRADIENT = {
+      // stops=[0:rgba(255,95,15,1)顶部, 1:rgba(255,95,15,0)底部] → 橙色从顶部深向底部淡出
+      trend: 'linear-gradient(180deg, rgba(255,95,15,1) 0%, rgba(255,95,15,0) 100%), #ffffff',
+      // stops=[0:rgba(0,121,254,1)顶部, 1:rgba(0,121,254,0)底部] → 蓝色从顶部深向底部淡出
+      bar: 'linear-gradient(180deg, rgba(0,121,254,1) 0%, rgba(0,121,254,0) 100%), #ffffff',
+      // stops=[0:rgba(255,95,15,1)顶部, 1:rgba(255,95,15,0)底部]（Weather卡本身还叠了一层天气背景图片，图片色彩API无法读取，保持现状，仅确认底层白卡渐变已叠加）
+      denseBar: 'linear-gradient(180deg, rgba(255,95,15,1) 0%, rgba(255,95,15,0) 100%), #ffffff',
+      // stops=[0:rgba(255,95,15,0)顶部, 1:rgba(255,95,15,1)底部] → 方向相反，橙色从底部浮现
+      progress: 'linear-gradient(180deg, rgba(255,95,15,0) 0%, rgba(255,95,15,1) 100%), #ffffff',
+      // stops=[0:rgba(0,121,254,0)顶部, 1:rgba(0,121,254,1)底部] → 蓝色从底部浮现
+      timeline: 'linear-gradient(180deg, rgba(0,121,254,0) 0%, rgba(0,121,254,1) 100%), #ffffff',
+    };
+
     function tplBuildChart() {
       return [
         {
-          data: { ...TPL_BASE.chart, chartType: 'trend', title: 'Stock Trend', value: '+2.8%', subtitle: 'Up Today', chartColor: 'rgba(255,95,15,1)' },
+          data: { ...TPL_BASE.chart, bg: CHART_BG_GRADIENT.trend, chartType: 'trend', title: 'Stock Trend', value: '+2.8%', subtitle: 'Up Today', chartColor: 'rgba(255,95,15,1)' },
           label: '趋势图（趋势走向：股票、汇率、票价范围）',
         },
         {
-          data: { ...TPL_BASE.chart, chartType: 'bar', title: 'Step Count', value: '2345', unit: 'steps', subtitle: '12AM-12PM', chartColor: 'rgba(0,121,254,1)' },
+          data: { ...TPL_BASE.chart, bg: CHART_BG_GRADIENT.bar, chartType: 'bar', title: 'Step Count', value: '2345', unit: 'steps', subtitle: '12AM-12PM', chartColor: 'rgba(0,121,254,1)' },
           label: '柱状图（数值对比：步数、热量消耗等）',
         },
         {
-          data: { ...TPL_BASE.chart, chartType: 'denseBar', title: 'Weather', value: '23°', subtitle: 'Next 1h Rain', chartColor: 'rgba(255,49,134,1)' },
+          data: { ...TPL_BASE.chart, bg: CHART_BG_GRADIENT.denseBar, chartType: 'denseBar', title: 'Weather', value: '23°', subtitle: 'Next 1h Rain', chartColor: 'rgba(255,49,134,1)' },
           label: '密集柱状图（密集数值趋势：降雨）',
         },
         {
-          data: { ...TPL_BASE.chart, chartType: 'progress', title: 'Data Left', value: '20', unit: 'hrs', subtitle: 'Daily 1GB', chartColor: 'rgba(255,95,15,1)', chartRatio: 0.145454545 },
+          data: { ...TPL_BASE.chart, bg: CHART_BG_GRADIENT.progress, chartType: 'progress', title: 'Data Left', value: '20', unit: 'hrs', subtitle: 'Daily 1GB', chartColor: 'rgba(255,95,15,1)', chartRatio: 0.145454545 },
           label: '进度条（剩余进度类：流量、话费剩余）',
         },
         {
-          data: { ...TPL_BASE.chart, chartType: 'timeline', title: 'Food Delievery', value: '14:59', subtitle: 'Arrival Time', chartColor: 'rgba(0,121,254,1)' },
+          data: { ...TPL_BASE.chart, bg: CHART_BG_GRADIENT.timeline, chartType: 'timeline', title: 'Food Delievery', value: '14:59', subtitle: 'Arrival Time', chartColor: 'rgba(0,121,254,1)' },
           label: '时间轴（节点进度类：外卖/快递送达、打车）',
         },
         {
