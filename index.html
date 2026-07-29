@@ -513,6 +513,13 @@
     .toast.success { border-color: rgba(78,204,163,0.4); color: #3ab08a; }
     .toast.error { border-color: rgba(239,68,68,0.4); color: #ef4444; }
 
+    /* Gate: hide main content until authenticated */
+    body:not(.authed) .hero,
+    body:not(.authed) .grid {
+      display: none;
+    }
+    .modal-backdrop.gate-mode .modal-close { display: none; }
+
     @media (max-width: 680px) {
       .card.featured { grid-column: span 1; flex-direction: column; }
       .card.featured .card-preview { width: 100%; }
@@ -691,16 +698,24 @@
 
   <script>
     // ── Auth state ──────────────────────────────────────────────
-    const SESSION_KEY = 'tosdesign_session';
-
+    // 统一全站登录状态：localStorage + tos_token / tos_name
+    // （与 desktop-card / global-search / prd-to-design 保持一致，不再使用 sessionStorage）
     function getSession() {
-      try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); }
-      catch { return null; }
+      const token = localStorage.getItem('tos_token');
+      const name = localStorage.getItem('tos_name');
+      if (!token || !name) return null;
+      return { token, name };
     }
 
-    function saveSession(u) { sessionStorage.setItem(SESSION_KEY, JSON.stringify(u)); }
+    function saveSession(u) {
+      localStorage.setItem('tos_token', u.token);
+      localStorage.setItem('tos_name', u.name);
+    }
 
-    function clearSession() { sessionStorage.removeItem(SESSION_KEY); }
+    function clearSession() {
+      localStorage.removeItem('tos_token');
+      localStorage.removeItem('tos_name');
+    }
 
     // ── UI helpers ──────────────────────────────────────────────
     let pendingTarget = null;
@@ -712,12 +727,24 @@
       if (user) {
         guest.style.display = 'none';
         userEl.style.display = 'flex';
-        document.getElementById('user-name-text').textContent = user.name || user.email.split('@')[0];
-        document.getElementById('user-avatar-text').textContent =
-          (user.name || user.email)[0].toUpperCase();
+        document.getElementById('user-name-text').textContent = user.name;
+        document.getElementById('user-avatar-text').textContent = user.name[0].toUpperCase();
       } else {
         guest.style.display = 'flex';
         userEl.style.display = 'none';
+      }
+    }
+
+    // 页面级登录门禁：未登录时，先盖登录墙，不显示主内容
+    function requireAuthGate() {
+      if (getSession()) {
+        document.body.classList.add('authed');
+        document.getElementById('auth-modal').classList.remove('open', 'gate-mode');
+      } else {
+        document.body.classList.remove('authed');
+        const modal = document.getElementById('auth-modal');
+        modal.classList.add('open', 'gate-mode');
+        switchView('login');
       }
     }
 
@@ -732,6 +759,8 @@
     }
 
     function closeModal() {
+      // 门禁模式下（未登录）禁止关闭登录墙
+      if (document.getElementById('auth-modal').classList.contains('gate-mode') && !getSession()) return;
       document.getElementById('auth-modal').classList.remove('open');
       clearErrors();
     }
@@ -772,8 +801,10 @@
         const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
         const data = await res.json();
         if (!data.ok) { errEl.textContent = data.error; return; }
-        saveSession({ email: data.user.email, name: data.user.name, token: data.token });
+        saveSession({ name: data.user.name, token: data.token });
+        document.getElementById('auth-modal').classList.remove('gate-mode');
         closeModal(); updateNavUI();
+        document.body.classList.add('authed');
         showToast('✓ 欢迎回来，' + data.user.name, 'success');
         if (pendingTarget) { const t = pendingTarget; pendingTarget = null; setTimeout(() => { window.location.href = t; }, 400); }
       } catch { errEl.textContent = '网络错误，请重试'; }
@@ -804,9 +835,11 @@
       clearSession();
       updateNavUI();
       showToast('已退出登录');
+      requireAuthGate();
     }
 
     // ── Card actions ──────────────────────────────────────────────
+    // 已登录后卡片直接可点，无需再次登录检查（全站单一登录状态）
     function requireAuth(e, target) {
       e.preventDefault();
       if (getSession()) {
@@ -830,6 +863,7 @@
 
     // ── Init ──────────────────────────────────────────────────
     updateNavUI();
+    requireAuthGate();
   </script>
 
 </body>

@@ -580,11 +580,13 @@
 
 <script>
 // ─── AUTH ───
-const TOKEN_SECRET = 'tosdes…2024';
+// 统一全站登录：真实调用服务端 /api/login，与 desktop-card / 根目录首页保持一致的 tos_token / tos_name 存储键名
+const TOKEN_SECRET = 'tosdesign-secret-2024';
 const API_BASE = '/api';
 let authToken = localStorage.getItem('tos_token') || null;
-let currentUser = JSON.parse(localStorage.getItem('tos_user') || 'null');
+let currentUser = authToken ? { name: localStorage.getItem('tos_name') || '' } : null;
 
+// 本地 HMAC 签名校验（与服务端 functions/api/login.js 的 makeToken 密钥一致，可验真服务端签发的 token）
 async function verifyTokenLocal(token) {
   if (!token) return false;
   const parts = token.split('.');
@@ -599,20 +601,15 @@ async function verifyTokenLocal(token) {
   } catch { return false; }
 }
 
-async function makeToken(payload) {
-  const enc = new TextEncoder();
-  const key = await crypto.subtle.importKey('raw', enc.encode(TOKEN_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(payload));
-  return payload + '.' + Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
 async function checkAuth() {
   if (authToken && await verifyTokenLocal(authToken)) {
     document.getElementById('loginOverlay').classList.add('hidden');
+    currentUser = { name: localStorage.getItem('tos_name') || '' };
     updateUserUI();
   } else {
     authToken = null; currentUser = null;
-    localStorage.removeItem('tos_token'); localStorage.removeItem('tos_user');
+    localStorage.removeItem('tos_token'); localStorage.removeItem('tos_name');
+    document.getElementById('loginOverlay').classList.remove('hidden');
   }
 }
 
@@ -620,17 +617,21 @@ async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const pwd = document.getElementById('loginPassword').value;
   const err = document.getElementById('loginErr');
+  err.textContent = '';
   if (!email || !pwd) { err.textContent = '请填写邮箱和密码'; return; }
-  const users = JSON.parse(localStorage.getItem('tos_users') || '{}');
-  if (!users[email]) { err.textContent = '账号不存在，请先注册'; return; }
-  if (users[email].pwd !== btoa(pwd)) { err.textContent = '密码错误'; return; }
-  const payload = JSON.stringify({ email, name: users[email].name, exp: Date.now() + 7 * 86400000 });
-  const token = await makeToken(btoa(payload));
-  authToken = token; currentUser = { email, name: users[email].name };
-  localStorage.setItem('tos_token', token);
-  localStorage.setItem('tos_user', JSON.stringify(currentUser));
-  document.getElementById('loginOverlay').classList.add('hidden');
-  updateUserUI();
+  const btn = document.querySelector('#loginForm .login-btn');
+  if (btn) { btn.textContent = '登录中...'; btn.disabled = true; }
+  try {
+    const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password: pwd }) });
+    const data = await res.json();
+    if (!data.ok) { err.textContent = data.error || '登录失败'; return; }
+    authToken = data.token; currentUser = { name: data.user.name };
+    localStorage.setItem('tos_token', data.token);
+    localStorage.setItem('tos_name', data.user.name);
+    document.getElementById('loginOverlay').classList.add('hidden');
+    updateUserUI();
+  } catch (e) { err.textContent = '网络错误，请重试'; }
+  finally { if (btn) { btn.textContent = '登录'; btn.disabled = false; } }
 }
 
 async function doRegister() {
@@ -638,26 +639,27 @@ async function doRegister() {
   const email = document.getElementById('regEmail').value.trim();
   const pwd = document.getElementById('regPassword').value;
   const err = document.getElementById('registerErr');
+  err.textContent = '';
   if (!name || !email || !pwd) { err.textContent = '请填写所有字段'; return; }
   if (pwd.length < 6) { err.textContent = '密码至少6位'; return; }
-  const users = JSON.parse(localStorage.getItem('tos_users') || '{}');
-  if (users[email]) { err.textContent = '邮箱已注册'; return; }
-  users[email] = { name, pwd: btoa(pwd) };
-  localStorage.setItem('tos_users', JSON.stringify(users));
-  const payload = JSON.stringify({ email, name, exp: Date.now() + 7 * 86400000 });
-  const token = await makeToken(btoa(payload));
-  authToken = token; currentUser = { email, name };
-  localStorage.setItem('tos_token', token);
-  localStorage.setItem('tos_user', JSON.stringify(currentUser));
-  document.getElementById('loginOverlay').classList.add('hidden');
-  updateUserUI();
+  const btn = document.querySelector('#registerForm .login-btn');
+  if (btn) { btn.textContent = '提交中...'; btn.disabled = true; }
+  try {
+    const res = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, password: pwd }) });
+    const data = await res.json();
+    if (!data.ok) { err.textContent = data.error || '注册失败'; return; }
+    err.style.color = '#01CB65';
+    err.textContent = '注册成功！等待管理员审批后可登录';
+  } catch (e) { err.textContent = '网络错误，请重试'; }
+  finally { if (btn) { btn.textContent = '注册'; btn.disabled = false; } }
 }
 
 function doLogout() {
   authToken = null; currentUser = null;
-  localStorage.removeItem('tos_token'); localStorage.removeItem('tos_user');
+  localStorage.removeItem('tos_token'); localStorage.removeItem('tos_name');
   document.getElementById('loginOverlay').classList.remove('hidden');
   document.getElementById('sidebarLogout').style.display = 'none';
+  showLogin();
 }
 
 function showRegister() {
@@ -671,9 +673,9 @@ function showLogin() {
 
 function updateUserUI() {
   if (!currentUser) return;
-  const initial = (currentUser.name || currentUser.email || 'U')[0].toUpperCase();
+  const initial = (currentUser.name || 'U')[0].toUpperCase();
   document.getElementById('sidebarAvatar').textContent = initial;
-  document.getElementById('sidebarUsername').textContent = currentUser.name || currentUser.email;
+  document.getElementById('sidebarUsername').textContent = currentUser.name;
   document.getElementById('sidebarLogout').style.display = 'inline';
 }
 
