@@ -3265,13 +3265,13 @@
 
     /* ─── TERNARY PANEL (新建创作 欢迎页三元图) ─── */
     #ternary-panel {
-      width:100%;max-width:900px;
-      background:rgba(255,255,255,0.82);
-      border:1px solid rgba(0,0,0,0.07);
-      border-radius:20px;
-      box-shadow:0 4px 24px rgba(0,0,0,0.07),inset 0 1px 0 rgba(255,255,255,0.95);
+      width:100%;max-width:680px;
+      background:rgba(255,255,255,0.92);
+      border:1px solid rgba(0,0,0,0.06);
+      border-radius:28px;
+      box-shadow:0 2px 24px rgba(0,0,0,0.07),inset 0 1px 0 rgba(255,255,255,0.95);
       padding:16px 20px 14px;
-      margin-bottom:4px;
+      margin-top:10px;
     }
     #ternary-panel .tp-header {
       display:flex;align-items:start;justify-content:space-between;gap:12px;margin-bottom:12px;
@@ -3283,9 +3283,7 @@
       letter-spacing:.1em;text-transform:uppercase;color:var(--muted2);white-space:nowrap;padding-top:2px;
     }
     #ternary-panel .tp-stage {
-      display:grid;
-      grid-template-columns:minmax(86px,.5fr) minmax(200px,1fr) 434px;
-      gap:16px;align-items:center;
+      display:flex;flex-direction:column;gap:12px;
     }
     #ternary-panel .tp-metrics {
       height:min(320px,100%);display:flex;flex-direction:column;justify-content:space-between;
@@ -3449,40 +3447,28 @@
       background:#7C5CFC;border-color:#7C5CFC;color:#fff;
     }
     @keyframes tp-pulse { to { transform:scale(.65);opacity:.4; } }
-    /* Ternary panel responsive */
-    @media(max-width:900px) {
-      #ternary-panel .tp-stage { grid-template-columns:80px minmax(180px,1fr) 3fr;gap:10px; }
-      #ternary-panel .tp-card-previews { width:auto;grid-template-columns:repeat(3,1fr);gap:8px; }
-      .suggestion-card { width:100%;height:auto;aspect-ratio:1; }
+    /* Ternary panel responsive (single-column stack fits inside the 680px input-box width) */
+    #ternary-panel .tp-metrics { flex-direction:row;height:auto;gap:6px;width:100%; }
+    #ternary-panel .tp-metric,#ternary-panel .tp-metric:last-child {
+      flex:1;padding:7px 8px 6px;border:1px solid rgba(0,0,0,0.07);
+      border-radius:10px;min-width:0;
     }
+    #ternary-panel .tp-metric p { display:none; }
+    #ternary-panel .tp-metric strong { font-size:clamp(16px,3.2vw,22px); }
+    #ternary-panel .tp-controller { min-height:190px;height:210px; }
+    #ternary { overflow:hidden; }
+    #ternary-panel .tp-card-previews { width:100%;grid-template-columns:repeat(3,1fr);gap:8px; }
+    .suggestion-card { width:100%;height:auto;aspect-ratio:1; }
     @media(max-width:680px) {
-      #ternary-panel { padding:12px 14px 10px;overflow:hidden; }
+      #ternary-panel { padding:12px 14px 10px;overflow:hidden;border-radius:22px; }
       #ternary-panel .tp-header { margin-bottom:10px; }
       #ternary-panel .tp-stamp { display:none; }
-      #ternary-panel .tp-stage { display:flex;flex-direction:column;gap:12px; }
-      #ternary-panel .tp-metrics { flex-direction:row;height:auto;gap:6px; }
-      #ternary-panel .tp-metric,#ternary-panel .tp-metric:last-child {
-        flex:1;padding:7px 8px 6px;border:1px solid rgba(0,0,0,0.07);
-        border-radius:10px;min-width:0;
-      }
-      #ternary-panel .tp-metric p { display:none; }
-      #ternary-panel .tp-metric strong { font-size:clamp(14px,3.5vw,22px); }
       #ternary-panel .tp-controller { min-height:160px;height:180px; }
-      #ternary #ternary { overflow:hidden; }
-      #ternary-panel .tp-card-previews { width:138px;grid-template-columns:138px;justify-content:center;margin:0 auto;padding:4px 0; }
-      .suggestion-card { width:138px!important;height:138px!important;aspect-ratio:auto; }
+      #ternary-panel .tp-metric { padding:6px 6px 5px; }
+      #ternary-panel .tp-metric-head { font-size:7px;letter-spacing:.02em;gap:3px;white-space:nowrap; }
+      #ternary-panel .tp-metric strong { font-size:clamp(13px,4vw,17px); }
       #ternary-panel .tp-footer { flex-wrap:wrap;gap:8px; }
       #ternary-panel .tp-cache { white-space:normal;line-height:1.4; }
-      .welcome-ternary-label { margin:12px 0 8px; }
-    }
-    /* section divider before ternary panel */
-    .welcome-ternary-label {
-      width:100%;max-width:900px;
-      display:flex;align-items:center;gap:12px;
-      margin:16px 0 10px;font-size:11px;color:var(--muted2);
-    }
-    .welcome-ternary-label::before,.welcome-ternary-label::after {
-      content:"";flex:1;height:1px;background:rgba(0,0,0,0.08);
     }
   </style>
 </head>
@@ -3675,8 +3661,7 @@
       <input type="file" id="welcomeFileInput" accept=".pdf,.doc,.docx,.txt,.md" style="display:none" onchange="handleWelcomeFileSelect(this)" />
       <div id="welcomeUploadChipArea"></div>
 
-      <!-- TERNARY PANEL: 卡片风格三轴权重可视化 -->
-      <div class="welcome-ternary-label">预览你的卡片风格倾向</div>
+      <!-- TERNARY PANEL: 卡片风格三轴权重可视化，视觉上作为输入区的延伸 -->
       <div id="ternary-panel">
         <div class="tp-header">
           <div>
