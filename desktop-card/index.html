@@ -1335,12 +1335,12 @@
       position: absolute; inset: 0;
       display: flex; flex-direction: column;
       align-items: center; justify-content: flex-start;
-      z-index: 25; padding: 2rem 2rem 4rem;
+      z-index: 25; padding: 1.75rem 2rem 1.25rem;
       background:
         radial-gradient(ellipse 65% 55% at 92% 5%, rgba(230,210,205,0.70), transparent),
         radial-gradient(ellipse 70% 65% at 5% 100%, rgba(205,225,195,0.65), transparent),
         #eeecf1;
-      padding-top: clamp(2rem, 12vh, 5rem);
+      padding-top: clamp(1.75rem, 4vh, 2.25rem);
       overflow-y: auto;
       overflow-x: hidden;
       gap: 0;
@@ -1350,14 +1350,14 @@
     #welcomeState.hidden { display: none; }
     .welcome-title {
       font-size: 40px; font-weight: 300; color: #1a1a1a;
-      letter-spacing: -0.02em; margin-bottom: 28px; text-align: center;
+      letter-spacing: -0.02em; margin-bottom: 18px; text-align: center;
     }
     .welcome-sub { display: none; }
     .welcome-input-box {
       width: 100%; max-width: 680px;
       background: rgba(255,255,255,0.92); border: 1px solid rgba(0,0,0,0.06);
-      border-radius: 999px; padding: 10px 10px 10px 26px;
-      height: 64px;
+      border-radius: 999px; padding: 8px 8px 8px 24px;
+      height: 56px;
       display: flex; flex-direction: row; align-items: center; gap: 0;
       box-shadow: 0 2px 24px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,0.95);
       transition: border-color 0.25s, box-shadow 0.25s;
@@ -1369,7 +1369,7 @@
     .welcome-textarea {
       flex: 1; background: transparent; border: none; outline: none;
       color: var(--text); font-size: 0.95rem; resize: none;
-      height: 40px; max-height: 40px; font-family: inherit; line-height: 40px; padding: 0;
+      height: 36px; max-height: 36px; font-family: inherit; line-height: 36px; padding: 0;
       overflow: hidden;
     }
     .welcome-textarea::placeholder { color: #b8b8c0; }
@@ -1377,7 +1377,7 @@
     .welcome-input-hint { font-size: 0.72rem; color: var(--muted2); }
     .welcome-send-btn {
       display: flex; align-items: center; gap: 0.4rem;
-      padding: 0 22px; border-radius: 999px; height: 40px;
+      padding: 0 22px; border-radius: 999px; height: 36px;
       background: linear-gradient(180deg, #fff 0%, #f5f5f7 100%);
       border: 1px solid rgba(0,0,0,0.07); color: #333;
       font-size: 14px; font-weight: 500;
@@ -1387,7 +1387,7 @@
     }
     .welcome-send-btn:hover { background: linear-gradient(180deg, #fafafa 0%, #f0f0f2 100%); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
     .welcome-powered {
-      font-size: 13px; color: #999; text-align: center; margin-top: 20px;
+      font-size: 13px; color: #999; text-align: center; margin-top: 8px;
     }
     .welcome-blank {
       font-size: 14px; color: #888; text-align: center; margin-top: 24px;
@@ -1399,7 +1399,7 @@
     .welcome-blank a:hover { color: #222; }
     .welcome-quick-actions {
       display: flex; align-items: center; justify-content: center;
-      gap: 10px; margin-top: 16px;
+      gap: 10px; margin-top: 10px;
     }
     .welcome-quick-btn {
       display: flex; align-items: center; gap: 6px;
@@ -3270,12 +3270,12 @@
       border:1px solid rgba(0,0,0,0.06);
       border-radius:28px;
       box-shadow:0 2px 24px rgba(0,0,0,0.07),inset 0 1px 0 rgba(255,255,255,0.95);
-      padding:16px 20px 14px;
-      margin-top:10px;
+      padding:14px 20px 12px;
+      margin-top:8px;
       flex-shrink:0;
     }
     #ternary-panel .tp-header {
-      display:flex;align-items:start;justify-content:space-between;gap:12px;margin-bottom:12px;
+      display:flex;align-items:start;justify-content:space-between;gap:12px;margin-bottom:8px;
     }
     #ternary-panel .tp-title { font-size:12.5px;font-weight:600;color:var(--text);letter-spacing:-0.02em; }
     #ternary-panel .tp-sub { font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.4; }
@@ -3284,7 +3284,7 @@
       letter-spacing:.1em;text-transform:uppercase;color:var(--muted2);white-space:nowrap;padding-top:2px;
     }
     #ternary-panel .tp-stage {
-      display:flex;flex-direction:column;gap:12px;
+      display:flex;flex-direction:column;gap:8px;
     }
     #ternary-panel .tp-metrics {
       height:min(320px,100%);display:flex;flex-direction:column;justify-content:space-between;
@@ -3311,7 +3311,7 @@
     }
     #ternary-panel .tp-metric p { margin:0;color:var(--muted);font-size:9px;line-height:1.3; }
     #ternary-panel .tp-controller {
-      height:100%;min-height:260px;
+      height:100%;min-height:165px;
       display:flex;align-items:center;justify-content:center;position:relative;
     }
     #ternary-panel .tp-controller::before {
@@ -3331,11 +3331,11 @@
     #ternary .tp-node { fill:#7C5CFC;stroke:#fff;stroke-width:1.8; }
     #ternary .tp-particles { pointer-events:none; }
     #ternary-panel .tp-card-previews {
-      width:434px;display:grid;grid-template-columns:repeat(3,138px);gap:10px;align-items:center;
+      width:586px;display:grid;grid-template-columns:repeat(3,188px);gap:11px;align-items:center;justify-content:center;
     }
     /* Suggestion cards */
     .suggestion-card {
-      position:relative;width:138px;height:138px;overflow:hidden;border-radius:20px;
+      position:relative;width:188px;height:188px;overflow:hidden;border-radius:22px;
       background:#fff;border:1px solid rgba(23,23,23,0.2);
       box-shadow:0 8px 22px rgba(31,31,28,0.14);
       font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;
@@ -3399,24 +3399,24 @@
     .card-background.story-art .art-shape { display:none; }
     .card-background.art-focus-strong:before { background:none; }
     .art-focus-hero:after { content:"";position:absolute;inset:0 0 auto;height:47px;background:linear-gradient(rgba(72,17,31,.36),transparent);pointer-events:none; }
-    .story-svg { position:absolute;inset:0;width:138px;height:138px;overflow:visible; }
+    .story-svg { position:absolute;inset:0;width:100%;height:100%;overflow:visible; }
     .story-svg .stroke { fill:none;stroke-linecap:round;stroke-linejoin:round; }
     .story-svg .scene-line { fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:2.5; }
     .story-svg .rim { fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:2; }
     /* Suggestion card copy layers */
     .card-copy { position:absolute;inset:0;z-index:1; }
-    .card-title,.card-header,.card-label,.card-data,.card-support { position:absolute;left:14px;width:110px;overflow:hidden;text-overflow:ellipsis; }
-    .card-title { color:rgba(0,0,0,.9);font-size:16px;font-weight:600;line-height:23px;letter-spacing:-.04em; }
-    .card-header { height:14px;color:rgba(0,0,0,.9);font-size:12px;font-weight:500;line-height:14px;white-space:nowrap; }
-    .card-label { height:24px;color:rgba(0,0,0,.9);font-size:20px;font-weight:600;line-height:24px;letter-spacing:-.05em;white-space:nowrap; }
-    .card-data { height:48px;color:rgba(0,0,0,.9);font-size:40px;font-weight:500;line-height:48px;letter-spacing:-.08em;font-variant-numeric:tabular-nums; }
-    .card-support { color:rgba(0,0,0,.84);font-size:11.5px;font-weight:650;line-height:14px;white-space:nowrap;letter-spacing:-.015em;text-shadow:0 1px 0 rgba(255,255,255,.25); }
-    .suggestion-card .action { position:absolute;left:14px;height:30px;border:0;background:transparent;color:rgba(0,0,0,.9);font:650 12.5px/15px -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;cursor:pointer; }
-    .suggestion-card .action.link { height:14px;padding:0; }
+    .card-title,.card-header,.card-label,.card-data,.card-support { position:absolute;left:19px;width:150px;overflow:hidden;text-overflow:ellipsis; }
+    .card-title { color:rgba(0,0,0,.9);font-size:22px;font-weight:600;line-height:31px;letter-spacing:-.04em; }
+    .card-header { height:19px;color:rgba(0,0,0,.9);font-size:16px;font-weight:500;line-height:19px;white-space:nowrap; }
+    .card-label { height:33px;color:rgba(0,0,0,.9);font-size:27px;font-weight:600;line-height:33px;letter-spacing:-.05em;white-space:nowrap; }
+    .card-data { height:65px;color:rgba(0,0,0,.9);font-size:54px;font-weight:500;line-height:65px;letter-spacing:-.08em;font-variant-numeric:tabular-nums; }
+    .card-support { color:rgba(0,0,0,.84);font-size:16px;font-weight:650;line-height:19px;white-space:nowrap;letter-spacing:-.015em;text-shadow:0 1px 0 rgba(255,255,255,.25); }
+    .suggestion-card .action { position:absolute;left:19px;height:41px;border:0;background:transparent;color:rgba(0,0,0,.9);font:650 17px/20px -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;cursor:pointer; }
+    .suggestion-card .action.link { height:19px;padding:0; }
     .suggestion-card .action.link:after { content:"↗";margin-left:4px; }
     .suggestion-card .action.short,.suggestion-card .action.long { border-radius:999px;background:rgba(0,0,0,.08); }
-    .suggestion-card .action.short { width:74px; }
-    .suggestion-card .action.long { width:110px; }
+    .suggestion-card .action.short { width:101px; }
+    .suggestion-card .action.long { width:150px; }
     .suggestion-card .action.short:after,.suggestion-card .action.long:after { content:"";display:inline-block;width:5px;height:5px;margin:0 0 1px 6px;border-top:1px solid currentColor;border-right:1px solid currentColor;transform:rotate(45deg); }
     .suggestion-card[data-ink="light"] .card-title,.suggestion-card[data-ink="light"] .card-header,.suggestion-card[data-ink="light"] .card-label,.suggestion-card[data-ink="light"] .card-data,.suggestion-card[data-ink="light"] .action { color:rgba(255,255,255,.96); }
     .suggestion-card[data-ink="light"] .card-support { color:rgba(255,255,255,.98);font-weight:700; }
@@ -3424,7 +3424,7 @@
     .suggestion-card[data-ink="light"] .action.short,.suggestion-card[data-ink="light"] .action.long { background:rgba(255,255,255,.17); }
     /* Ternary panel footer */
     #ternary-panel .tp-footer {
-      border-top:1px solid rgba(0,0,0,0.07);padding-top:10px;margin-top:12px;
+      border-top:1px solid rgba(0,0,0,0.07);padding-top:7px;margin-top:8px;
       display:flex;align-items:center;gap:10px;flex-wrap:wrap;
     }
     #ternary-panel .tp-state { flex:1;color:var(--muted);font-size:10px;line-height:1.5;min-width:0; }
@@ -3456,9 +3456,9 @@
     }
     #ternary-panel .tp-metric p { display:none; }
     #ternary-panel .tp-metric strong { font-size:clamp(16px,3.2vw,22px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
-    #ternary-panel .tp-controller { min-height:190px;height:210px; }
+    #ternary-panel .tp-controller { min-height:165px;height:165px; }
     #ternary { overflow:hidden; }
-    #ternary-panel .tp-card-previews { width:100%;grid-template-columns:repeat(3,1fr);gap:8px; }
+    #ternary-panel .tp-card-previews { width:100%;grid-template-columns:repeat(3,1fr);gap:11px;max-width:586px;margin:0 auto; }
     .suggestion-card { width:100%;height:auto;aspect-ratio:1; }
     @media(max-width:680px) {
       /* Sidebar keeps eating horizontal space on narrow phones, so #welcomeState itself
@@ -4869,7 +4869,161 @@
         deco.textContent = icon;
         wrap.appendChild(deco);
       }
+
+      if (layout === 'chart') {
+        wrap.appendChild(buildChartCardInner(data));
+      }
+
       return wrap;
+    }
+
+    // ─── 图表卡片渲染（基础模板 · 图表分区专用，独立于 single/dual/triple/big 四个分支）───
+    // 数值来源：/tmp/openclaw/figma_chart_specs.md（Figma REST API 精确解析），颜色/坐标/比例均有据可查。
+    // 文字排版遵循任务约定的统一规范：标题 12px/500，核心数值 20px/600（图表主色），副文本 10px/500 黑0.6透明度，
+    // 分别位于卡片上半区 (14,14) / (14,30) / (14,56)；图表区域位于 (14,72) 110×52（环形图表居右下 76,76 48×48）。
+    function buildChartCardInner(data) {
+      const container = document.createElement('div');
+      container.style.cssText = 'position:absolute;inset:0;';
+      const mk = (styles, text) => {
+        const el = document.createElement('div');
+        el.style.cssText = styles;
+        if (text !== undefined) el.textContent = text;
+        return el;
+      };
+      const tc = 'rgba(0,0,0,0.9)';
+      const sc = 'rgba(0,0,0,0.6)';
+      const accent = data.chartColor || tc;
+
+      // 双值对比（IOT电量）无独立标题/数值/副文本三行结构，整卡就是两个纵向堆叠的环形进度行
+      if (data.chartType === 'dualRing') {
+        container.appendChild(buildRingRow(14, data.ring1Value, data.ring1Ratio, data.chartColor));
+        container.appendChild(buildRingRow(76, data.ring2Value, data.ring2Ratio, data.chartColor));
+        return container;
+      }
+
+      container.appendChild(mk(
+        `position:absolute;left:14px;top:14px;width:110px;height:14px;` +
+        `font-size:12px;font-weight:500;color:${tc};overflow:hidden;white-space:nowrap;text-overflow:ellipsis;`,
+        data.title || ''));
+
+      const valueRow = document.createElement('div');
+      valueRow.style.cssText = 'position:absolute;left:14px;top:30px;width:110px;height:24px;display:flex;align-items:baseline;gap:2px;overflow:hidden;';
+      valueRow.appendChild(mk(`font-size:20px;font-weight:600;color:${accent};white-space:nowrap;`, data.value || ''));
+      if (data.unit) valueRow.appendChild(mk(`font-size:12px;font-weight:600;color:${accent};white-space:nowrap;`, data.unit));
+      container.appendChild(valueRow);
+
+      container.appendChild(mk(
+        `position:absolute;left:14px;top:56px;width:110px;height:12px;` +
+        `font-size:10px;font-weight:500;color:${sc};overflow:hidden;white-space:nowrap;text-overflow:ellipsis;`,
+        data.subtitle || ''));
+
+      const chartWrap = document.createElement('div');
+      if (data.chartType === 'ring') {
+        // Figma规范：Phone Battery 环形进度区固定在 (76,76) 48×48
+        chartWrap.style.cssText = 'position:absolute;left:76px;top:76px;width:48px;height:48px;';
+      } else {
+        chartWrap.style.cssText = 'position:absolute;left:14px;top:72px;width:110px;height:52px;display:flex;align-items:center;';
+      }
+      chartWrap.innerHTML = buildChartSVG(data.chartType, data.chartColor, data.chartRatio);
+      container.appendChild(chartWrap);
+      return container;
+    }
+
+    // 双值对比卡片的单个环形进度行：环48×48 居左（x=14），数值文字位于环右侧 x=14+56=70（相对卡片）
+    function buildRingRow(top, value, ratio, color) {
+      const row = document.createElement('div');
+      row.style.cssText = `position:absolute;left:14px;top:${top}px;width:110px;height:48px;`;
+      const ring = document.createElement('div');
+      ring.style.cssText = 'position:absolute;left:0;top:0;width:48px;height:48px;';
+      ring.innerHTML = buildRingSVG(color, ratio);
+      row.appendChild(ring);
+      const val = document.createElement('div');
+      val.style.cssText = 'position:absolute;left:56px;top:12px;width:54px;height:24px;font-size:20px;font-weight:600;color:rgba(0,0,0,0.9);white-space:nowrap;display:flex;align-items:center;';
+      val.textContent = value || '';
+      row.appendChild(val);
+      return row;
+    }
+
+    // 环形进度 SVG：轨道 rgba(0,0,0,0.12)，进度色按参数传入；扫描比例(ratio)直接来自 Figma arcData 精确计算值，
+    // 不做「数值%=扫描比例」的线性假设（例如 Phone Battery 显示 72% 但扫描比例实为 83.9999981%，如实还原）
+    function buildRingSVG(color, ratio) {
+      const r = 19, cx = 24, cy = 24, sw = 5;
+      const c = 2 * Math.PI * r;
+      const dash = c * (ratio == null ? 0.72 : ratio);
+      return `<svg viewBox="0 0 48 48" width="48" height="48">` +
+        `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(0,0,0,0.12)" stroke-width="${sw}"/>` +
+        `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round" ` +
+        `stroke-dasharray="${dash.toFixed(2)} ${c.toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"/>` +
+        `</svg>`;
+    }
+
+    function buildChartSVG(chartType, color, ratio) {
+      if (chartType === 'trend') {
+        // Figma规范：Stroke 110×16，Gradient Fill 110×32，渐变 rgba(250,127,65,0.3)→rgba(250,127,65,0) 90deg
+        // 注：Figma API 对 VECTOR 类型仅返回 bounding box，未返回具体折线路径点坐标，故折线形状为示意性还原
+        return `<svg viewBox="0 0 110 40" width="110" height="40" preserveAspectRatio="none">` +
+          `<defs><linearGradient id="tplTrendGrad" x1="0" y1="0" x2="0" y2="1">` +
+          `<stop offset="0%" stop-color="rgba(250,127,65,0.3)"/>` +
+          `<stop offset="85.7%" stop-color="rgba(250,127,65,0)"/>` +
+          `</linearGradient></defs>` +
+          `<path d="M0,28 L18,22 L36,26 L55,14 L73,18 L92,6 L110,8 L110,40 L0,40 Z" fill="url(#tplTrendGrad)"/>` +
+          `<path d="M0,28 L18,22 L36,26 L55,14 L73,18 L92,6 L110,8" fill="none" stroke="${color}" stroke-width="1.4"/>` +
+          `</svg>`;
+      }
+      if (chartType === 'bar') {
+        // Figma规范：Step Count 绘图区 110×48，12根胶囊柱 w5 cornerRadius999，x/h 精确取自 API 数据
+        const heights = [17,10,23,17,11,23,31,27,21,31,24,11];
+        const xs = [0,9.55,19.09,28.64,38.18,47.73,57.27,66.82,76.36,85.91,95.45,105];
+        const bars = xs.map((x,i) => {
+          const h = heights[i];
+          const y = 48 - h;
+          return `<rect x="${x.toFixed(2)}" y="${y}" width="5" height="${h}" rx="2.5" fill="${color}"/>`;
+        }).join('');
+        return `<svg viewBox="0 0 110 48" width="110" height="48">${bars}</svg>`;
+      }
+      if (chartType === 'denseBar') {
+        // Figma规范：Weather 密集柱状图 29 根 w2 cornerRadius5，x/y/h 精确取自 API 数据(1:456-1:484)，
+        // 渐变 rgba(255,49,134,1)→rgba(255,49,49,1) 90deg
+        const bars29 = [
+          [0,14,2],[4,14,2],[8,14,2],[12,13,3],[16,8,8],[20,9.6,6.4],[24,10.73,5.27],[28,10.73,5.27],
+          [32,8,8],[36,6.4,9.6],[40,8,8],[44,6.4,9.6],[48,0,16],[52,0,16],[56,1.6,14.4],[60,4.8,11.2],
+          [64,5.46,10.54],[68,8.09,7.91],[72,6.4,9.6],[76,8,8],[80,6.4,9.6],[84,6.4,9.6],[88,2.82,13.18],
+          [92,2.82,13.18],[96,8.09,7.91],[100,13,3],[104,14,2],[108,14,2],[112,10.73,5.27]
+        ];
+        const bars = bars29.map(([x,y,h]) => `<rect x="${x}" y="${y}" width="2" height="${h}" rx="1" fill="url(#tplDenseGrad)"/>`).join('');
+        return `<svg viewBox="0 0 116 16" width="110" height="36" preserveAspectRatio="none">` +
+          `<defs><linearGradient id="tplDenseGrad" x1="0" y1="0" x2="0" y2="1">` +
+          `<stop offset="0%" stop-color="rgba(255,49,134,1)"/>` +
+          `<stop offset="100%" stop-color="rgba(255,49,49,1)"/>` +
+          `</linearGradient></defs>${bars}</svg>`;
+      }
+      if (chartType === 'progress') {
+        // Figma规范：Data Left 轨道110×6 cornerRadius999 黑0.2透明度，进度色按参数传入，视觉比例14.5454545%
+        const w = 110 * (ratio == null ? 0.145454545 : ratio);
+        return `<svg viewBox="0 0 110 6" width="110" height="6">` +
+          `<rect x="0" y="0" width="110" height="6" rx="3" fill="rgba(0,0,0,0.2)"/>` +
+          `<rect x="0" y="0" width="${w.toFixed(2)}" height="6" rx="3" fill="${color}"/>` +
+          `</svg>`;
+      }
+      if (chartType === 'timeline') {
+        // Figma规范：Food Delievery 底轨110×6黑0.2透明度，进度渐变 rgba(86,167,255,1)→rgba(0,121,254,1)，
+        // 3个14×14圆点节点：起点(x0)蓝色已达、中点(x48)蓝色已达、终点(x96)灰色rgba(217,217,217,1)未达
+        return `<svg viewBox="0 0 110 14" width="110" height="14">` +
+          `<defs><linearGradient id="tplTimelineGrad" x1="0" y1="0" x2="1" y2="0">` +
+          `<stop offset="0%" stop-color="rgba(86,167,255,1)"/>` +
+          `<stop offset="100%" stop-color="rgba(0,121,254,1)"/>` +
+          `</linearGradient></defs>` +
+          `<rect x="0" y="4" width="110" height="6" rx="3" fill="rgba(0,0,0,0.2)"/>` +
+          `<rect x="0" y="4" width="81" height="6" rx="3" fill="url(#tplTimelineGrad)"/>` +
+          `<circle cx="7" cy="7" r="7" fill="rgba(0,121,254,1)"/>` +
+          `<circle cx="55" cy="7" r="7" fill="rgba(0,121,254,1)"/>` +
+          `<circle cx="103" cy="7" r="7" fill="rgba(217,217,217,1)"/>` +
+          `</svg>`;
+      }
+      if (chartType === 'ring') {
+        return buildRingSVG(color, ratio);
+      }
+      return '';
     }
 
     function applyPreset(data) {
@@ -4949,7 +5103,7 @@
 
     // Simulate skill steps while waiting for API
     // Layout labels
-    const LAYOUT_LABELS = { single: '单行标题', dual: '双行内容', triple: '三段式', big: '大数字突显' };
+    const LAYOUT_LABELS = { single: '单行标题', dual: '双行内容', triple: '三段式', big: '大数字突显', chart: '图表' };
 
     // Tone axis labels
     const AXIS_LABELS = {
@@ -6648,6 +6802,7 @@
       dual:   { layout: 'dual', title: 'Title', subtitle: 'Subtitle', bg: '#ffffff', dark: false },
       triple: { layout: 'triple', header: 'Header', value: 'Value', subtitle: 'Subtitle', bg: '#ffffff', dark: false },
       big:    { layout: 'big', header: 'Header', value: 'DATA', bg: '#ffffff', dark: false },
+      chart:  { layout: 'chart', bg: '#ffffff', dark: false },
     };
 
     function tplBuildSingle() {
@@ -6738,14 +6893,50 @@
       ];
     }
 
+    // chart 7种 = 每个图表类型对应一个真实使用场景(潮伟哥要求:图表不是无差别堆砌,而是先看卡片数据类型/场景是否需要图表;
+    // 数值/坐标/颜色严格来自 /tmp/openclaw/figma_chart_specs.md「Bottom 图表类型 legend blocks」一节的官方场景描述文案,逐一对应)
+    function tplBuildChart() {
+      return [
+        {
+          data: { ...TPL_BASE.chart, chartType: 'trend', title: 'Stock Trend', value: '+2.8%', subtitle: 'Up Today', chartColor: 'rgba(255,95,15,1)' },
+          label: '趋势图（趋势走向：股票、汇率、票价范围）',
+        },
+        {
+          data: { ...TPL_BASE.chart, chartType: 'bar', title: 'Step Count', value: '2345', unit: 'steps', subtitle: '12AM-12PM', chartColor: 'rgba(0,121,254,1)' },
+          label: '柱状图（数值对比：步数、热量消耗等）',
+        },
+        {
+          data: { ...TPL_BASE.chart, chartType: 'denseBar', title: 'Weather', value: '23°', subtitle: 'Next 1h Rain', chartColor: 'rgba(255,49,134,1)' },
+          label: '密集柱状图（密集数值趋势：降雨）',
+        },
+        {
+          data: { ...TPL_BASE.chart, chartType: 'progress', title: 'Data Left', value: '20', unit: 'hrs', subtitle: 'Daily 1GB', chartColor: 'rgba(255,95,15,1)', chartRatio: 0.145454545 },
+          label: '进度条（剩余进度类：流量、话费剩余）',
+        },
+        {
+          data: { ...TPL_BASE.chart, chartType: 'timeline', title: 'Food Delievery', value: '14:59', subtitle: 'Arrival Time', chartColor: 'rgba(0,121,254,1)' },
+          label: '时间轴（节点进度类：外卖/快递送达、打车）',
+        },
+        {
+          data: { ...TPL_BASE.chart, chartType: 'ring', title: 'Phone Battery', value: '72', unit: '%', chartColor: 'rgba(77,198,96,1)', chartRatio: 0.839999981 },
+          label: '环形进度（单对象：设备电量、容量剩余）',
+        },
+        {
+          data: { ...TPL_BASE.chart, chartType: 'dualRing', ring1Value: '80%', ring1Ratio: 0.839999981, ring2Value: '60%', ring2Ratio: 0.639999977, chartColor: 'rgba(77,198,96,1)' },
+          label: '双值对比（双对象：设备电量、容量剩余）',
+        },
+      ];
+    }
+
     const TEMPLATE_VARIANTS = {
       single: tplBuildSingle(),
       dual: tplBuildDual(),
       triple: tplBuildTriple(),
       big: tplBuildBig(),
+      chart: tplBuildChart(),
     };
-    const TEMPLATE_TAB_LABELS = { single: '单文本', dual: '双文本', triple: '三文本', big: '大字体' };
-    const TEMPLATE_TAB_PREFIX = { single: 'S', dual: 'D', triple: 'T', big: 'B' };
+    const TEMPLATE_TAB_LABELS = { single: '单文本', dual: '双文本', triple: '三文本', big: '大字体', chart: '图表' };
+    const TEMPLATE_TAB_PREFIX = { single: 'S', dual: 'D', triple: 'T', big: 'B', chart: 'C' };
 
     let templatesInited = false;
 
@@ -7914,8 +8105,8 @@
     function affordance(){return w[2]<.18?'none':w[2]<.42?'link':w[2]<.7?'short':'long'}
     function label(){const i=w.indexOf(Math.max(...w));return w[i]<.45?['平衡态','三种力量彼此让位，适合需要兼顾理解、感受与行动的卡片。']:i===0?['视觉优先','先建立情绪与焦点，让插画资产承担第一眼吸引。']:i===1?['信息优先','先让用户读懂重点，文本结构自动升级为更显著的状态。']:['行动优先','先消除犹豫，让下一步以正确的操作力度出现。']}
     const content={focus:{title:'插画焦点',label:'晨间灵感',data:'68',support:'一个画面，打开灵感',action:'去看看',asset:'focus'},status:{title:'即时状态',label:'状态稳定',data:'86',support:'同步已完成',action:'查看详情',asset:'status'},step:{title:'下一步',label:'整理桌面',data:'1',support:'剩 1 个待处理项',action:'继续整理',asset:'step'}};
-    function actionHTML(kind,text,form){if(kind==='none')return '';const top=kind==='link'?(form==='single'?106:form==='double'?78:form==='triple'?76:82):94;return `<button class="action ${kind}" style="top:${top}px" type="button">${text}</button>`}
-    function cardHTML(item,form,act,id){let copy='';const canUseBottom=act==='none';if(form==='single'){const bottom=canUseBottom&&(id==='focus'||id==='step');copy=`<div class="card-title" style="top:${bottom?105:14}px">${item.title}</div>`}else if(form==='double'){const bottom=canUseBottom&&id==='step',y=bottom?68:14,support=id==='step'?'待处理':item.support;copy=`<div class="card-title" style="top:${y}px">${item.title}</div><div class="card-support" style="top:${y+25}px">${support}</div>`}else if(form==='triple'){const bottom=canUseBottom&&id==='focus',y=bottom?70:14;copy=`<div class="card-header" style="top:${y}px">${item.title}</div><div class="card-label" style="top:${y+16}px">${item.label}</div><div class="card-support" style="top:${y+42}px">${item.support}</div>`}else{if(canUseBottom&&id==='focus'){copy=`<div class="card-data" style="top:62px">${item.data}</div><div class="card-header" style="top:110px">${item.title}</div>`}else{copy=`<div class="card-header" style="top:14px">${item.title}</div><div class="card-data" style="top:28px">${item.data}</div>${act==='none'?`<div class="card-support" style="top:98px">${item.support}</div><div class="card-support" style="top:112px">立即可读</div>`:''}`}}return `<div class="card-copy">${copy}${actionHTML(act,item.action,form)}</div>`}
+    function actionHTML(kind,text,form){if(kind==='none')return '';const top=kind==='link'?(form==='single'?144:form==='double'?106:form==='triple'?104:112):128;return `<button class="action ${kind}" style="top:${top}px" type="button">${text}</button>`}
+    function cardHTML(item,form,act,id){let copy='';const canUseBottom=act==='none';if(form==='single'){const bottom=canUseBottom&&(id==='focus'||id==='step');copy=`<div class="card-title" style="top:${bottom?143:19}px">${item.title}</div>`}else if(form==='double'){const bottom=canUseBottom&&id==='step',y=bottom?93:19,support=id==='step'?'待处理':item.support;copy=`<div class="card-title" style="top:${y}px">${item.title}</div><div class="card-support" style="top:${y+34}px">${support}</div>`}else if(form==='triple'){const bottom=canUseBottom&&id==='focus',y=bottom?95:19;copy=`<div class="card-header" style="top:${y}px">${item.title}</div><div class="card-label" style="top:${y+22}px">${item.label}</div><div class="card-support" style="top:${y+57}px">${item.support}</div>`}else{if(canUseBottom&&id==='focus'){copy=`<div class="card-data" style="top:84px">${item.data}</div><div class="card-header" style="top:150px">${item.title}</div>`}else{copy=`<div class="card-header" style="top:19px">${item.title}</div><div class="card-data" style="top:38px">${item.data}</div>${act==='none'?`<div class="card-support" style="top:134px">${item.support}</div><div class="card-support" style="top:153px">立即可读</div>`:''}`}}return `<div class="card-copy">${copy}${actionHTML(act,item.action,form)}</div>`}
     function updateMetrics(){['va','is','aa'].forEach((id,i)=>$('#'+id).textContent=(w[i]*100).toFixed(1)+'%');$('#sum').textContent=(w.reduce((a,b)=>a+b,0)*100).toFixed(1)+'%'}
     const VA_TEMPLATE_REGISTRY=Object.freeze({
       focus:{weak:{tier:'L2',id:'F-L2-BotanicalBloom',recipe:'focus-weak',ink:'dark'},subtle:{tier:'L2',id:'F-L2-FieldCollage',recipe:'focus-subtle',ink:'dark'},intermediate:{tier:'L3',id:'F-L3-RecordBloom',recipe:'focus-intermediate',ink:'dark'},strong:{tier:'L4',id:'F-L4-LightbulbMoment',recipe:'focus-strong',ink:'light'},hero:{tier:'L5',id:'F-L5-RecordPlayerScene',recipe:'focus-hero',ink:'light'}},
@@ -7924,6 +8115,15 @@
     });
     function templateFor(role,level){const entry=VA_TEMPLATE_REGISTRY[role]?.[level];if(!entry)throw new Error(`No VA template for ${role}/${level}`);return entry}
     const HIGH_VA_STORIES=Object.freeze({
+      'focus-weak':`<svg class="story-svg" viewBox="0 0 138 138" aria-hidden="true"><circle cx="98" cy="78" r="36" fill="#eef8f0" opacity=".7"/><path d="M98 39c-16 0-28 12-28 27 0 10 5 17 11 23l4 4v9h26v-9l4-4c6-6 11-13 11-23 0-15-12-27-28-27z" fill="#fff6d1" stroke="#e3c97a" stroke-width="2.5"/><path d="M85 102h26v10a3 3 0 0 1-3 3H88a3 3 0 0 1-3-3z" fill="#d8c48a" stroke="#b8a066" stroke-width="2"/><path d="M89 118h18M90 122h16" class="scene-line" stroke="#b8a066" stroke-width="2"/><path d="M98 27v9M70 46l7 6M126 46l-7 6" class="scene-line" stroke="#f0dfa0" stroke-width="3"/></svg>`,
+      'focus-subtle':`<svg class="story-svg" viewBox="0 0 138 138" aria-hidden="true"><circle cx="96" cy="70" r="44" fill="#eef8d8" opacity=".6"/><path d="M96 30c-19 0-33 14-33 32 0 12 6 20 13 27l4 4v10h32v-10l4-4c7-7 13-15 13-27 0-18-14-32-33-32z" fill="#fdf6c8" stroke="#d9c26a" stroke-width="2.5"/><path d="M80 103h32v11a3 3 0 0 1-3 3H83a3 3 0 0 1-3-3z" fill="#cdb97e" stroke="#a8935c" stroke-width="2"/><path d="M84 121h24M85 125h22" class="scene-line" stroke="#a8935c" stroke-width="2"/><circle cx="96" cy="66" r="13" fill="none" stroke="#e8d685" stroke-width="2"/><path d="M96 16v10M56 34l8 8M136 34l-8 8M50 70h10M142 70h-10" class="scene-line" stroke="#e8d685" stroke-width="3"/></svg>`,
+      'focus-intermediate':`<svg class="story-svg" viewBox="0 0 138 138" aria-hidden="true"><path d="M10 128H128" class="scene-line" stroke="#7d5570" stroke-opacity=".4" stroke-width="2.5"/><ellipse cx="86" cy="122" rx="38" ry="9" fill="#4a2f42" fill-opacity=".4"/><circle cx="86" cy="100" r="24" fill="#3d2438" stroke="#f6d9e6" stroke-width="2.5"/><circle cx="86" cy="100" r="17" fill="none" stroke="#a9577c" stroke-width="1.5"/><circle cx="86" cy="100" r="8" fill="#f6d9e6"/><circle cx="86" cy="100" r="3" fill="#3d2438"/><circle cx="94" cy="46" r="27" fill="#f9dfe6" stroke="#a9577c" stroke-width="2.5"/><path d="M81 71h26v10a3 3 0 0 1-3 3H84a3 3 0 0 1-3-3z" fill="#c98fa6" stroke="#7d5570" stroke-width="2"/><path d="M94 12v10M58 26l7 7M130 26l-7 7" class="scene-line" stroke="#e8b8cf" stroke-width="3"/></svg>`,
+      'status-weak':`<svg class="story-svg" viewBox="0 0 138 138" aria-hidden="true"><circle cx="100" cy="58" r="22" fill="#ffe4b0" stroke="#e0b877" stroke-width="2.5"/><path d="M67 100c-11 0-20-8-20-18s9-18 18-18c3-11 13-19 25-19 14 0 25 10 27 22 10 1 17 9 17 18 0 10-9 18-19 18z" fill="#f6f2e6" stroke="#c9c0a6" stroke-width="2.5"/><path d="M90 26v8M65 40l5 6M138 40l-5 6" class="scene-line" stroke="#eecf94" stroke-width="2.5"/></svg>`,
+      'status-subtle':`<svg class="story-svg" viewBox="0 0 138 138" aria-hidden="true"><circle cx="88" cy="70" r="46" fill="#eaf3ff" opacity=".6"/><path d="M58 92c-12 0-22-9-22-20s10-20 21-20c3-12 14-21 27-21 15 0 27 11 30 24 11 1 19 10 19 20 0 11-10 20-21 20z" fill="#dcecfd" stroke="#b7d4f2" stroke-width="2.5"/><path d="M58 92c-12 0-22-9-22-20 0-9 6-16 15-19-1 2-1 5-1 7 0 12 10 22 23 22 9 0 17-5 21-13 3 3 6 8 6 13 0 11-10 20-21 20z" fill="#ffffff" opacity=".55"/><path d="M68 106l-5 13M89 111l-5 15M110 106l-5 13M78 118l-4 11M100 118l-4 11" class="scene-line" stroke="#7fb0e8" stroke-width="3"/><path d="M95 24v9M60 40l7 7M136 40l-7 7" class="scene-line" stroke="#cfe3fb" stroke-width="3"/></svg>`,
+      'status-intermediate':`<svg class="story-svg" viewBox="0 0 138 138" aria-hidden="true"><ellipse cx="88" cy="124" rx="38" ry="7" fill="#3f8a99" fill-opacity=".28"/><path d="M100 124c10-3 19-1 26 5" class="scene-line" stroke="#5aa9b8" stroke-width="2.5" opacity=".55"/><path d="M50 92c-13 0-24-10-24-22s11-22 23-22c4-13 16-23 30-23 17 0 30 12 33 27 12 1 21 11 21 22 0 12-11 22-23 22z" fill="#2d7a8c" stroke="#deeef1" stroke-width="2.5"/><path d="M62 106l-6 14M86 111l-6 17M110 106l-6 14M74 122l-5 12M98 122l-5 12" class="scene-line" stroke="#deeef1" stroke-width="3"/><path d="M62 30l-6-8M112 30l6-8" class="scene-line" stroke="#8fcdd8" stroke-width="2.5"/></svg>`,
+      'step-weak':`<svg class="story-svg" viewBox="0 0 138 138" aria-hidden="true"><path d="M72 76l30-13 30 13v33l-30 13-30-13z" fill="#dcecf2" stroke="#9dc3cd" stroke-width="2.5"/><path d="M72 76l30 13v33l-30-13z" fill="#c5dee8"/><path d="M132 76l-30 13v33l30-13z" fill="#eef6f8"/><path d="M87 82l30 13" class="scene-line" stroke="#f4f9fb" stroke-width="1.5"/></svg>`,
+      'step-subtle':`<svg class="story-svg" viewBox="0 0 138 138" aria-hidden="true"><path d="M60 82l36-16 36 16v38l-36 16-36-16z" fill="#dcecf2" stroke="#8fb9d0" stroke-width="2.5"/><path d="M60 82l36 16v38l-36-16z" fill="#c5dee8"/><path d="M132 82l-36 16v38l36-16z" fill="#eef6f8"/><path d="M78 90l36 16" class="scene-line" stroke="#f4f9fb" stroke-width="1.5"/><rect x="78" y="108" width="28" height="15" rx="2.5" fill="#bcdcec" stroke="#6ea0bc" stroke-width="1.5"/><path d="M42 62c14-6 26-2 34 8M96 22v10M65 40l6 6M127 40l-6 6" class="scene-line" stroke="#a9cfe0" stroke-width="2.5" stroke-dasharray="1 7"/><circle cx="42" cy="62" r="4" fill="#6ea0bc"/></svg>`,
+      'step-intermediate':`<svg class="story-svg" viewBox="0 0 138 138" aria-hidden="true"><path d="M55 86l38-17 38 17v40l-38 17-38-17z" fill="#f0e6a8" stroke="#c7b355" stroke-width="2.5"/><path d="M55 86l38 17v40l-38-17z" fill="#e3d489"/><path d="M131 86l-38 17v40l38-17z" fill="#fbf6d4"/><path d="M74 95l38 17" class="scene-line" stroke="#fbf6d4" stroke-width="1.5"/><rect x="78" y="116" width="30" height="17" rx="3" fill="#f6f0c0" stroke="#a8934a" stroke-width="1.5"/><path d="M28 108c16-9 28-9 40 0M72 108q22-15 40 0" class="scene-line" stroke="#8a9b45" stroke-width="2.5" stroke-dasharray="1 8"/><circle cx="28" cy="108" r="5" fill="#5c6b2e"/><circle cx="112" cy="108" r="5" fill="#5c6b2e"/><path d="M55 46l-6-8" class="scene-line" stroke="#e3d489" stroke-width="2.5"/></svg>`,
       'focus-strong':`<svg class="story-svg" viewBox="0 0 138 138" aria-hidden="true"><path d="M10 104H128" class="scene-line" stroke="#f6bd7a" stroke-width="3"/><path d="M10 108l29-7 42 3 47-9v43H10z" fill="#e8dfc9" stroke="#6f8791" stroke-width="2.5"/><path d="M78 25l2-17 3 17zM106 36l18-9-12 16zM114 58h17v8h-17zM53 36L37 27l11 17zM46 58H29v8h17z" fill="#ffd77a" stroke="#6d8587" stroke-width="2" stroke-linejoin="round"/><path d="M58 82c-5-6-8-13-8-21 0-16 13-29 30-29s30 13 30 29c0 8-3 15-8 21l-8 8v6h2v8h-4v7H68v-7h-4v-8h2v-6z" fill="#f7bd5b"/><path d="M58 82c-5-6-8-13-8-21 0-16 13-29 30-29s30 13 30 29c0 8-3 15-8 21l-8 8v6h2v8h-4v7H68v-7h-4v-8h2v-6z" fill="none" stroke="#6d8587" stroke-width="2.5" stroke-linejoin="round"/><path d="M55 61c0-14 11-25 25-25 4 0 8 1 12 3-11 1-20 10-20 22 0 8 3 15 8 21l-7 8h-7l-8-8c-2-3-3-5-4-8z" fill="#ffe58b"/><path d="M58 82c-5-6-8-13-8-21 0-16 13-29 30-29s30 13 30 29c0 8-3 15-8 21l-8 8v6h2v8h-4v7H68v-7h-4v-8h2v-6z" fill="none" stroke="#6d8587" stroke-width="2.5" stroke-linejoin="round"/><path d="M68 96h24M68 104h24" class="scene-line" stroke="#6d8587" stroke-width="2"/><path d="M69 55l11 8 10-8M80 63v12" class="scene-line" stroke="#6d8587" stroke-width="2.5"/></svg>`,
       'focus-hero':`<svg class="story-svg" viewBox="0 0 138 138" aria-hidden="true"><path d="M9 105H129" class="scene-line" stroke="#9dd8d3" stroke-width="3"/><path d="M15 109l35-7 35 5 43-8v39H15z" fill="#102b42"/><path d="M24 105h93l-7 24H31z" fill="#7fc6c2" stroke="#d9f2d6" stroke-width="2.5"/><path d="M37 51h62l8 48H31z" fill="#ff7d50" stroke="#91b2ad" stroke-width="3"/><path d="M37 51h62l-5 13H34z" fill="#ffbd63" stroke="#91b2ad" stroke-width="2"/><circle cx="69" cy="79" r="28" fill="#ff8c58" stroke="#91b2ad" stroke-width="2"/><circle cx="69" cy="79" r="25" fill="#18344b" stroke="#91b2ad" stroke-width="3"/><circle cx="69" cy="79" r="18" fill="none" stroke="#ffbd63" stroke-width="2.5"/><circle cx="69" cy="79" r="14" fill="#24566a" stroke="#91b2ad" stroke-width="2"/><path d="M69 64v30M54 79h30" class="rim" stroke="#ffbd63" stroke-width="2"/><circle cx="69" cy="79" r="5" fill="#91b2ad" stroke="#18344b" stroke-width="1.5"/><path d="M97 57l15-13v31" class="scene-line" stroke="#91b2ad" stroke-width="3"/><circle cx="111" cy="76" r="4" fill="#91b2ad" stroke="#18344b" stroke-width="1.5"/><path d="M19 33l17-8M26 43l12-5" class="scene-line" stroke="#c7eee2" stroke-width="3"/></svg>`,
       'status-strong':`<svg class="story-svg" viewBox="0 0 138 138" aria-hidden="true"><path d="M8 107H130" class="scene-line" stroke="#d3f0e7" stroke-width="3.5"/><path d="M9 112l31-6 37 4 52-7v35H9z" fill="#173244"/><path d="M9 112l31-6 37 4 52-7" class="scene-line" stroke="#78a8ad" stroke-width="2.5"/><ellipse cx="70" cy="109" rx="45" ry="6" fill="#0f2435"/><path d="M30 89l13-20h45l19 20v14H30z" fill="#ffd66b" stroke="#6d8587" stroke-width="2.5"/><path d="M46 73h35l10 15H37z" fill="#fff0c4" stroke="#6d8587" stroke-width="2"/><path d="M33 92h70v7H33z" fill="#ff965d" stroke="#6d8587" stroke-width="2"/><circle cx="49" cy="103" r="9" fill="#142a3b" stroke="#fff0c4" stroke-width="2"/><circle cx="92" cy="103" r="9" fill="#142a3b" stroke="#fff0c4" stroke-width="2"/><path d="M21 37c5-9 18-11 26-3 8-8 22-4 24 7 8 0 14 5 14 12H21c-7-7-6-13 0-16z" fill="#c5e7e7" stroke="#e8fbef" stroke-width="2"/><path d="M31 58l-4 10M49 58l-4 10M67 58l-4 10" class="scene-line" stroke="#84c4cf" stroke-width="3"/></svg>`,
