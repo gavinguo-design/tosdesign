@@ -5249,17 +5249,13 @@
 
       // 2. 调性分析 - 优先提取逐轴推理(VA2 视觉吸引力:xxx),退回旧格式
       let toneDesc = null;
-      const vaLine = fullReply.match(/VA(\d)[\s·]*视觉吸引力[::：]\s*([^\n]+)/);
-      const isLine = fullReply.match(/IS(\d)[\s·]*信息显著性[::]\s*([^\n]+)/);
-      const aaLine = fullReply.match(/AA(\d)[\s·]*行动权威性[::]\s*([^\n]+)/);
-      if (vaLine || isLine || aaLine) {
-        const rows = [];
-        if (vaLine) rows.push(`<b>VA${vaLine[1]}</b> 视觉吸引力 - ${vaLine[2].trim()}`);
-        if (isLine) rows.push(`<b>IS${isLine[1]}</b> 信息显著性 - ${isLine[2].trim()}`);
-        if (aaLine) rows.push(`<b>AA${aaLine[1]}</b> 行动权威性 - ${aaLine[2].trim()}`);
-        toneDesc = rows.join('<br>');
+      const toneAnalysis = parseToneAnalysis(fullReply);
+      if (toneAnalysis.rows.length) {
+        toneDesc = toneAnalysis.rows
+          .map((row) => `<b>${row.ax}${row.level}</b> ${AXIS_NAMES[row.ax] || row.ax} - ${escapeHtml(row.reason)}`)
+          .join('<br>');
       } else {
-        const axisMatch = fullReply.match(/VA(\d)\+IS(\d)\+AA(\d)/);
+        const axisMatch = (toneAnalysis.summary || fullReply).match(/VA(\d)\+IS(\d)\+AA(\d)/);
         if (axisMatch) {
           const va = axisMatch[1], is = axisMatch[2], aa = axisMatch[3];
           const vaLabel = AXIS_LABELS.VA[va] || `视觉张力 ${va}`;
@@ -5384,13 +5380,13 @@
         const cardMatches = [...reply.matchAll(/```card-update\n([\s\S]*?)```/g)];
         let displayReply = reply.replace(/```card-update\n[\s\S]*?```/g, '').trim();
 
+        const tone = parseToneAnalysis(displayReply);
+        const toneRows = tone.rows;
+        currentCardToneRows = toneRows;
+        currentCardToneSummary = tone.summary;
+
         // 解析逐轴调性推理 → 结构化徽章块
         const AXIS_NAMES = { VA: '视觉吸引力', IS: '信息显著性', AA: '行动权威性' };
-        const toneRows = [];
-        ['VA', 'IS', 'AA'].forEach(ax => {
-          const m = displayReply.match(new RegExp(ax + '(\\d)[\\s·]*' + AXIS_NAMES[ax] + '[::：]\\s*([^\\n]+)'));
-          if (m) toneRows.push({ ax, level: m[1], reason: m[2].trim() });
-        });
         let toneBlockHtml = '';
         if (toneRows.length) {
           toneBlockHtml = '<div class="tone-block"><div class="tone-block-title">调性分析</div>' +
@@ -5425,7 +5421,7 @@
 
         // ✨ 左侧5个分析卡片:先于卡片/插图渲染,用打字机效果逐字显示
         if (document.getElementById('workbench-view').classList.contains('active')) {
-          if (typeof renderWbTone === 'function') renderWbTone(toneRows);
+          if (typeof renderWbTone === 'function') renderWbTone(toneRows, tone.summary);
           if (typeof renderWbColor === 'function' && preCardData) renderWbColor(preCardData);
           if (typeof renderWbFont === 'function' && preCardData) renderWbFont(preCardData);
           if (typeof renderWbSuggest === 'function') renderWbSuggest(displayReply);
@@ -6571,8 +6567,9 @@
         const match = text.match(new RegExp(axis + '(\\d)[\\s·]*' + names[axis] + '[::：]\\s*([^\\n]+)'));
         return match ? { ax: axis, level: match[1], reason: match[2].trim() } : null;
       }).filter(Boolean);
-      const summary = (text.match(/综合调性\s*[:：]?\s*([^\n]+)/) || [])[1] || '';
-      return { rows, summary: summary.trim() };
+      const rawSummary = (text.match(/综合调性\s*[:：]?\s*([^\n]+)/) || [])[1] || '';
+      const summary = rawSummary.trim() || (rows.length ? rows.map((row) => `${row.ax}${row.level}`).join('+') : '');
+      return { rows, summary };
     }
 
     async function generateReqWorkbenchJob(job) {
