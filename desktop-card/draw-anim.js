@@ -535,6 +535,7 @@
      * instant=true 直接显示；否则播「描线→填充」落卡动画 */
     _mountCardToSlot: function (instant) {
       if (!this._stage) return;
+      this._clearSlotSketch();
       var card = document.getElementById('wb-card');
       var inner = document.getElementById('wb-card-inner');
       var content = inner && inner.firstElementChild;
@@ -566,6 +567,28 @@
       }
       this._sketchReveal(slot);
     },
+    /* 迭代等待态：卡位描线循环（紫色勾线反复描画，营造「正在重绘」感） */
+    _slotSketch: function () {
+      if (!this._stage) return;
+      this._clearSlotSketch();
+      var svg = svgEl('svg', { 'class': 'da-slot-svg', viewBox: '0 0 ' + W + ' ' + H, width: W, height: H });
+      var rc = svgEl('rect', { x: SLOT.x, y: SLOT.y, width: SLOT.w, height: SLOT.h, rx: SLOT.r, ry: SLOT.r, pathLength: 1 });
+      svg.appendChild(rc);
+      this._stage.appendChild(svg);
+      this._slotSketchEl = svg;
+      this._animate(rc, [
+        { strokeDashoffset: 1, opacity: 1 },
+        { strokeDashoffset: 0, opacity: 1, offset: 0.55 },
+        { strokeDashoffset: 0, opacity: 0 },
+      ], { duration: 1400, iterations: Infinity, easing: 'ease-in-out' });
+    },
+    _clearSlotSketch: function () {
+      if (this._slotSketchEl) {
+        if (this._slotSketchEl.parentNode) this._slotSketchEl.parentNode.removeChild(this._slotSketchEl);
+        this._slotSketchEl = null;
+      }
+    },
+
     /* 卡位描线 → 卡片淡入 → 白闪填充 */
     _sketchReveal: function (slot) {
       var svg = svgEl('svg', { 'class': 'da-slot-svg', viewBox: '0 0 ' + W + ' ' + H, width: W, height: H });
@@ -627,6 +650,7 @@
       this.active = false;
       this._finishing = false;
       this._iterMode = false;
+      this._clearSlotSketch();
       if (this._iterPen) { try { this._iterPen.cancel(); } catch (e) {} this._iterPen = null; }
       if (this._pen) this._pen.style.opacity = '0';
       if (this._slot) {
@@ -725,12 +749,13 @@
       this._root = this._stage = this._wrap = this._svg = this._caption = this._pen = null;
       this._iconBoxEls = this._bigIconEls = this._miniIconEls = this._searchIconEls = null;
       this._labelEls = this._clockTxtEls = this._dialG = this._wall = null;
-      this._strokes = null; this._slot = null; this._iterPen = null;
+      this._strokes = null; this._slot = null; this._iterPen = null; this._slotSketchEl = null;
       this.active = false;
       this.persistent = false;
       this._suspended = false;
       this._iterMode = false;
-      this._variantsMode = false;
+      // 注：_variantsMode 不在此重置 —— 首次生成返回 A/B 时过场层会 exit，
+      // 但标记需存活到用户选定方案后触发快放重播定格回手机（start() 会显式清）
       if (!silent) this._finishing = false;
     },
 
@@ -815,7 +840,9 @@
     if (typeof _updateStep === 'function') {
       window.updateStep = function (stepId, status) {
         var r = _updateStep.apply(this, arguments);
-        if (status === 'error' && stepId !== 'illust') {
+        // 'render' 报错除外：那是「回复里没卡」的闲聊路径（updateStepsFromResponse 末尾标 render=error），
+        // 由下方 updateStepsFromResponse 包装走 abort() 软处理，常驻手机保留。
+        if (status === 'error' && stepId !== 'illust' && stepId !== 'render') {
           try { DrawAnim.errorAbort(); } catch (e) {}
         }
         return r;
