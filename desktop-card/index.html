@@ -4793,14 +4793,14 @@
 
     function buttonStyle(data, dark) {
       const isGradient = typeof data.bg === 'string' && data.bg.includes('gradient');
-      // 白磨砂胶囊只适用于深色氛围渐变底(dark:true)；浅色信息渐变(如10%蓝色wash,dark:false)上
-      // 白28%+白字几乎不可见，必须走浅底分支(Figma规范:黑8%胶囊+黑0.9主文字色)
+      // Figma node 540:4507: 浅底按钮=黑8%中性胶囊 + #0A69FE 蓝字；深底=白15% + 白字。
+      // 浅色信息渐变仍属浅底，不能走白磨砂分支，否则白字会丢失对比度。
       if (isGradient && dark) {
         return 'background:rgba(255,255,255,0.28);backdrop-filter:blur(6px);color:#fff;';
       }
       return dark
-        ? 'background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.9);'
-        : 'background:rgba(0,0,0,0.08);color:rgba(0,0,0,0.9);';
+        ? 'background:rgba(255,255,255,0.15);color:#fff;'
+        : 'background:rgba(0,0,0,0.08);color:#0A69FE;';
     }
 
     // 字号降级:按可用宽度和字符数自动缩小,避免大数字溢出
