@@ -5414,6 +5414,10 @@
     // Layout labels
     const LAYOUT_LABELS = { single: '单行标题', dual: '双行内容', triple: '三段式', big: '大数字突显', chart: '图表', itinerary: '行程卡' };
 
+    // 调性轴名：全局定义。updateStepsFromResponse 与 sendMessage/renderWbTone 都要用；
+    // 此前只在 sendMessage 局部定义，导致 updateStepsFromResponse 抛 ReferenceError 被 catch 误报成「网络错误」（2026-08-06 修复）
+    const AXIS_NAMES = { VA: '视觉吸引力', IS: '信息显著性', AA: '行动权威性' };
+
     // Tone axis labels
     const AXIS_LABELS = {
       VA: { 1: '信息展示', 2: '平衡呈现', 3: '视觉强刺激' },
@@ -5565,8 +5569,7 @@
         currentCardToneRows = toneRows;
         currentCardToneSummary = tone.summary;
 
-        // 解析逐轴调性推理 → 结构化徽章块
-        const AXIS_NAMES = { VA: '视觉吸引力', IS: '信息显著性', AA: '行动权威性' };
+        // 解析逐轴调性推理 → 结构化徽章块（AXIS_NAMES 用全局定义）
         let toneBlockHtml = '';
         if (toneRows.length) {
           toneBlockHtml = '<div class="tone-block"><div class="tone-block-title">调性分析</div>' +
