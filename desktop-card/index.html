@@ -3993,12 +3993,7 @@
               </div>
             </div>
             <div class="wb-skill-label">校验设计 Skill调用</div>
-            <div id="wb-panel-suggest-left" class="wb-left-card">
-              <div class="wb-left-card-header" onclick="toggleWbLeftCard('suggest')"><span class="wb-left-card-icon">💡</span><span class="wb-left-card-title">设计建议</span><span class="wb-left-card-arrow">▼</span></div>
-              <div class="wb-left-card-body">
-                <div id="wb-suggest-content-left"><span class="wb-bottom-empty">等待 AI 建议...</span></div>
-              </div>
-            </div>
+            <!-- 设计建议已迁移至右侧对话流（AI 气泡输出），左面板不再展示该区块 -->
             <div id="wb-panel-spec-left" class="wb-left-card">
               <div class="wb-left-card-header" onclick="toggleWbLeftCard('spec')"><span class="wb-left-card-icon">📐</span><span class="wb-left-card-title">规范快查</span><span class="wb-left-card-arrow">▼</span></div>
               <div class="wb-left-card-body">
@@ -4107,7 +4102,6 @@
           <div class="wb-bottom-tab active" data-panel="tone" onclick="switchWbBottomTab('tone')">调性分析</div>
           <div class="wb-bottom-tab" data-panel="color" onclick="switchWbBottomTab('color')">配色方案</div>
           <div class="wb-bottom-tab" data-panel="font" onclick="switchWbBottomTab('font')">字体排版</div>
-          <div class="wb-bottom-tab" data-panel="suggest" onclick="switchWbBottomTab('suggest')">设计建议</div>
           <div class="wb-bottom-tab" data-panel="spec" onclick="switchWbBottomTab('spec')">规范快查</div>
         </div>
         <div id="wb-bottom-content">
@@ -4119,9 +4113,6 @@
           </div>
           <div id="wb-panel-font" class="wb-bottom-panel">
             <div id="wb-font-content"><span class="wb-bottom-empty">等待卡片生成...</span></div>
-          </div>
-          <div id="wb-panel-suggest" class="wb-bottom-panel">
-            <div id="wb-suggest-content"><span class="wb-bottom-empty">等待 AI 建议...</span></div>
           </div>
           <div id="wb-panel-spec" class="wb-bottom-panel">
             <div id="wb-spec-content" class="wb-scroll">
@@ -5613,12 +5604,16 @@
           if (typeof renderWbTone === 'function') renderWbTone(toneRows, tone.summary);
           if (typeof renderWbColor === 'function' && preCardData) renderWbColor(preCardData);
           if (typeof renderWbFont === 'function' && preCardData) renderWbFont(preCardData);
-          if (typeof renderWbSuggest === 'function') renderWbSuggest(displayReply);
           if (typeof renderWbSpec === 'function' && preCardData) renderWbSpec(preCardData);
         }
 
         if (parsed.length >= 2) {
           addMsg((displayReply || '我出了两个方案') + toneBlockHtml + '<br>👆 在预览区选择你喜欢的方案', 'bot');
+          // 设计建议改为在右侧对话流以 AI 口吻输出（原先渲染在左面板「设计建议」卡片）
+          const adviceHtml = formatWbAdviceHtml(displayReply);
+          addWbRpMsg((adviceHtml
+            ? '💡 两个方案都跑完校验了，说说我的设计建议：<br><br>' + adviceHtml
+            : '我出了两个方案 ✨') + '<br><br>👆 在预览区选一个你喜欢的吧', 'bot');
           const variants = parsed.slice(0, 2);
           cardData = parsed[0];
           try { await illustrateVariants(variants); } catch(e) { console.warn('illustrate failed', e); }
@@ -5626,14 +5621,14 @@
           showCompare(variants);
         } else if (parsed.length === 1) {
           addMsg((displayReply || '卡片已更新 ✨') + toneBlockHtml, 'bot');
-          addWbRpMsg(displayReply || '卡片已更新 ✨', 'bot');
+          addWbRpMsg(formatWbAdviceHtml(displayReply) || '卡片已更新 ✨', 'bot');
           const { reason, ...cd } = parsed[0];
           cardData = cd;
           if (document.getElementById('workbench-view').classList.contains('active')) setWbLoading(false);
           presentCard(cd);
         } else {
           addMsg(displayReply || '卡片已更新 ✨', 'bot');
-          addWbRpMsg(displayReply || '卡片已更新 ✨', 'bot');
+          addWbRpMsg(formatWbAdviceHtml(displayReply) || '卡片已更新 ✨', 'bot');
         }
         updateStepsFromResponse(reply, displayReply, cardData);
       } catch(e) {
@@ -7738,9 +7733,7 @@
       const fontName = data._font || 'SF Pro Display';
       scroll.appendChild(makeWbCard('字体搞配', `显示字体:<b>SF Pro Display</b><br>数据字体:<b>SF Pro Text</b>`));
 
-      // 4. 设计建议
-      scroll.appendChild(makeWbCard('设计建议', data._advice ||
-        '• 保持内容简洁,重点信息突出显示<br>• 配色与主题行业匹配<br>• 可尝试深色模式'));
+      // 4. 设计建议已迁移至右侧对话流输出，此处不再渲染
 
       // 5. 布局规格
       const layout = data.layout ? (LAYOUT_LABELS[data.layout] || data.layout) : '双行内容';
@@ -8474,15 +8467,14 @@
       typewriteHTML(el, html, 10);
     }
 
-    function renderWbSuggest(text) {
-      const el = document.getElementById('wb-suggest-content-left');
-      if (!el) return;
-      if (!text || !text.trim()) {
-        el.innerHTML = '<span class="wb-bottom-empty">等待 AI 建议...</span>';
-        return;
-      }
-      const html = `<div style="font-size:13px;color:#333;line-height:1.7">${text.replace(/\n/g,'<br>')}</div>`;
-      typewriteHTML(el, html, 14);
+    // 设计建议 → 右侧对话流 AI 气泡：把原始建议文本整理成聊天可读的 HTML
+    function formatWbAdviceHtml(text) {
+      if (!text || !text.trim()) return '';
+      return escapeHtml(text.trim())
+        .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+        .replace(/^\s*---\s*$/gm, '')
+        .replace(/\n{3,}/g, '\n\n')
+        .replace(/\n/g, '<br>');
     }
 
     /* ─── TERNARY CONTROLLER (welcome page) ─── */
