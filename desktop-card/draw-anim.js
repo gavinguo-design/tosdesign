@@ -315,13 +315,8 @@
         return fillbox(rect('ib' + idx, p[0], p[1], 55, 55, 16),
           idx === 0 ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.95)');
       });
-      // ② 搜索栏胶囊 / 分页指示器 / 导航条
+      // ② 搜索栏胶囊 / 导航条。分页指示器按需求移除，不参与动画或定格。
       rect('searchOuter', SEARCH_BAR.x, SEARCH_BAR.y, SEARCH_BAR.w, SEARCH_BAR.h, SEARCH_BAR.r);
-      var pager = svgEl('g', {}); svg.appendChild(pager);
-      pager.appendChild(svgEl('circle', { cx: 157, cy: 624, r: 3, pathLength: 1, 'class': 'da-stroke' }));
-      pager.appendChild(svgEl('rect', { x: 168, y: 621, width: 20, height: 6, rx: 3, pathLength: 1, 'class': 'da-stroke' }));
-      pager.appendChild(svgEl('circle', { cx: 200, cy: 624, r: 3, pathLength: 1, 'class': 'da-stroke' }));
-      strokes.pager = pager;
       rect('nav', 120, 791, 120, 3, 2);
 
       // ③ 时钟卡成品图（资源类素材，同壁纸：模糊→清晰淡入落位，不描线）
@@ -426,7 +421,6 @@
       this._draw(s.aiBox, T(790), T(420));
       this._iconBoxEls.forEach(function (el, i) { self._draw(el, T(900 + i * 60), T(300)); }); // 波浪式
       this._draw(s.searchOuter, T(1560), T(360));
-      this._draw(s.pager, T(1700), T(220));
       this._draw(s.nav, T(1780), T(220));
       // ③ 时钟卡成品图落位：容器框勾完后，模糊→清晰淡入（与壁纸同类资源素材处理，不描线）
       this._animate(this._clockImg, [
