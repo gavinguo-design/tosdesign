@@ -1,5 +1,17 @@
-// 卡片库：保存/列出 —— Cloudflare KV 云端存储，按登录用户隔离，跨设备同步
+// 卡片库：保存/列出 —— 优先 Cloudflare KV；线上未绑定 CARD_LIBRARY 时自动回退 D1（env.DB），按登录用户隔离，跨设备同步
 const TOKEN_SECRET = 'tosdesign-secret-2024';
+
+// D1 回退：确保表存在
+async function ensureLibraryTable(db) {
+  await db.prepare(`CREATE TABLE IF NOT EXISTS library_cards (
+    id TEXT PRIMARY KEY,
+    email TEXT NOT NULL,
+    title TEXT,
+    thumbnail TEXT,
+    card_json TEXT NOT NULL,
+    saved_at INTEGER NOT NULL
+  )`).run();
+}
 
 const CORS = {
   'Content-Type': 'application/json',
@@ -59,9 +71,17 @@ export async function onRequestPost({ request, env }) {
     savedAt: ts,
   };
   try {
-    await env.CARD_LIBRARY.put(key, JSON.stringify(record));
+    if (env.CARD_LIBRARY) {
+      await env.CARD_LIBRARY.put(key, JSON.stringify(record));
+    } else if (env.DB) {
+      await ensureLibraryTable(env.DB);
+      await env.DB.prepare('INSERT INTO library_cards (id, email, title, thumbnail, card_json, saved_at) VALUES (?, ?, ?, ?, ?, ?)')
+        .bind(id, email, record.title, record.thumbnail, JSON.stringify(cardData), ts).run();
+    } else {
+      throw new Error('未配置存储（CARD_LIBRARY KV 与 DB 均不可用）');
+    }
   } catch (e) {
-    return new Response(JSON.stringify({ ok: false, error: 'KV 写入失败: ' + e.message }), { status: 500, headers: CORS });
+    return new Response(JSON.stringify({ ok: false, error: '存储写入失败: ' + e.message }), { status: 500, headers: CORS });
   }
   return new Response(JSON.stringify({ ok: true, id, savedAt: ts }), { headers: CORS });
 }
@@ -74,19 +94,32 @@ export async function onRequestGet({ request, env }) {
   const prefix = `library:${email}:`;
   const items = [];
   try {
-    let cursor;
-    do {
-      const listRes = await env.CARD_LIBRARY.list({ prefix, cursor });
-      for (const k of listRes.keys) {
-        const raw = await env.CARD_LIBRARY.get(k.name);
-        if (raw) {
-          try { items.push(JSON.parse(raw)); } catch {}
+    if (env.CARD_LIBRARY) {
+      let cursor;
+      do {
+        const listRes = await env.CARD_LIBRARY.list({ prefix, cursor });
+        for (const k of listRes.keys) {
+          const raw = await env.CARD_LIBRARY.get(k.name);
+          if (raw) {
+            try { items.push(JSON.parse(raw)); } catch {}
+          }
         }
+        cursor = listRes.list_complete ? undefined : listRes.cursor;
+      } while (cursor);
+    } else if (env.DB) {
+      await ensureLibraryTable(env.DB);
+      const { results } = await env.DB.prepare('SELECT id, title, thumbnail, card_json, saved_at FROM library_cards WHERE email = ? ORDER BY saved_at DESC')
+        .bind(email).all();
+      for (const r of results || []) {
+        let cardData = null;
+        try { cardData = JSON.parse(r.card_json); } catch {}
+        items.push({ id: r.id, title: r.title, thumbnail: r.thumbnail, cardData, savedAt: r.saved_at });
       }
-      cursor = listRes.list_complete ? undefined : listRes.cursor;
-    } while (cursor);
+    } else {
+      throw new Error('未配置存储（CARD_LIBRARY KV 与 DB 均不可用）');
+    }
   } catch (e) {
-    return new Response(JSON.stringify({ ok: false, error: 'KV 读取失败: ' + e.message }), { status: 500, headers: CORS });
+    return new Response(JSON.stringify({ ok: false, error: '存储读取失败: ' + e.message }), { status: 500, headers: CORS });
   }
 
   items.sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));

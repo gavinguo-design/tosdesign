@@ -41,11 +41,19 @@ export async function onRequestDelete({ request, env, params }) {
 
   const key = `library:${email}:${id}`;
   try {
-    const existing = await env.CARD_LIBRARY.get(key);
-    if (!existing) return new Response(JSON.stringify({ ok: false, error: '未找到该卡片' }), { status: 404, headers: CORS });
-    await env.CARD_LIBRARY.delete(key);
+    if (env.CARD_LIBRARY) {
+      const existing = await env.CARD_LIBRARY.get(key);
+      if (!existing) return new Response(JSON.stringify({ ok: false, error: '未找到该卡片' }), { status: 404, headers: CORS });
+      await env.CARD_LIBRARY.delete(key);
+    } else if (env.DB) {
+      const existing = await env.DB.prepare('SELECT id FROM library_cards WHERE id = ? AND email = ?').bind(id, email).first();
+      if (!existing) return new Response(JSON.stringify({ ok: false, error: '未找到该卡片' }), { status: 404, headers: CORS });
+      await env.DB.prepare('DELETE FROM library_cards WHERE id = ? AND email = ?').bind(id, email).run();
+    } else {
+      throw new Error('未配置存储（CARD_LIBRARY KV 与 DB 均不可用）');
+    }
   } catch (e) {
-    return new Response(JSON.stringify({ ok: false, error: 'KV 删除失败: ' + e.message }), { status: 500, headers: CORS });
+    return new Response(JSON.stringify({ ok: false, error: '存储删除失败: ' + e.message }), { status: 500, headers: CORS });
   }
   return new Response(JSON.stringify({ ok: true }), { headers: CORS });
 }
