@@ -5460,11 +5460,13 @@
 
       // 4. 配色方案
       let colorDesc = null;
-      if (cardData?.accentColor || cardData?.bg) {
+      // 2026-08-06 修复：强调色改用 getCardAccentColor 推导真实用色，不再直接透出 AI 输出但卡片未采用的 accentColor
+      const stepAccent = (typeof getCardAccentColor === 'function') ? getCardAccentColor(cardData) : null;
+      if (stepAccent || cardData?.bg) {
         colorDesc = '';
-        if (cardData.accentColor) colorDesc += `强调色:${cardData.accentColor}`;
-        if (cardData.bg)          colorDesc += `<br>背景色:${cardData.bg}`;
-        if (cardData.dark)        colorDesc += `<br>深色模式已开启`;
+        if (stepAccent)    colorDesc += `强调色:${stepAccent}`;
+        if (cardData.bg)   colorDesc += `<br>背景色:${cardData.bg}`;
+        if (cardData.dark) colorDesc += `<br>深色模式已开启`;
       }
 
       // 5. 插图生成(占位)
@@ -7726,11 +7728,12 @@
       scroll.appendChild(makeWbCard('调性分析', toneHtml));
 
       // 2. 配色方案
+      // 2026-08-06 修复：只展示卡片真实用色（背景 + 推导出的真实强调色），不再兜底塞入卡片上不存在的颜色。
       const swatchColors = [];
-      if (data.bg && !data.bg.includes('gradient')) swatchColors.push(data.bg);
-      if (data.accentColor) swatchColors.push(data.accentColor);
-      if (swatchColors.length === 0) swatchColors.push('#7C5CFC', '#4ecca3', '#f5f5f7');
-      while (swatchColors.length < 3) swatchColors.push('#e8e8ef');
+      if (data.bg) swatchColors.push(data.bg);
+      const wbAccent = getCardAccentColor(data);
+      if (wbAccent) swatchColors.push(wbAccent);
+      if (swatchColors.length === 0) swatchColors.push('#ffffff');
       const swatchHtml = `<div class="wb-swatches">${swatchColors.slice(0,4).map(c=>`<div class="wb-swatch" style="background:${c}" title="${c}"></div>`).join('')}</div>`;
       scroll.appendChild(makeWbCard('配色方案', swatchHtml));
 
@@ -8446,15 +8449,30 @@
       typewriteHTML(el, html, 10);
     }
 
+    // 2026-08-06 修复：强调色必须反映卡片真实用色，禁止兜底显示卡片上不存在的颜色（原来写死 #7C5CFC 紫）。
+    // 推导优先级与卡片渲染逻辑保持一致：
+    //   1) userColorOk && accentColor —— 用户显式要求彩色文字时渲染层才会用 accentColor（见 big/value 渲染）；
+    //   2) chartColor —— chart 布局折线/柱状/圆环的真实主色；
+    //   3) itinerary —— Figma 规格固定蓝 rgba(10,105,254,1)（航班号/车次蓝字 + 底部蓝渐变同源）；
+    //   4) 其余卡片没有强调色概念 → 返回 null，面板不渲染「强调色」这一行。
+    function getCardAccentColor(data) {
+      if (!data) return null;
+      if (data.userColorOk && data.accentColor) return data.accentColor;
+      if (data.chartColor) return data.chartColor;
+      if (data.layout === 'itinerary') return 'rgba(10,105,254,1)';
+      return null;
+    }
+
     function renderWbColor(data) {
       const el = document.getElementById('wb-color-content-left');
       if (!el || !data) return;
-      const colors = [data.bg || '#ffffff', data.accentColor || '#7C5CFC'].filter(Boolean);
-      const labels = ['背景色', '强调色'];
-      const html = colors.map((c, i) =>
+      const rows = [{ c: data.bg || '#ffffff', label: '背景色' }];
+      const accent = getCardAccentColor(data);
+      if (accent) rows.push({ c: accent, label: '强调色' });
+      const html = rows.map(({ c, label }) =>
         `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
           <div style="width:32px;height:32px;border-radius:8px;background:${c};border:1px solid rgba(0,0,0,0.1)"></div>
-          <div><div style="font-family:monospace;font-size:12px;color:#333">${c}</div><div style="font-size:11px;color:#999">${labels[i]||''}</div></div>
+          <div><div style="font-family:monospace;font-size:12px;color:#333">${c}</div><div style="font-size:11px;color:#999">${label}</div></div>
         </div>`
       ).join('');
       typewriteHTML(el, html, 8);
