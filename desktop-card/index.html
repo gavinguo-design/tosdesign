@@ -2806,6 +2806,25 @@
     }
     .wb-req-back-btn.visible { display: inline-flex; }
     .wb-req-back-btn:hover { background: #fff; transform: translateY(-1px); }
+    .wb-save-library-btn {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(0,0,0,0.10);
+      border-radius: 999px;
+      background: #fff;
+      color: #222;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+    }
+    .wb-save-library-btn:hover { background: #f7f7f8; transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.08); }
+    .wb-save-library-btn:disabled { cursor: wait; opacity: 0.7; transform: none; }
+    .wb-save-library-btn.saved-flash { background: rgba(1,203,101,0.13); border-color: rgba(1,163,80,0.22); color: #018c46; }
 
     /* ─── GALLERY VIEW (灵感剧场 / 最佳案例) ─── */
     #gallery-view {
@@ -3964,6 +3983,8 @@
           </button>
           <button class="wb-view-tab active" id="wbViewTabPreview" onclick="switchWbView('preview')">卡片预览</button>
           <button class="wb-view-tab" id="wbViewTabCode" onclick="switchWbView('code')">代码预览</button>
+          <!-- 顶栏精简时误删的存库入口：保留在预览/代码上下文中，始终保存 currentCardData。 -->
+          <button class="wb-save-library-btn" id="wbSaveLibBtn" onclick="saveToLibrary(this)" type="button">＋ 添加到卡片库</button>
         </div>
       </div>
       <!-- Top card: left panel + preview + right chat panel -->
@@ -6214,7 +6235,7 @@
         });
         const data = await res.json();
         if (!data.ok) { alert('保存失败:' + (data.error || '请重试')); btn.textContent = orig; btn.disabled = false; return; }
-        btn.textContent = '已保存 ✓';
+        btn.textContent = '已添加 ✓';
         btn.classList.add('saved-flash');
         playSaveToLibraryFlyAnim();
         setTimeout(() => { btn.textContent = orig; btn.disabled = false; btn.classList.remove('saved-flash'); }, 1600);
