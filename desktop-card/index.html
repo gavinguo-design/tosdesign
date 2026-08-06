@@ -3465,9 +3465,9 @@
     .suggestion-card .action { position:absolute;left:19px;height:41px;border:0;background:transparent;color:rgba(0,0,0,.9);font:650 17px/20px -apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;cursor:pointer; }
     .suggestion-card .action.link { height:19px;padding:0; }
     .suggestion-card .action.link:after { content:"↗";margin-left:4px; }
-    .suggestion-card .action.short,.suggestion-card .action.long { border-radius:999px;background:rgba(0,0,0,.08); }
-    .suggestion-card .action.short { width:101px; }
-    .suggestion-card .action.long { width:150px; }
+    /* 2026-08-06 溢出修复：胶囊按钮不再定死宽度（旧 short:101px 是按4字设计，「打开播放器」5字撑爆），
+       改为内容自适应：padding 撑开，max-width 卡在卡片可用宽度(150px)内兜底。 */
+    .suggestion-card .action.short,.suggestion-card .action.long { width:auto;max-width:150px;padding:0 14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:999px;background:rgba(0,0,0,.08); }
     .suggestion-card .action.short:after,.suggestion-card .action.long:after { content:"";display:inline-block;width:5px;height:5px;margin:0 0 1px 6px;border-top:1px solid currentColor;border-right:1px solid currentColor;transform:rotate(45deg); }
     .suggestion-card[data-ink="light"] .card-title,.suggestion-card[data-ink="light"] .card-header,.suggestion-card[data-ink="light"] .card-label,.suggestion-card[data-ink="light"] .card-data,.suggestion-card[data-ink="light"] .action { color:rgba(255,255,255,.96); }
     .suggestion-card[data-ink="light"] .card-support { color:rgba(255,255,255,.98);font-weight:700; }
