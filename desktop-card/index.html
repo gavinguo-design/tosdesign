@@ -5644,9 +5644,23 @@
     }
 
     function routeDataCardTemplate(card, requestText) {
+      // AI 生成链路已能直接输出 layout:'chart'（chat.js CHART LAYOUT 路由规则）。
+      // AI 已选 chart 时后处理绝不覆盖路由，只做字段归一化：flat JSON 里 ratio 是字符串 → 转 number；
+      // bg 缺失时按 chartType 补模板底色，保证渲染层拿到的字段类型与模板库一致。
+      if (card.layout === 'chart') {
+        const normalized = { ...card };
+        ['chartRatio', 'ring1Ratio', 'ring2Ratio'].forEach(k => {
+          if (typeof normalized[k] === 'string' && normalized[k] !== '') {
+            const n = parseFloat(normalized[k]);
+            if (!Number.isNaN(n)) normalized[k] = Math.min(Math.max(n, 0), 1);
+          }
+        });
+        if (!normalized.bg) normalized.bg = getChartBackground(normalized.chartType);
+        return normalized;
+      }
       const source = `${requestText || ''} ${card.header || ''} ${card.title || ''} ${card.subtitle || ''}`.toLowerCase();
       const isTraffic = /流量|套餐|话费|mobile data|data usage|data plan|quota/.test(source);
-      if (!isTraffic || card.layout === 'chart') return card;
+      if (!isTraffic) return card;
 
       const value = String(card.value || '').match(/[0-9]+(?:\.[0-9]+)?/)?.[0] || '12.6';
       const unit = card.unit || 'GB';
