@@ -3437,10 +3437,14 @@
     .art-step-photo-hero:before{background:linear-gradient(160deg,rgba(12,16,28,.6) 0%,rgba(12,16,28,.36) 55%,rgba(12,16,28,.12) 100%)}
     /* High-VA story art */
     /* C-01 trend component is a foreground component, never background art. */
-    .c01-chart-component { position:absolute;inset:0;z-index:2;width:138px;height:138px;transform:scale(calc(188 / 138));transform-origin:top left;pointer-events:none; }
+    /* 2026-08-06 尺寸统一返工：C-01 不再整卡接管（138×138 缩放导致标题/按钮与另两卡不同规格），
+       改为仅承载折线图表区，文字/按钮全部回归 .card-copy 标准层（.card-title/.card-header/.action）。 */
+    .c01-chart-component { position:absolute;z-index:2;pointer-events:none;overflow:visible; }
+    .step-title { display:flex;align-items:center;gap:8px; }
+    .step-title-plate { flex:none;display:inline-block;width:14px;height:14px;border-radius:4px;background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.95) 0 2.4px,rgba(255,95,15,1) 2.6px); }
     /* 高VA深色摄影底可读性保障（2026-08-06）：文字加投影；图表区局部轻蒙层；折线加粗提亮 */
     .suggestion-card[data-ink="light"] .c01-chart-component { text-shadow:0 1px 2px rgba(0,0,0,.72); }
-    .suggestion-card[data-ink="light"] .c01-chart-component:before { content:"";position:absolute;left:8px;right:8px;top:72px;bottom:6px;border-radius:10px;background:rgba(10,14,24,.42);backdrop-filter:blur(2px); }
+    .suggestion-card[data-ink="light"] .c01-chart-component:before { content:"";position:absolute;inset:-6px;border-radius:10px;background:rgba(10,14,24,.42);backdrop-filter:blur(2px); }
     .suggestion-card[data-ink="light"] .c01-chart-component svg path[stroke] { stroke-width:1.9px; }
     .suggestion-card[data-ink="light"] .c01-chart-component svg { filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.5)); }
     /* Suggestion card copy layers */
@@ -5452,7 +5456,8 @@
         ? textPart.split(/。|\n/)[0].trim().slice(0, 60)
         : null;
 
-      // 2. 调性分析 - 优先提取逐轴推理(VA2 视觉吸引力:xxx),退回旧格式
+      // 2. 调性分析 - 优先提取逐轴推理(VA2 视觉吸引力:xxx),退回旧格式;
+      // 迭代回复没带调性块时沿用上一次全局结论,避免步骤条卡在 running(2026-08-06)
       let toneDesc = null;
       const toneAnalysis = parseToneAnalysis(fullReply);
       if (toneAnalysis.rows.length) {
@@ -5468,6 +5473,12 @@
           const aaLabel = AXIS_LABELS.AA[aa] || `行动引导 ${aa}`;
           toneDesc = `VA${va} 视觉张力·${vaLabel}<br>IS${is} 信息密度·${isLabel}<br>AA${aa} 行动引导·${aaLabel}`;
         }
+      }
+      // 迭代回复未带调性块 → 用上一次全局结论兼容，步骤条不留空
+      if (!toneDesc && Array.isArray(currentCardToneRows) && currentCardToneRows.length) {
+        toneDesc = currentCardToneRows
+          .map((row) => `<b>${row.ax}${row.level}</b> ${AXIS_NAMES[row.ax] || row.ax} - ${escapeHtml(row.reason)}`)
+          .join('<br>') + '<br><span style="opacity:.6">（沿用上次结论，本次迭代调性未变）</span>';
       }
 
       // 3. 布局规划
@@ -5589,8 +5600,14 @@
 
         const tone = parseToneAnalysis(displayReply);
         const toneRows = tone.rows;
-        currentCardToneRows = toneRows;
-        currentCardToneSummary = tone.summary;
+        // 2026-08-06 修复：迭代改卡/闲聊回复常不带调性块（prompt 允许调性不变时省略），
+        // 此处无条件覆盖会把上一张卡的调性结论清空，左侧面板退化成「本次生成未返回调性结论」。
+        // 只有本次真的解析到调性才写回全局；面板始终渲染全局状态（见下方 renderWbTone 调用）。
+        const hasNewTone = toneRows.length > 0 || !!tone.summary;
+        if (hasNewTone) {
+          currentCardToneRows = toneRows;
+          currentCardToneSummary = tone.summary;
+        }
 
         // 解析逐轴调性推理 → 结构化徽章块（AXIS_NAMES 用全局定义）
         let toneBlockHtml = '';
@@ -5627,7 +5644,7 @@
 
         // ✨ 左侧5个分析卡片:先于卡片/插图渲染,用打字机效果逐字显示
         if (document.getElementById('workbench-view').classList.contains('active')) {
-          if (typeof renderWbTone === 'function') renderWbTone(toneRows, tone.summary);
+          if (typeof renderWbTone === 'function') renderWbTone(currentCardToneRows, currentCardToneSummary);
           if (typeof renderWbColor === 'function' && preCardData) renderWbColor(preCardData);
           if (typeof renderWbFont === 'function' && preCardData) renderWbFont(preCardData);
           if (typeof renderWbSpec === 'function' && preCardData) renderWbSpec(preCardData);
