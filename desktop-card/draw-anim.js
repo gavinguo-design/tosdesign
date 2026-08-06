@@ -2,8 +2,9 @@
  * draw-anim.js — 「AI 绘制感」生成过场动画 + 手机常驻预览
  * ------------------------------------------------------------
  * 工作台每次发出生成指令时，播放一段"AI 正在绘制手机界面"的
- * 过场动画：结构元素 SVG 描线勾勒 → 时钟表盘刻度连续描出 →
- * 图标真图逐个点亮 → 壁纸模糊淡入 → 生成卡片「描线→填充」
+ * 过场动画：结构元素 SVG 描线勾勒 → 时钟卡成品图落位（模糊→
+ * 清晰淡入，与壁纸同类资源素材处理，不描线）→ 图标真图逐个点亮 →
+ * 壁纸模糊淡入 → 生成卡片「描线→填充」
  * 落到手机屏幕的卡位上（Figma 6:1179 AI Suggestions 组件位）。
  *
  * 收口行为（2026-08-06 修正）：动画播完后手机界面**定格保留**，
@@ -54,7 +55,7 @@
     [14, 402, 83, 'Games'], [97, 402, 83, 'Phone Master'], [180, 402, 83, 'App Center'], [263, 402, 83, 'File Manager'],
     [28, 222, 138, 'Clock'], [214, 222, 98, 'AI Suggestions'],
   ];
-  var PHASES = ['落笔起稿…', '勾勒骨架…', '描绘表盘…', '点亮图标…', '铺陈壁纸…'];
+  var PHASES = ['落笔起稿…', '勾勒骨架…', '安放时钟…', '点亮图标…', '铺陈壁纸…'];
 
   /* ---------- 样式注入（一次性） ---------- */
   var css = [
@@ -76,8 +77,8 @@
     '.da-ic{position:absolute;opacity:0;}',
     '.da-txt{position:absolute;color:#fff;font-family:-apple-system,"SF Pro Display","PingFang SC",sans-serif;',
     '  opacity:0;white-space:nowrap;text-shadow:0 1px 6px rgba(15,20,45,.35);}',
-    '.da-clock-txt{transition:color .45s ease,text-shadow .45s ease;}',
-    '.da-stage.da-final .da-clock-txt{color:#16181d;text-shadow:none;}',
+    '.da-clockimg{position:absolute;left:25px;top:73px;width:145px;height:145px;border-radius:20px;opacity:0;',
+    '  box-shadow:0 6px 18px rgba(15,20,45,.28);}',
     '.da-pen{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;pointer-events:none;z-index:8;',
     '  background:radial-gradient(circle,#fff 0%,rgba(167,139,250,.95) 40%,rgba(124,92,252,0) 72%);',
     '  box-shadow:0 0 14px 5px rgba(150,120,255,.55);opacity:0;}',
@@ -132,7 +133,6 @@
     _timers: [], _anims: [], _observer: null, _watch: null, _ro: null,
     _iterPen: null,
     _startAt: 0, _contentQueued: false, _finishing: false,
-    _dialSvgText: null, _dialFetching: false,
     _k: 1, _end: 3300,
     TIMELINE_END: 3300,
     ITER_END: 1300,
@@ -302,7 +302,7 @@
         el.style.fillOpacity = '0';
         return el;
       }
-      fillbox(rect('clockBox', 25, 73, 145, 145, 20), 'rgba(255,255,255,0.92)');
+      rect('clockBox', 25, 73, 145, 145, 20); // 时钟位只勾外框不填底，成品图稍后盖上
       fillbox(rect('aiBox', 190.5, 73, 145, 145, 20), 'rgba(46,52,96,0.9)');
       // ② 12 个图标容器（位次0 谷歌文件夹是玻璃底）
       this._iconBoxEls = ICON_BOXES.map(function (p, idx) {
@@ -318,11 +318,14 @@
       pager.appendChild(svgEl('circle', { cx: 200, cy: 624, r: 3, pathLength: 1, 'class': 'da-stroke' }));
       strokes.pager = pager;
       rect('nav', 120, 791, 120, 3, 2);
-      // ③ 时钟表盘线稿容器（fetch 后注入）
-      var dialG = svgEl('g', { transform: 'translate(29.5,77.5)', opacity: 1 });
-      svg.appendChild(dialG);
-      this._dialG = dialG;
-      this._injectDial();
+
+      // ③ 时钟卡成品图（资源类素材，同壁纸：模糊→清晰淡入落位，不描线）
+      var clockImg = document.createElement('img');
+      clockImg.className = 'da-clockimg';
+      clockImg.src = asset('时钟卡成品.png');
+      clockImg.alt = '';
+      stage.appendChild(clockImg);
+      this._clockImg = clockImg;
 
       // B：图标层（真图）
       var icLayer = document.createElement('div');
@@ -361,11 +364,6 @@
         return d;
       }
       this._labelEls = LABELS.map(function (l) { return txt(l[0], l[1], l[2], l[3], 11); });
-      this._clockTxtEls = [
-        txt(42, 112, 111, '09:30', 46, 'da-clock-txt', 750),
-        txt(68, 93, 60, 'Mon, Dec 18', 10, 'da-clock-txt', 600),
-        txt(82, 182, 32, '26°', 10, 'da-clock-txt', 600),
-      ];
 
       // 画笔光点
       var pen = document.createElement('div');
@@ -374,45 +372,6 @@
       this._pen = pen;
     },
 
-    /* 时钟表盘线稿：fetch 一次缓存，逐条 stagger 描出 */
-    _injectDial: function () {
-      var self = this;
-      if (this._dialSvgText) return this._mountDial();
-      if (this._dialFetching) return;
-      this._dialFetching = true;
-      fetch(encodeURI(ICON + '手机：时钟表盘线稿.svg'))
-        .then(function (r) { return r.ok ? r.text() : Promise.reject(r.status); })
-        .then(function (text) {
-          self._dialSvgText = text;
-          self._dialFetching = false;
-          if (self.active) self._mountDial();
-        })
-        .catch(function () { self._dialFetching = false; /* 表盘缺席不阻塞主动画 */ });
-    },
-    _mountDial: function () {
-      if (!this._dialG || this._dialG.childNodes.length) return;
-      var k = this._k || 1;
-      var doc = new DOMParser().parseFromString(this._dialSvgText, 'image/svg+xml');
-      var paths = doc.querySelectorAll('path');
-      var frag = document.createDocumentFragment();
-      for (var i = 0; i < paths.length; i++) {
-        var p = document.importNode(paths[i], true);
-        // 线稿在深底上反白显示
-        if (p.getAttribute('fill') && p.getAttribute('fill') !== 'none') p.setAttribute('fill', 'rgba(255,255,255,0.85)');
-        if (p.getAttribute('stroke')) p.setAttribute('stroke', 'rgba(255,255,255,0.85)');
-        p.style.opacity = '0';
-        frag.appendChild(p);
-      }
-      this._dialG.appendChild(frag);
-      // 若时间线已开动，按剩余时序补 stagger
-      var elapsed = this.active ? performance.now() - this._startAt : 0;
-      var base = Math.max(Math.round(900 * k) - elapsed, 0);
-      var nodes = this._dialG.childNodes;
-      for (var j = 0; j < nodes.length; j++) {
-        this._animate(nodes[j], [{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'scale(1)' }],
-          { duration: Math.round(180 * k), delay: base + Math.round(j * 16 * k), fill: 'forwards', easing: 'ease-out' });
-      }
-    },
 
     /* ---------- 时间线 ---------- */
     _animate: function (el, kf, opts) {
@@ -467,10 +426,11 @@
       this._draw(s.searchGlass, T(1640), T(360));
       this._draw(s.pager, T(1700), T(220));
       this._draw(s.nav, T(1780), T(220));
-      // ③ 表盘炫技（表盘 stagger 在 _mountDial 里按 900ms 基点排布）＋时钟文字扫入
-      this._wipe(this._clockTxtEls[0], T(1750), T(340));
-      this._wipe(this._clockTxtEls[1], T(1900), T(260));
-      this._wipe(this._clockTxtEls[2], T(2000), T(240));
+      // ③ 时钟卡成品图落位：容器框勾完后，模糊→清晰淡入（与壁纸同类资源素材处理，不描线）
+      this._animate(this._clockImg, [
+        { opacity: 0, filter: 'blur(14px) brightness(1.15)', transform: 'scale(1.06)' },
+        { opacity: 1, filter: 'blur(0px) brightness(1)', transform: 'scale(1)' },
+      ], { duration: T(680), delay: T(1150), fill: 'forwards', easing: 'ease-out' });
       // ④ 图标点亮：8 主屏 → 9 迷你连爆 → dock4 → 搜索栏3；容器同步「线稿→实体」
       var boxFillDelay = {};
       BIG_ICONS.forEach(function (it, i) {
@@ -485,9 +445,15 @@
         var d = boxFillDelay[i] != null ? boxFillDelay[i] : T(2200);
         self._later(function () { el.style.fillOpacity = i === 0 ? '0.6' : '1'; }, d);
       });
-      // 组件容器底填充随表盘/文字进场
-      this._later(function () { if (self._strokes) { self._strokes.clockBox.style.fillOpacity = '1'; self._strokes.aiBox.style.fillOpacity = '1'; } }, T(1500));
-      // ⑤ 壁纸落位（blur 收敛到残留，保持氛围感）＋标签渐显＋时钟文字转正色
+      // AI 组件容器随时钟成品图进场；时钟外框稍后淡出让成品图完整呈现。
+      this._later(function () {
+        if (self._strokes) {
+          self._strokes.aiBox.style.fillOpacity = '1';
+          self._animate(self._strokes.clockBox, [{ opacity: 1 }, { opacity: 0 }],
+            { duration: T(300), delay: T(350), fill: 'forwards' });
+        }
+      }, T(1500));
+      // ⑤ 壁纸落位（blur 收敛到残留，保持氛围感）＋标签渐显
       this._animate(this._wall, [
         { opacity: 0, filter: 'blur(18px) brightness(.75) saturate(1.1)', transform: 'scale(1.06)' },
         { opacity: 0.5, filter: 'blur(9px) brightness(.8) saturate(1.15)', transform: 'scale(1.02)' },
@@ -496,7 +462,6 @@
         self._animate(el, [{ opacity: 0, transform: 'translateY(3px)' }, { opacity: 1, transform: 'translateY(0)' }],
           { duration: T(260), delay: T(2650 + i * 40), fill: 'forwards' });
       });
-      this._later(function () { if (self._stage) self._stage.classList.add('da-final'); }, T(2750));
       // 画笔光点：沿各幕关键位巡游，收在卡位附近
       this._pen.style.opacity = '0.9';
       this._animate(this._pen, [
@@ -748,7 +713,7 @@
       if (this._root && this._root.parentNode) this._root.parentNode.removeChild(this._root);
       this._root = this._stage = this._wrap = this._svg = this._caption = this._pen = null;
       this._iconBoxEls = this._bigIconEls = this._miniIconEls = this._searchIconEls = null;
-      this._labelEls = this._clockTxtEls = this._dialG = this._wall = null;
+      this._labelEls = this._wall = this._clockImg = null;
       this._strokes = null; this._slot = null; this._iterPen = null; this._slotSketchEl = null;
       this.active = false;
       this.persistent = false;
