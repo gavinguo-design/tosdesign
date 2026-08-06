@@ -5186,36 +5186,39 @@
     }
 
     // ─── 行程卡渲染（基础模板 · 行程分区专用，layout:'itinerary'，独立于 single/dual/triple/big/chart 分支）───
-    // 数值来源：/tmp/openclaw/figma_itinerary_specs.md（Figma REST API 精确解析，file MMdPCkHpgkZy2cKwSjyrVf node 1:102）。
-    // 统一容器：138×138 r20，白底 + 顶部蓝色渐变叠加（rgba(0,97,249,0.2)→rgba(10,105,254,0)），
-    // 1px 渐变白描边（blendMode OVERLAY），右下 36×36 r10 #E5E5E5 图标底板 + 金色飞机徽章（Figma 1:108 导出 PNG @3x；
-    // 火车卡也统一用飞机徽章——潮伟哥已确认不换图标）。
-    // 可见形态：A 标准横排（站码对开+方向徽章+Departs/时间）；B 竖排（无站码→中文城市，采用 Figma 红箭头
-    // 「优化布局」版 1:470/1:495，Departs 标签 visible=false 隐藏、弱化时间上移）；C 兜底（无编号→首行固定标签
-    // 「航班信息/车次信息」1:530/1:555，其余同 B）。缺 from/to/departsAt = 形态 D：业务规则不生成卡片，
-    // 渲染层仅保留背景+图标底板（对应 Figma 空卡演示 1:273）。
-    const ITINERARY_BG = 'linear-gradient(180deg, rgba(0,97,249,0.2) 0%, rgba(10,105,254,0) 100%), #ffffff';
+    // 数值来源：/tmp/openclaw/figma_itinerary_specs_v2.md（2026-08-06 新稿，Figma REST API 精确解析，
+    // file MMdPCkHpgkZy2cKwSjyrVf node 1:102，lastModified 2026-08-06T03:06Z）。
+    // 新稿把行程卡重构为「出行阶段状态机」：航班 4 态（值机→登机口→座位→行李转盘）、火车 3 态（出发时间→检票口→座位）。
+    // 旧稿的站码横排（SZX→PEK）、兜底标签「航班信息/车次信息」、Departs 标签、右下角金色飞机徽章+#E5E5E5 底板全部废弃
+    //（新稿对应图层 visible=false / 不存在）。
+    // 统一容器：138×138 r20，白底 + 底部蓝色渐变叠加（rgba(10,105,254,0)→rgba(0,97,249,0.2)，方向与旧稿相反），
+    // 1px 渐变白描边（blendMode OVERLAY）。两大形态：
+    //   · 竖排出发态（vertical）：编号[｜值机柜台] → 出发地[+航站楼16px混排] → 弱化时间[+延误tag] → 方向徽章 → 到达地[+到达时间]
+    //   · 大字凸显态（highlight，data.bigValue 触发）：编号 → 20px 大字 → 10px 灰标签[+延误tag] → 底部 122×54 白0.6 信息条
+    const ITINERARY_BG = 'linear-gradient(180deg, rgba(10,105,254,0) 0%, rgba(0,97,249,0.2) 100%), #ffffff';
 
-    // 16×16 方向小徽章（Figma 1:119 航班 / 1:194 火车 导出 SVG，路径原样保留）
-    const ITIN_DIR_BADGE = {
-      flight: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-        '<path d="M8 0C12.4183 0 16 3.58172 16 8C16 12.4183 12.4183 16 8 16C3.58172 16 0 12.4183 0 8C0 3.58172 3.58172 0 8 0Z" fill="black" fill-opacity="0.9"/>' +
-        '<path d="M11.1192 6.08477C12.0199 5.56524 13.071 5.70107 13.4669 6.39044C13.5518 6.52883 13.4668 6.73283 13.2823 6.83965L8.10357 9.82891C8.0744 9.84347 5.57637 11.088 4.35259 10.9432C3.93985 10.8946 3.4688 10.5008 3.4688 10.5008L11.1192 6.08477ZM2.62896 9.26251C2.80857 9.16069 3.10686 9.15884 3.25982 9.20489C3.40855 9.25047 4.52699 9.69616 4.55377 9.70684L3.35455 10.3992C3.347 10.3922 2.81978 9.89818 2.69439 9.7752C2.57785 9.65866 2.35946 9.41546 2.62896 9.26251ZM5.4063 5.31036C5.68794 5.20596 6.13034 5.22018 6.37798 5.33672C6.62397 5.4537 9.57016 6.95018 9.59673 6.96368L7.87115 7.95879C7.87115 7.95879 5.78742 6.27796 5.5938 6.1502C5.33161 5.97783 4.802 5.53132 5.4063 5.31036Z" fill="white"/>' +
-        '</svg>',
-      train: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-        '<rect width="16" height="16" rx="8" fill="black"/>' +
-        '<mask id="mask0_1_194" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="16" height="16">' +
-        '<rect width="16" height="16" rx="8" fill="black"/>' +
-        '</mask>' +
-        '<g mask="url(#mask0_1_194)">' +
-        '<path d="M-0.84082 10.5999C-0.928485 10.5999 -1 10.6714 -1 10.7591C-0.999804 10.8466 -0.928363 10.9173 -0.84082 10.9173H12.8408C12.9284 10.9173 12.9998 10.8466 13 10.7591C13 10.6714 12.9285 10.5999 12.8408 10.5999H-0.84082ZM-0.365234 5.14288C-0.715768 5.14297 -0.999916 5.42712 -1 5.77765V9.42902C-0.999774 9.77943 -0.715681 10.0637 -0.365234 10.0638H12.3652C12.7157 10.0637 12.9998 9.77943 13 9.42902V7.91925C13 7.72027 12.9068 7.53242 12.748 7.41241L12.4609 7.19464C12.4359 7.20144 12.41 7.20632 12.3828 7.20636H9.17383C9.00825 7.20636 8.8742 7.07209 8.87402 6.90656V6.07745C8.87422 5.91193 9.00826 5.77765 9.17383 5.77765H10.5859L10.0859 5.39972C9.86551 5.23305 9.59665 5.14295 9.32031 5.14288H-0.365234ZM7.93848 5.77765C8.10384 5.77789 8.23907 5.91208 8.23926 6.07745V6.90656C8.23908 7.07194 8.10385 7.20612 7.93848 7.20636H7.11035C6.94477 7.20636 6.81072 7.07209 6.81055 6.90656V6.07745C6.81074 5.91193 6.94479 5.77765 7.11035 5.77765H7.93848ZM5.87598 5.77765C6.04125 5.77799 6.1756 5.91214 6.17578 6.07745V6.90656C6.1756 7.07187 6.04126 7.20601 5.87598 7.20636H5.04688C4.88146 7.20618 4.74725 7.07197 4.74707 6.90656V6.07745C4.74726 5.91204 4.88146 5.77783 5.04688 5.77765H5.87598ZM3.81934 5.77765C3.98461 5.77799 4.11895 5.91214 4.11914 6.07745V6.90656C4.11896 7.07187 3.98462 7.20601 3.81934 7.20636H2.99023C2.82481 7.20618 2.69061 7.07197 2.69043 6.90656V6.07745C2.69062 5.91204 2.82482 5.77783 2.99023 5.77765H3.81934Z" fill="white"/>' +
-        '</g>' +
-        '</svg>',
+    // 行程卡图标统一走 icons/ 图标库（与 headerIcon 同一套管理惯例：中文命名 SVG 文件 + 'icons/xxx' 引用），不内联 path。
+    // 矢量均为 Figma /v1/images 官方导出（file MMdPCkHpgkZy2cKwSjyrVf 新稿节点），原始 path 数据未动：
+    //   行程：航班方向.svg   ← node 3:275（16×16 黑圆底白飞机剪影；竖排值机态按 Figma 3:108 以 14×14 摆放）
+    //   行程：火车方向.svg   ← node 3:308（16×16 黑胶囊底白车头）
+    //   行程：航班行程条.svg ← node 3:22（15×8 纯黑飞机剪影，底部信息条时间行中缝）
+    //   行程：火车行程条.svg ← node 3:242（14×6 黑0.9火车剪影，底部信息条站名行中缝）
+    // 旧稿的 行程：金色飞机徽章.png（1:108）已随新稿废弃删除。
+    const ITIN_ICONS = {
+      flightDir: 'icons/行程：航班方向.svg',
+      trainDir: 'icons/行程：火车方向.svg',
+      flightStrip: 'icons/行程：航班行程条.svg',
+      trainStrip: 'icons/行程：火车行程条.svg',
     };
 
-    // 火车徽章 SVG 内含 mask id，同一页面多实例会撞 id（后者引用前者的 mask）。内容相同视觉无差，
-    // 但为规范起见每次插入替换成唯一 id
-    let itinMaskSeq = 0;
+    // 延误 tag（Figma 3:32/3:123：22×12 r3，bg 橙0.2，文字 8px Medium 橙）——竖排/大字两形态复用
+    function mkItinDelayTag() {
+      const tag = document.createElement('div');
+      tag.style.cssText = 'flex:none;width:22px;height:12px;border-radius:3px;background:rgba(255,95,15,0.2);' +
+        'display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:500;line-height:9.54px;color:rgba(255,95,15,1);';
+      tag.textContent = '延误';
+      return tag;
+    }
 
     function buildItineraryCardInner(data) {
       const container = document.createElement('div');
@@ -5237,74 +5240,104 @@
         '-webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;';
       container.appendChild(borderOverlay);
 
-      // 右下角图标区（所有形态统一）：36×36 r10 #E5E5E5 底板 @ (88,88) + 40×40 徽章 frame 同起点。
-      // 徽章矢量原始占位 27.67×34.29 居中于 40×40 frame（偏移 6.16,2.46），导出 PNG 含 DROP_SHADOW bleed（96×115@3x），
-      // 按 32×38.3 居中摆放使矢量主体回到规范尺寸
-      container.appendChild(mk('position:absolute;left:88px;top:88px;width:36px;height:36px;border-radius:10px;background:rgba(229,229,229,1);'));
-      const badgeFrame = document.createElement('div');
-      badgeFrame.style.cssText = 'position:absolute;left:88px;top:88px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;overflow:hidden;';
-      const badgeImg = document.createElement('img');
-      badgeImg.src = 'assets/itinerary-plane-badge.png';
-      badgeImg.alt = '';
-      badgeImg.style.cssText = 'width:32px;height:38.3px;display:block;';
-      badgeFrame.appendChild(badgeImg);
-      container.appendChild(badgeFrame);
-
-      // 形态 D：缺必选信息（出发地&目的地 / 出发时间）→ 业务规则不生成卡片，这里只留空卡背景演示
-      const itFrom = str(data.from), itTo = str(data.to), itNumber = str(data.number), itDeparts = str(data.departsAt);
-      if (!itFrom || !itTo || !itDeparts) return container;
-
       const itMode = data.mode === 'train' ? 'train' : 'flight';
+      const itNumber = str(data.number), itNumberExtra = str(data.numberExtra);
+      const itFrom = str(data.from), itTo = str(data.to), itDeparts = str(data.departsAt), itArrives = str(data.arrivesAt);
+      const itBig = str(data.bigValue), itBigLabel = str(data.bigLabel);
+      const itDepTime = str(data.depTime), itArrTime = str(data.arrTime);
 
-      // 首行 @ (14,14)：编号 12px Medium #0A69FE；无编号 → 兜底固定标签（形态 C）
-      container.appendChild(mk(
-        'position:absolute;left:14px;top:14px;width:110px;height:14px;font-size:12px;font-weight:500;line-height:14.32px;color:rgba(10,105,254,1);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;',
-        itNumber || (itMode === 'flight' ? '航班信息' : '车次信息')));
+      // 缺必选信息（出发地&目的地 / 出发时间，且无大字凸显内容）→ 业务规则不生成卡片，只留背景
+      if (!itBig && (!itFrom || !itTo || !itDeparts)) return container;
 
-      // 方向小徽章 16×16（航班：圆形黑底白机；火车：胶囊黑底白车头）
-      const dirBadge = document.createElement('div');
-      dirBadge.innerHTML = itMode === 'train'
-        ? ITIN_DIR_BADGE.train.replace(/mask0_1_194/g, 'itinTrainMask' + (itinMaskSeq++))
-        : ITIN_DIR_BADGE.flight;
+      // 首行 @ (14,14)：编号 12px Medium #0A69FE；可选「｜值机柜台」复合（Figma 3:95：｜ 8px Heavy 黑0.4，gap 2px）
+      const headRow = document.createElement('div');
+      headRow.style.cssText = 'position:absolute;left:14px;top:14px;width:110px;height:14px;display:flex;align-items:center;gap:2px;overflow:hidden;white-space:nowrap;';
+      headRow.appendChild(mk('flex:none;font-size:12px;font-weight:500;line-height:14.32px;color:rgba(10,105,254,1);', itNumber || (itMode === 'flight' ? '航班信息' : '车次信息')));
+      if (itNumberExtra) {
+        headRow.appendChild(mk('flex:none;font-size:8px;font-weight:900;line-height:10.8px;color:rgba(0,0,0,0.4);', '｜'));
+        headRow.appendChild(mk('flex:none;font-size:12px;font-weight:500;line-height:14.32px;color:rgba(10,105,254,1);overflow:hidden;text-overflow:ellipsis;', itNumberExtra));
+      }
+      container.appendChild(headRow);
 
-      // 站码判定：显式 fromIsCode 优先，否则按 3-4 位大写字母自动识别（IATA 三字码 / 国际铁路车站代码）
-      const isCode = (data.fromIsCode != null)
-        ? !!data.fromIsCode
-        : (/^[A-Z]{3,4}$/.test(itFrom) && /^[A-Z]{3,4}$/.test(itTo));
-
-      if (isCode) {
-        // ── 形态 A：标准横排（Figma 1:128 航班 / 1:310 火车）──
-        // 站码对开：出发左对齐 @ (14,30)，到达右对齐（右缘距卡右 14px）；航班 18px / 火车 16px SemiBold
-        const codeSize = itMode === 'flight' ? 18 : 16;
-        const codeLh = itMode === 'flight' ? '21.47px' : '19.09px';
+      if (itBig) {
+        // ── 大字凸显态（Figma 3:2 登机口 / 3:35 座位 / 3:65 行李转盘 / 3:153 检票口 / 3:224 火车座位）──
+        // 大字 20px SemiBold @ (14,30)；灰标签 10px @ (14,56)，延误 tag 紧随其右 gap 4px（Figma 标签30w@14→tag@48）
         container.appendChild(mk(
-          `position:absolute;left:14px;top:30px;width:43px;font-size:${codeSize}px;font-weight:600;line-height:${codeLh};color:rgba(0,0,0,0.9);white-space:nowrap;`,
-          itFrom));
-        // 方向徽章位于两码之间：航班 (61,33) / 火车 (61,31)
-        dirBadge.style.cssText = `position:absolute;left:61px;top:${itMode === 'flight' ? 33 : 31}px;width:16px;height:16px;`;
+          'position:absolute;left:14px;top:30px;width:110px;height:24px;font-size:20px;font-weight:600;line-height:23.87px;color:rgba(0,0,0,0.9);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;',
+          itBig));
+        const labelRow = document.createElement('div');
+        labelRow.style.cssText = 'position:absolute;left:14px;top:56px;width:110px;height:12px;display:flex;align-items:center;gap:4px;overflow:hidden;white-space:nowrap;';
+        labelRow.appendChild(mk('flex:none;font-size:10px;font-weight:500;line-height:11.93px;color:rgba(0,0,0,0.6);', itBigLabel));
+        if (data.delayed) labelRow.appendChild(mkItinDelayTag());
+        container.appendChild(labelRow);
+
+        // 底部信息条（Figma Group 2134130928）：122×54 r10 白0.6 @ (8,76)
+        const strip = document.createElement('div');
+        strip.style.cssText = 'position:absolute;left:8px;top:76px;width:122px;height:54px;border-radius:10px;background:rgba(255,255,255,0.6);overflow:hidden;';
+        const stripIcon = document.createElement('img');
+        stripIcon.alt = '';
+        if (itMode === 'flight') {
+          // 航班条：时间对开 15px SemiBold @ (6,11)/right6，飞机剪影 15×8 @ (54,16)，站名 10px 灰0.6 @ y31 对开
+          strip.appendChild(mk('position:absolute;left:6px;top:11px;font-size:15px;font-weight:600;line-height:17.9px;color:rgba(0,0,0,0.9);white-space:nowrap;', itDepTime));
+          strip.appendChild(mk('position:absolute;right:6px;top:11px;font-size:15px;font-weight:600;line-height:17.9px;color:rgba(0,0,0,0.9);white-space:nowrap;text-align:right;', itArrTime));
+          stripIcon.src = ITIN_ICONS.flightStrip;
+          stripIcon.style.cssText = 'position:absolute;left:54px;top:16px;width:15px;height:8px;';
+        } else {
+          // 火车条：仅出发时间 16px SemiBold @ (6,10)，火车剪影 14×6 @ (44,35) 居两站名之间
+          strip.appendChild(mk('position:absolute;left:6px;top:10px;font-size:16px;font-weight:600;line-height:19.09px;color:rgba(0,0,0,0.9);white-space:nowrap;', itDepTime));
+          stripIcon.src = ITIN_ICONS.trainStrip;
+          stripIcon.style.cssText = 'position:absolute;left:44px;top:35px;width:14px;height:6px;';
+        }
+        strip.appendChild(stripIcon);
+        // 站名行：Figma 两侧各自紧贴 6px 内边距，「乌鲁木齐T3」实宽 52px；max-width 留到 64px 避免字体渲染差异触发省略号
+        strip.appendChild(mk('position:absolute;left:6px;top:31px;max-width:44px;font-size:10px;font-weight:500;line-height:11.93px;color:rgba(0,0,0,0.6);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;', itFrom));
+        strip.appendChild(mk('position:absolute;right:6px;top:31px;max-width:64px;font-size:10px;font-weight:500;line-height:11.93px;color:rgba(0,0,0,0.6);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;text-align:right;', itTo));
+        container.appendChild(strip);
+        return container;
+      }
+
+      // ── 竖排出发态（Figma 3:95 航班值机 / 3:189 火车出发时间）──
+      const dirBadge = document.createElement('img');
+      dirBadge.src = itMode === 'train' ? ITIN_ICONS.trainDir : ITIN_ICONS.flightDir;
+      dirBadge.alt = '';
+
+      if (itMode === 'flight') {
+        // 出发行：城市 14px lh16.7 + 航站楼 16px lh19.1 底对齐混排（Figma 城市@(14,32)h17 / T1@(44,30)h19，gap 2px）
+        const fromRow = document.createElement('div');
+        fromRow.style.cssText = 'position:absolute;left:14px;top:30px;width:110px;height:19px;display:flex;align-items:flex-end;gap:2px;overflow:hidden;white-space:nowrap;';
+        fromRow.appendChild(mk('flex:none;font-size:14px;font-weight:600;line-height:16.71px;color:rgba(0,0,0,0.9);', itFrom));
+        if (str(data.terminal)) fromRow.appendChild(mk('flex:none;font-size:16px;font-weight:600;line-height:19.09px;color:rgba(0,0,0,0.9);', str(data.terminal)));
+        container.appendChild(fromRow);
+        // 弱化时间 @ (14,51) lh13.5；延误 tag @ (82,52)（时间右侧 gap 4px）
+        const timeRow = document.createElement('div');
+        timeRow.style.cssText = 'position:absolute;left:14px;top:51px;width:110px;height:14px;display:flex;align-items:center;gap:4px;overflow:hidden;white-space:nowrap;';
+        timeRow.appendChild(mk('flex:none;font-size:10px;font-weight:500;line-height:13.5px;color:rgba(0,0,0,0.6);', itDeparts));
+        if (data.delayed) timeRow.appendChild(mkItinDelayTag());
+        container.appendChild(timeRow);
+        // 航班方向徽章竖排态为 14×14 @ (15,70)（Figma 3:108）
+        dirBadge.style.cssText = 'position:absolute;left:15px;top:70px;width:14px;height:14px;';
         container.appendChild(dirBadge);
+        // 到达行：整串 14px @ (14,89)；到达时间 @ (14,110)
         container.appendChild(mk(
-          `position:absolute;right:14px;top:30px;width:43px;font-size:${codeSize}px;font-weight:600;line-height:${codeLh};color:rgba(0,0,0,0.9);white-space:nowrap;text-align:right;`,
+          'position:absolute;left:14px;top:89px;width:110px;height:19px;font-size:14px;font-weight:600;line-height:16.71px;color:rgba(0,0,0,0.9);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;',
           itTo));
-        container.appendChild(mk(
-          'position:absolute;left:14px;top:96px;width:39px;height:14px;font-size:10px;font-weight:500;line-height:13.5px;color:rgba(0,0,0,0.6);white-space:nowrap;',
-          'Departs'));
-        container.appendChild(mk(
-          'position:absolute;left:14px;top:110px;width:110px;height:14px;font-size:10px;font-weight:500;line-height:13.5px;color:rgba(0,0,0,0.9);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;',
-          itDeparts));
+        if (itArrives) container.appendChild(mk(
+          'position:absolute;left:14px;top:110px;width:110px;height:14px;font-size:10px;font-weight:500;line-height:13.5px;color:rgba(0,0,0,0.6);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;',
+          itArrives));
       } else {
-        // ── 形态 B/C：中文城市竖排「优化布局」（Figma 1:470/1:495/1:530/1:555，红箭头标注的最终版）──
-        // Departs 标签 visible=false 隐藏；弱化时间（rgba(0,0,0,0.6)）紧跟出发城市下方
+        // 火车：出发站 16px @ (14,30)，时间 @ (14,51) lh11.93，徽章 16×16 @ (14,76)，到达站 16px @ (14,105)，无到达时间
         container.appendChild(mk(
-          'position:absolute;left:14px;top:30px;width:90px;height:19px;font-size:16px;font-weight:600;line-height:19px;color:rgba(0,0,0,0.9);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;',
+          'position:absolute;left:14px;top:30px;width:110px;height:19px;font-size:16px;font-weight:600;line-height:19.09px;color:rgba(0,0,0,0.9);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;',
           itFrom));
-        container.appendChild(mk(
-          'position:absolute;left:14px;top:51px;width:110px;height:12px;font-size:10px;font-weight:500;line-height:11.93px;color:rgba(0,0,0,0.6);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;',
-          itDeparts));
-        dirBadge.style.cssText = 'position:absolute;left:14px;top:75px;width:16px;height:16px;';
+        const timeRow = document.createElement('div');
+        timeRow.style.cssText = 'position:absolute;left:14px;top:51px;width:110px;height:12px;display:flex;align-items:center;gap:4px;overflow:hidden;white-space:nowrap;';
+        timeRow.appendChild(mk('flex:none;font-size:10px;font-weight:500;line-height:11.93px;color:rgba(0,0,0,0.6);', itDeparts));
+        if (data.delayed) timeRow.appendChild(mkItinDelayTag());
+        container.appendChild(timeRow);
+        dirBadge.style.cssText = 'position:absolute;left:14px;top:76px;width:16px;height:16px;';
         container.appendChild(dirBadge);
         container.appendChild(mk(
-          'position:absolute;left:14px;top:103px;width:80px;height:21px;font-size:16px;font-weight:600;line-height:21px;color:rgba(0,0,0,0.9);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;',
+          'position:absolute;left:14px;top:105px;width:110px;height:19px;font-size:16px;font-weight:600;line-height:19.09px;color:rgba(0,0,0,0.9);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;',
           itTo));
       }
 
@@ -7272,23 +7305,26 @@
       ];
     }
 
-    // ─── 行程分区变体（Figma 1:102「航班&火车&快递」，规格：/tmp/openclaw/figma_itinerary_specs.md）───
-    // 三种可见形态 × 航班/高铁 = 6 个变体。形态 D（缺起止地/出发时间）业务规则不生成卡片，不进模板库。
+    // ─── 行程分区变体（Figma 1:102「航班&火车&快递」2026-08-06 新稿，规格：/tmp/openclaw/figma_itinerary_specs_v2.md）───
+    // 按出行阶段状态机：航班 4 态 + 火车 3 态 = 7 个变体（样本数据即 Figma 画布原文）。
+    // 缺起止地/出发时间且无凸显内容 → 业务规则不生成卡片，不进模板库。
     function tplBuildItinerary() {
       const base = TPL_BASE.itinerary;
       return [
-        { data: { ...base, mode: 'flight', number: 'RY9108', from: 'SZX', to: 'PEK', departsAt: '11:50 AM, 10 Oct' },
-          label: '行程卡·航班横排（提取到机场三字码：出行提醒）' },
-        { data: { ...base, mode: 'train', number: 'Trn 12904', from: 'KRMI', to: 'NDLS', departsAt: '06:16 AM, 10 Oct' },
-          label: '行程卡·高铁横排（提取到车站代码：出行提醒）' },
-        { data: { ...base, mode: 'flight', number: 'RY9108', from: '重庆', to: '乌鲁木齐', departsAt: '3月16日 09:30' },
-          label: '行程卡·航班竖排（未提取到三字码：中文城市）' },
-        { data: { ...base, mode: 'train', number: 'Trn 12904', from: '重庆', to: '乌鲁木齐西', departsAt: '3月16日 09:30' },
-          label: '行程卡·高铁竖排（未提取到站码：中文站名）' },
-        { data: { ...base, mode: 'flight', from: '重庆', to: '乌鲁木齐', departsAt: '3月16日 09:30' },
-          label: '行程卡·航班兜底（未提取到航班号）' },
-        { data: { ...base, mode: 'train', from: '重庆', to: '乌鲁木齐西', departsAt: '3月16日 09:30' },
-          label: '行程卡·高铁兜底（未提取到车次）' },
+        { data: { ...base, mode: 'flight', number: 'ZH9528', numberExtra: 'B22值机', from: '重庆', terminal: 'T1', to: '乌鲁木齐 T3', departsAt: '3月16日 09:30', arrivesAt: '3月16日 12:30', delayed: true },
+          label: '行程卡·航班值机（起飞前6小时：凸显值机柜台）' },
+        { data: { ...base, mode: 'flight', number: 'ZH9528', bigValue: '104', bigLabel: '登机口', delayed: true, from: '重庆T1', to: '乌鲁木齐T3', depTime: '09:30', arrTime: '12:30' },
+          label: '行程卡·航班登机口（起飞前1小时：凸显登机口）' },
+        { data: { ...base, mode: 'flight', number: 'ZH9528', bigValue: '32A', bigLabel: '座位号', from: '重庆T1', to: '乌鲁木齐T3', depTime: '09:30', arrTime: '12:30' },
+          label: '行程卡·航班座位（起飞前30分钟：凸显座位）' },
+        { data: { ...base, mode: 'flight', number: 'ZH9528', bigValue: '08', bigLabel: '行李转盘', from: '重庆T1', to: '乌鲁木齐T3', depTime: '09:30', arrTime: '12:30' },
+          label: '行程卡·航班行李转盘（落地机场：凸显行李转盘）' },
+        { data: { ...base, mode: 'train', number: 'D7923', from: '重庆西', to: '乌鲁木齐西', departsAt: '3月16日 09:30' },
+          label: '行程卡·火车出发（发车前6小时：凸显出发时间）' },
+        { data: { ...base, mode: 'train', number: 'D7923', bigValue: 'A22', bigLabel: '检票口', from: '重庆西', to: '乌鲁木齐西', depTime: '09:30' },
+          label: '行程卡·火车检票口（发车前4小时：凸显检票口）' },
+        { data: { ...base, mode: 'train', number: 'D7923', bigValue: '11车15F', bigLabel: '座位号', from: '重庆西', to: '乌鲁木齐西', depTime: '09:30' },
+          label: '行程卡·火车座位（发车前15分钟：凸显座位）' },
       ];
     }
 
@@ -7301,7 +7337,7 @@
       itinerary: tplBuildItinerary(),
     };
     const TEMPLATE_TAB_LABELS = { single: '单文本', dual: '双文本', triple: '三文本', big: '大字体', chart: '图表', itinerary: '行程' };
-    const TEMPLATE_TAB_PREFIX = { single: 'S', dual: 'D', triple: 'T', big: 'B', chart: 'C', itinerary: 'T' };
+    const TEMPLATE_TAB_PREFIX = { single: 'S', dual: 'D', triple: 'T', big: 'B', chart: 'C', itinerary: 'I' };
 
     let templatesInited = false;
 
