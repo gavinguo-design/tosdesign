@@ -23,10 +23,18 @@ function parseSseTextResponse(raw) {
 // API candidates: tried in order until one succeeds
 const API_CANDIDATES = [
   {
+    // 主力：CRS claude-fable-5（reasoning 模型，需预留思考预算，parseText 跳过 thinking 块取 text）
+    url: "https://crs.chenge.ink/api/v1/messages",
+    headers: { 'Authorization': `Bearer ${CRS_KEY}`, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
+    buildBody: (msgs) => JSON.stringify({ model: 'claude-fable-5', max_tokens: 4000, system: SYSTEM_PROMPT, messages: msgs }),
+    parseText: (d) => (d.content || []).filter(b => b.type === 'text').map(b => b.text).join('') || '',
+    label: 'crs-fable-5',
+  },
+  {
     url: "https://crs.chenge.ink/api/v1/messages",
     headers: { 'Authorization': `Bearer ${CRS_KEY}`, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
     buildBody: (msgs) => JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1400, system: SYSTEM_PROMPT, messages: msgs }),
-    parseText: (d) => d.content?.[0]?.text || '',
+    parseText: (d) => (d.content || []).filter(b => b.type === 'text').map(b => b.text).join('') || '',
     label: 'crs-claude',
   },
   {
@@ -41,13 +49,6 @@ const API_CANDIDATES = [
     }),
     parseText: parseSseTextResponse,
     label: 'crs-gpt-56',
-  },
-  {
-    url: "https://admin.nickcloud.xyz/v1/messages",
-    headers: { 'Authorization': `Bearer ${NICK_KEY}`, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
-    buildBody: (msgs) => JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1400, system: SYSTEM_PROMPT, messages: msgs }),
-    parseText: (d) => d.content?.[0]?.text || '',
-    label: 'nickcloud',
   },
   {
     // 国产兜底：月之暗面 Kimi K3（reasoning 模型，max_tokens 需预留思考预算）

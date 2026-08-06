@@ -66,6 +66,21 @@ function parseSseTextResponse(raw) {
 
 const API_CANDIDATES = [
   {
+    // 主力：CRS claude-fable-5（reasoning 模型，max_tokens 预留思考预算，parseText 过滤 thinking 块）
+    url: "https://crs.chenge.ink/api/v1/messages",
+    headers: { Authorization: `Bearer ${CRS_KEY}`, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
+    supportsDocument: true,
+    buildBody: (input, document) => JSON.stringify({
+      model: 'claude-fable-5', max_tokens: 4000, system: SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: document ? [
+        { type: 'document', source: { type: 'base64', media_type: document.mediaType, data: document.base64 } },
+        { type: 'text', text: input },
+      ] : input }],
+    }),
+    parseText: (d) => (d.content || []).filter(b => b.type === 'text').map(b => b.text).join('') || '',
+    label: 'crs-fable-5',
+  },
+  {
     url: "https://crs.chenge.ink/api/v1/messages",
     headers: { Authorization: `Bearer ${CRS_KEY}`, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
     supportsDocument: true,
@@ -76,7 +91,7 @@ const API_CANDIDATES = [
         { type: 'text', text: input },
       ] : input }],
     }),
-    parseText: (d) => d.content?.[0]?.text || '',
+    parseText: (d) => (d.content || []).filter(b => b.type === 'text').map(b => b.text).join('') || '',
     label: 'crs-claude',
   },
   {
@@ -106,20 +121,7 @@ const API_CANDIDATES = [
     parseText: parseSseTextResponse,
     label: 'crs-gpt-56',
   },
-  {
-    url: "https://admin.nickcloud.xyz/v1/messages",
-    headers: { Authorization: `Bearer ${NICK_KEY}`, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
-    supportsDocument: true,
-    buildBody: (input, document) => JSON.stringify({
-      model: 'claude-sonnet-4-6', max_tokens: 1400, system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: document ? [
-        { type: 'document', source: { type: 'base64', media_type: document.mediaType, data: document.base64 } },
-        { type: 'text', text: input },
-      ] : input }],
-    }),
-    parseText: (d) => d.content?.[0]?.text || '',
-    label: 'nickcloud',
-  },
+
   {
     // 国产兜底：月之暗面 Kimi K3（不支持 document 附件，仅纯文本兜底）
     url: "https://api.moonshot.cn/v1/chat/completions",
