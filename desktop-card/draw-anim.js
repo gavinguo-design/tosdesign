@@ -3,8 +3,8 @@
  * ------------------------------------------------------------
  * 工作台每次发出生成指令时，播放一段"AI 正在绘制手机界面"的
  * 过场动画：结构元素 SVG 描线勾勒 → 时钟卡成品图落位（模糊→
- * 清晰淡入，与壁纸同类资源素材处理，不描线）→ 图标真图逐个点亮 →
- * 壁纸模糊淡入 → 生成卡片「描线→填充」
+ * 清晰淡入，不描线）→ 图标真图逐个点亮 →
+ * 深色底显现 → 生成卡片「描线→填充」
  * 落到手机屏幕的卡位上（Figma 6:1179 AI Suggestions 组件位）。
  *
  * 收口行为（2026-08-06 修正）：动画播完后手机界面**定格保留**，
@@ -55,7 +55,17 @@
     [14, 402, 83, 'Games'], [97, 402, 83, 'Phone Master'], [180, 402, 83, 'App Center'], [263, 402, 83, 'File Manager'],
     [28, 222, 138, 'Clock'], [214, 222, 98, 'AI Suggestions'],
   ];
-  var PHASES = ['落笔起稿…', '勾勒骨架…', '安放时钟…', '点亮图标…', '铺陈壁纸…'];
+  var SEARCH_BAR = { x: 27, y: 722, w: 301, h: 48, r: 23.48 };
+  var SEARCH_BAR_CENTER_Y = SEARCH_BAR.y + SEARCH_BAR.h / 2;
+  var SEARCH_ICONS = [
+    { x: 38, w: 22.65, h: 23, name: '搜索栏：G标.png' },
+    { x: 263, w: 12.4, h: 17.9, name: '手机：搜索语音.svg' },
+    { x: 303, w: 15.35, h: 15.5, name: '手机：搜索镜头.svg' },
+  ].map(function (icon) {
+    icon.y = SEARCH_BAR_CENTER_Y - icon.h / 2;
+    return icon;
+  });
+  var PHASES = ['落笔起稿…', '勾勒骨架…', '安放时钟…', '点亮图标…', '铺陈深底…'];
 
   /* ---------- 样式注入（一次性） ---------- */
   var css = [
@@ -69,7 +79,7 @@
     '  background:#1F2545;box-shadow:0 24px 64px rgba(20,24,50,.45),0 4px 16px rgba(20,24,50,.25);transform-origin:top left;}',
     '.da-stage-wrap.da-hold .da-stage{animation:da-breathe 2.6s ease-in-out infinite;}',
     '@keyframes da-breathe{0%,100%{filter:brightness(1)}50%{filter:brightness(1.12)}}',
-    '.da-wall{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;opacity:0;filter:blur(10px);}',
+    '.da-wall{position:absolute;inset:0;background:#10292B;opacity:0;}',
     '.da-svg{position:absolute;inset:0;}',
     '.da-stroke{fill:none;stroke:rgba(255,255,255,.92);stroke-width:1.4;stroke-linecap:round;',
     '  stroke-dasharray:1;stroke-dashoffset:1;}',
@@ -253,13 +263,9 @@
     _build: function () {
       var stage = this._stage;
 
-      // C：壁纸（预加载，act⑤ 淡入）。
-      // 注：壁纸.png 是带完整 UI 的系统截图素材，若按 Figma 坐标局部贴会产生鬼影双层图标；
-      // 故作为全幅氛围壁纸（cover + 残留模糊 + 降透明度）垫在描线层下方，读作背景质感而非重复 UI。
-      var wall = document.createElement('img');
+      // C：手机屏纯深色底。用户明确不要模糊壁纸，因此这里改为纯色背景层。
+      var wall = document.createElement('div');
       wall.className = 'da-wall';
-      wall.src = asset('壁纸.png');
-      wall.alt = '';
       stage.appendChild(wall);
       this._wall = wall;
 
@@ -309,9 +315,8 @@
         return fillbox(rect('ib' + idx, p[0], p[1], 55, 55, 16),
           idx === 0 ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.95)');
       });
-      // ② 搜索栏胶囊 ×2 / 分页指示器 / 导航条
-      rect('searchOuter', 27, 722, 301, 48, 23.48);
-      rect('searchGlass', 30, 726, 295, 40, 20, { 'stroke-width': 1, 'stroke-opacity': 0.55 });
+      // ② 搜索栏胶囊 / 分页指示器 / 导航条
+      rect('searchOuter', SEARCH_BAR.x, SEARCH_BAR.y, SEARCH_BAR.w, SEARCH_BAR.h, SEARCH_BAR.r);
       var pager = svgEl('g', {}); svg.appendChild(pager);
       pager.appendChild(svgEl('circle', { cx: 157, cy: 624, r: 3, pathLength: 1, 'class': 'da-stroke' }));
       pager.appendChild(svgEl('rect', { x: 168, y: 621, width: 20, height: 6, rx: 3, pathLength: 1, 'class': 'da-stroke' }));
@@ -345,11 +350,9 @@
         return img(p[0], p[1], 55, 55, it[1], 16);
       });
       this._miniIconEls = MINI_ICONS.map(function (it) { return img(it[0], it[1], 12, 12, it[2], 3); });
-      this._searchIconEls = [
-        img(38, 739, 22.65, 23, '搜索栏：G标.png'),
-        img(263, 742, 12.4, 17.9, '手机：搜索语音.svg'),
-        img(303, 742, 15.35, 15.5, '手机：搜索镜头.svg'),
-      ];
+      this._searchIconEls = SEARCH_ICONS.map(function (icon) {
+        return img(icon.x, icon.y, icon.w, icon.h, icon.name);
+      });
 
       // 文字层（标签 + 时钟内文字）
       var txLayer = document.createElement('div');
@@ -423,7 +426,6 @@
       this._draw(s.aiBox, T(790), T(420));
       this._iconBoxEls.forEach(function (el, i) { self._draw(el, T(900 + i * 60), T(300)); }); // 波浪式
       this._draw(s.searchOuter, T(1560), T(360));
-      this._draw(s.searchGlass, T(1640), T(360));
       this._draw(s.pager, T(1700), T(220));
       this._draw(s.nav, T(1780), T(220));
       // ③ 时钟卡成品图落位：容器框勾完后，模糊→清晰淡入（与壁纸同类资源素材处理，不描线）
@@ -453,10 +455,10 @@
             { duration: T(300), delay: T(350), fill: 'forwards' });
         }
       }, T(1500));
-      // ⑤ 壁纸落位（blur 收敛到残留，保持氛围感）＋标签渐显
+      // ⑤ 深色底显现＋标签渐显
       this._animate(this._wall, [
-        { opacity: 0, filter: 'blur(18px) brightness(.75) saturate(1.1)', transform: 'scale(1.06)' },
-        { opacity: 0.5, filter: 'blur(9px) brightness(.8) saturate(1.15)', transform: 'scale(1.02)' },
+        { opacity: 0 },
+        { opacity: 1 },
       ], { duration: T(620), delay: T(2500), fill: 'forwards', easing: 'ease-out' });
       this._labelEls.forEach(function (el, i) {
         self._animate(el, [{ opacity: 0, transform: 'translateY(3px)' }, { opacity: 1, transform: 'translateY(0)' }],
