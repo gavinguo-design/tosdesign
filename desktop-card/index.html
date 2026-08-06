@@ -1168,6 +1168,13 @@
     .lib-item-title {
       font-size: 0.82rem; font-weight: 600; color: var(--text);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      cursor: text; border-radius: 5px; padding: 1px 3px; margin: -1px -3px;
+    }
+    .lib-item-title:hover { background: rgba(124,92,252,0.08); }
+    .lib-item-title-input {
+      font-size: 0.82rem; font-weight: 600; color: var(--text);
+      width: 100%; border: 1px solid rgba(124,92,252,0.4); border-radius: 5px;
+      padding: 1px 3px; outline: none; font-family: inherit; background: #fff;
     }
     .lib-item-time { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
     .lib-item-actions { display: flex; gap: 0.35rem; flex-shrink: 0; }
@@ -4732,6 +4739,37 @@
       return s.replace(/°C/g, '°C');
     }
 
+    // ─── 卡片自动起名（保存到卡片库时用，不打断保存流程）───
+    // 按 layout 智能拼名，拼不出来才兜底「未命名卡片」（2026-08-06 修复：此前 saveToLibrary 只取
+    // header||title||''，chart/big/itinerary 等模板常年没有 header/title 字段，导致卡片库清一色未命名）
+    const CHART_TYPE_LABEL = {
+      trend: '走势', bar: '统计', denseBar: '天气', progress: '进度',
+      timeline: '时间线', ring: '占比', dualRing: '占比',
+    };
+    function deriveCardName(data) {
+      if (!data || typeof data !== 'object') return '未命名卡片';
+      const layout = data.layout;
+      if (layout === 'itinerary') {
+        const mode = data.mode === 'train' ? '车次' : '航班';
+        const number = str(data.number);
+        const from = str(data.from), to = str(data.to);
+        if (number && from && to) return `${mode} ${number} ${from}→${to}`;
+        if (from && to) return `${mode} ${from}→${to}`;
+        if (number) return `${mode} ${number}`;
+      } else if (layout === 'chart') {
+        const header = str(data.title) || str(data.header);
+        const suffix = CHART_TYPE_LABEL[data.chartType] || '走势';
+        if (header) return `${header} ${suffix}`;
+        if (data.chartType) return `${suffix}卡`;
+      } else {
+        const header = str(data.header) || str(data.title);
+        if (header) return header;
+        const value = str(data.value);
+        if (value) return data.unit ? `${value}${data.unit}` : value;
+      }
+      return '未命名卡片';
+    }
+
     // 按钮用色规范(Figma):统一中性胶囊,黑8%底(浅色)/白15%底(深色)/白磨砂(渐变背景)
     // 语义强调色只用于数值文字和图标,按钮永不实底语义色
     // headerIcon 支持两种来源:emoji 字符串(直接 textContent)或图标库文件(icons/xxx.svg,直接渲染纯SVG)
@@ -6249,7 +6287,7 @@
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({
             cardData: currentCardData,
-            title: currentCardData.header || currentCardData.title || '',
+            title: deriveCardName(currentCardData),
             thumbnail: currentCardData.bgImage || '',
           }),
         });
@@ -6295,6 +6333,54 @@
       }
     }
 
+    // 展示层兵底：存量「未命名卡片」若可从 cardData 推导出名字，展示推导名（不回写存储，用户点击改名时才持久化）
+    function resolveLibTitle(it) {
+      if (it.title && it.title !== '未命名卡片') return it.title;
+      if (it.cardData) {
+        const derived = deriveCardName(it.cardData);
+        if (derived !== '未命名卡片') return derived;
+      }
+      return it.title || '未命名卡片';
+    }
+    function escLibTitle(s) {
+      return String(s).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+    }
+
+    // 卡片名字点击可编辑（inline input），确认后 PATCH /api/library/:id 持久化
+    async function startRenameLibItem(el, id) {
+      if (el.querySelector('input')) return;
+      const current = el.textContent;
+      const input = document.createElement('input');
+      input.className = 'lib-item-title-input';
+      input.value = current;
+      el.replaceWith(input);
+      input.focus();
+      input.select();
+      const commit = async () => {
+        const newTitle = input.value.trim().slice(0, 60) || current;
+        input.replaceWith(el);
+        el.textContent = newTitle;
+        if (newTitle === current) return;
+        try {
+          const token = localStorage.getItem('tos_token');
+          const res = await fetch(`/api/library/${encodeURIComponent(id)}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ title: newTitle }),
+          });
+          const data = await res.json();
+          if (!data.ok) { alert('重命名失败:' + (data.error || '请重试')); el.textContent = current; return; }
+          const item = _libraryCache.find(x => String(x.id) === String(id));
+          if (item) item.title = newTitle;
+        } catch (e) { alert('网络错误,请重试'); el.textContent = current; }
+      };
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+        if (e.key === 'Escape') { input.value = current; input.blur(); }
+      });
+      input.addEventListener('blur', commit, { once: true });
+    }
+
     function renderLibraryList(items) {
       const emptyEl = document.getElementById('libraryEmpty');
       const listEl = document.getElementById('libraryList');
@@ -6308,11 +6394,11 @@
         const thumbStyle = it.thumbnail ? `background-image:url(${it.thumbnail})` : '';
         const thumbIcon = it.thumbnail ? '' : '🎨';
         const time = it.savedAt ? new Date(it.savedAt).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
-        const title = (it.title || '未命名卡片').replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+        const title = escLibTitle(resolveLibTitle(it));
         return `<div class="lib-item" data-id="${it.id}">
           <div class="lib-item-thumb" style="${thumbStyle}">${thumbIcon}</div>
           <div class="lib-item-info">
-            <div class="lib-item-title">${title}</div>
+            <div class="lib-item-title" title="点击重命名" onclick='startRenameLibItem(this, ${JSON.stringify(it.id)})'>${title}</div>
             <div class="lib-item-time">${time}</div>
           </div>
           <div class="lib-item-actions">
@@ -6377,10 +6463,10 @@
         _libraryCache = items;
         grid.innerHTML = items.map(it => {
           const time = it.savedAt ? new Date(it.savedAt).toLocaleString('zh-CN', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
-          const title = (it.title || '未命名卡片').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+          const title = escLibTitle(resolveLibTitle(it));
           return `<div style="background:var(--surface);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px;border:1px solid var(--border)">
             <div style="width:92px;height:92px;overflow:hidden;border-radius:13px;background:#eee;margin:0 auto;position:relative" id="lib-thumb-${it.id}"></div>
-            <div style="font-size:12px;font-weight:600;color:var(--text);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${title}</div>
+            <div class="lib-item-title" title="点击重命名" onclick='startRenameLibItem(this, ${JSON.stringify(it.id)})' style="font-size:12px;font-weight:600;color:var(--text);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${title}</div>
             <div style="font-size:11px;color:var(--muted);text-align:center">${time}</div>
             <div style="display:flex;gap:6px">
               <button class="wb-tb-btn" style="flex:1;font-size:11px" onclick='loadLibItem(${JSON.stringify(it.id)})'>加载</button>
