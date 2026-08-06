@@ -57,6 +57,7 @@
   ];
   var SEARCH_BAR = { x: 27, y: 722, w: 301, h: 48, r: 23.48 };
   var SEARCH_BAR_CENTER_Y = SEARCH_BAR.y + SEARCH_BAR.h / 2;
+  var STATUS_BAR = { x: 0, y: 0, w: 360, h: 36, name: '手机：状态栏.svg' };
   var SEARCH_ICONS = [
     { x: 38, w: 22.65, h: 23, name: '搜索栏：G标.png' },
     { x: 263, w: 12.4, h: 17.9, name: '手机：搜索语音.svg' },
@@ -284,23 +285,6 @@
       }
       // ① 手机外框
       rect('frame', 2, 2, W - 4, H - 4, 28, { 'stroke-width': 2 });
-      // ② 状态栏小件
-      var sbTime = svgEl('text', { x: 20, y: 22, fill: '#fff', 'font-size': 14, 'font-weight': 600, 'font-family': 'sans-serif', opacity: 0 });
-      sbTime.textContent = '9:30';
-      svg.appendChild(sbTime); strokes.sbTime = sbTime;
-      strokes.sbGear = svg.appendChild(svgEl('circle', { cx: 58, cy: 18, r: 5.5, pathLength: 1, 'class': 'da-stroke' }));
-      rect('sbMsg', 68, 12, 13, 12, 3);
-      // 信号 4 格
-      var sig = svgEl('g', { 'class': '' }); svg.appendChild(sig);
-      for (var i = 0; i < 4; i++) {
-        var bar = svgEl('rect', { x: 280 + i * 3.6, y: 21 - (i + 1) * 2.4, width: 2.2, height: (i + 1) * 2.4 + 2, rx: 1, pathLength: 1, 'class': 'da-stroke' });
-        bar.setAttribute('stroke-width', 1);
-        sig.appendChild(bar);
-      }
-      strokes.sbSignal = sig;
-      var sb5g = svgEl('text', { x: 299, y: 22, fill: '#fff', 'font-size': 10, 'font-weight': 600, 'font-family': 'sans-serif', opacity: 0 });
-      sb5g.textContent = '5G'; svg.appendChild(sb5g); strokes.sb5g = sb5g;
-      rect('sbBat', 318, 12.5, 22, 11, 3);
       // ② 组件容器
       function fillbox(el, color) {
         el.classList.add('da-fillbox');
@@ -348,6 +332,8 @@
       this._searchIconEls = SEARCH_ICONS.map(function (icon) {
         return img(icon.x, icon.y, icon.w, icon.h, icon.name);
       });
+      this._statusBar = img(STATUS_BAR.x, STATUS_BAR.y, STATUS_BAR.w, STATUS_BAR.h, STATUS_BAR.name);
+      this._statusBar.classList.add('da-statusbar');
 
       // 文字层（标签 + 时钟内文字）
       var txLayer = document.createElement('div');
@@ -416,7 +402,7 @@
       this._animate(this._stage, [{ filter: 'brightness(.35)' }, { filter: 'brightness(1)' }], { duration: T(380), fill: 'forwards' });
       this._draw(s.frame, T(80), T(520));
       // ② 骨架勾线
-      [s.sbTime, s.sbGear, s.sbMsg, s.sbSignal, s.sb5g, s.sbBat].forEach(function (el, i) { self._draw(el, T(420 + i * 55), T(240)); });
+      this._pop(this._statusBar, T(420), T(320), 0.98);
       this._draw(s.clockBox, T(720), T(420));
       this._draw(s.aiBox, T(790), T(420));
       this._iconBoxEls.forEach(function (el, i) { self._draw(el, T(900 + i * 60), T(300)); }); // 波浪式
@@ -709,6 +695,7 @@
       if (this._root && this._root.parentNode) this._root.parentNode.removeChild(this._root);
       this._root = this._stage = this._wrap = this._svg = this._caption = this._pen = null;
       this._iconBoxEls = this._bigIconEls = this._miniIconEls = this._searchIconEls = null;
+      this._statusBar = null;
       this._labelEls = this._wall = this._clockImg = null;
       this._strokes = null; this._slot = null; this._iterPen = null; this._slotSketchEl = null;
       this.active = false;

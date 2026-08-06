@@ -8624,15 +8624,88 @@
       typewriteHTML(el, html, 8);
     }
 
+    function getItineraryStageLabel(data) {
+      const stage = str(data.stage);
+      if (stage) {
+        const stageMap = {
+          checkin: '值机',
+          gate: '登机口',
+          seat: '座位',
+          baggage: '行李转盘',
+          depart: '出发',
+          boarding: '检票口',
+        };
+        return stageMap[stage] || stage;
+      }
+      if (data.bigValue) return str(data.bigLabel) || '核心信息';
+      if (data.numberExtra) return data.mode === 'train' ? '当前阶段' : '值机';
+      return data.mode === 'train' ? '出发' : '出发';
+    }
+
+    function getItineraryTypographyRows(data) {
+      const rows = [];
+      const modeLabel = data.mode === 'train' ? '火车' : '航班';
+      const stageLabel = getItineraryStageLabel(data);
+      const route = [str(data.from), str(data.to)].filter(Boolean).join(' → ');
+      const coreValue = str(data.bigValue) || str(data.numberExtra) || str(data.stageValue);
+      const numberLabel = data.mode === 'train' ? '车次号' : '航班号';
+
+      rows.push({ label: '类型', value: modeLabel });
+      if (data.number) rows.push({ label: numberLabel, value: str(data.number) });
+      if (route) rows.push({ label: '行程', value: route });
+      if (data.departsAt || data.depTime) rows.push({ label: '出发', value: str(data.departsAt) || str(data.depTime) });
+      if (data.arrivesAt || data.arrTime) rows.push({ label: '到达', value: str(data.arrivesAt) || str(data.arrTime) });
+      if (stageLabel) rows.push({ label: '当前阶段', value: stageLabel });
+      if (coreValue) rows.push({ label: '核心信息', value: coreValue });
+      if (data.delayed) rows.push({ label: '状态', value: '延误' });
+
+      // 这里直接按 buildItineraryCardInner 的分支同步，避免面板口径和真实渲染脱节。
+      if (data.bigValue) {
+        rows.push(
+          { label: '文本层级 1', value: `${numberLabel} / 12px Medium / 14.32px` },
+          { label: '文本层级 2', value: `核心信息 / 20px SemiBold / 23.87px` },
+          { label: '文本层级 3', value: `${stageLabel || '标签'} / 10px Medium / 11.93px` },
+          { label: '文本层级 4', value: `底部信息条时间 / ${data.mode === 'train' ? '16px' : '15px'} SemiBold / ${data.mode === 'train' ? '19.09px' : '17.9px'}` },
+          { label: '文本层级 5', value: '底部信息条站名 / 10px Medium / 11.93px' }
+        );
+      } else if (data.mode === 'train') {
+        rows.push(
+          { label: '文本层级 1', value: `${numberLabel} / 12px Medium / 14.32px` },
+          { label: '文本层级 2', value: '出发站 / 16px SemiBold / 19.09px' },
+          { label: '文本层级 3', value: '出发时间 / 10px Medium / 11.93px' },
+          { label: '文本层级 4', value: '到达站 / 16px SemiBold / 19.09px' }
+        );
+      } else {
+        rows.push(
+          { label: '文本层级 1', value: `${numberLabel} / 12px Medium / 14.32px` },
+          { label: '文本层级 2', value: '出发地 / 14px SemiBold / 16.71px' },
+          { label: '文本层级 3', value: '航站楼 / 16px SemiBold / 19.09px' },
+          { label: '文本层级 4', value: '出发时间 / 10px Medium / 13.5px' },
+          { label: '文本层级 5', value: '到达地 / 14px SemiBold / 16.71px' },
+          { label: '文本层级 6', value: '到达时间 / 10px Medium / 13.5px' }
+        );
+      }
+
+      return rows.filter((row) => row.value && String(row.value).trim());
+    }
+
     function renderWbFont(data) {
       const el = document.getElementById('wb-font-content-left');
       if (!el || !data) return;
-      const html = `<div style="font-size:12px;color:#333;line-height:2">
-        <div><span style="color:#999;font-family:monospace">layout</span>  ${data.layout || '—'}</div>
-        <div><span style="color:#999;font-family:monospace">header</span>  ${data.header || '—'}</div>
-        <div><span style="color:#999;font-family:monospace">value</span>   ${data.value || '—'}</div>
-        <div><span style="color:#999;font-family:monospace">unit</span>    ${data.unit || '—'}</div>
-      </div>`;
+      const rows = data.layout === 'itinerary'
+        ? getItineraryTypographyRows(data)
+        : [
+            { label: 'layout', value: data.layout || '—', mono: true },
+            { label: 'header', value: data.header || '—', mono: true },
+            { label: 'value', value: data.value || '—', mono: true },
+            { label: 'unit', value: data.unit || '—', mono: true },
+          ];
+      const html = `<div style="font-size:12px;color:#333;line-height:1.85">${rows.map((row) => {
+        const labelStyle = row.mono
+          ? 'color:#999;font-family:monospace'
+          : 'color:#999';
+        return `<div><span style="${labelStyle}">${escapeHtml(row.label)}</span>  ${escapeHtml(String(row.value))}</div>`;
+      }).join('')}</div>`;
       typewriteHTML(el, html, 10);
     }
 
@@ -8771,6 +8844,6 @@
     </div>
   </div>
 
-<script src="draw-anim.js?v=4c2f8d1"></script>
+<script src="draw-anim.js?v=0c6c31f"></script>
 </body>
 </html>
