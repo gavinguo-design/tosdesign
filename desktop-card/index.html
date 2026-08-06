@@ -4793,12 +4793,14 @@
 
     function buttonStyle(data, dark) {
       const isGradient = typeof data.bg === 'string' && data.bg.includes('gradient');
-      if (isGradient) {
+      // 白磨砂胶囊只适用于深色氛围渐变底(dark:true)；浅色信息渐变(如10%蓝色wash,dark:false)上
+      // 白28%+白字几乎不可见，必须走浅底分支(Figma规范:黑8%胶囊+黑0.9主文字色)
+      if (isGradient && dark) {
         return 'background:rgba(255,255,255,0.28);backdrop-filter:blur(6px);color:#fff;';
       }
       return dark
         ? 'background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.9);'
-        : 'background:rgba(0,0,0,0.08);color:rgba(0,0,0,0.8);';
+        : 'background:rgba(0,0,0,0.08);color:rgba(0,0,0,0.9);';
     }
 
     // 字号降级:按可用宽度和字符数自动缩小,避免大数字溢出
@@ -4968,8 +4970,10 @@
         }
       }
 
-      // 行动按钮:所有布局通用(dual 布局已在上面渲染过,跳过)
-      if (data.action && layout !== 'dual') {
+      // 行动按钮:仅 single/triple/big 有按钮槽位(dual 已在上面渲染过)。
+      // chart/itinerary 底部区域被图表/行程条占用(chart进度区y92-124 vs 按钮y94-124物理重叠),
+      // 即使 AI 违规输出 action 也不渲染,防止元素叠压
+      if (data.action && (layout === 'single' || layout === 'triple' || layout === 'big')) {
         const styles = buttonStyle(data, dark);
         // Figma规范: 按钮 y=94 高30 r999;长按钮110px/短按钮74px 两档
         const wide = String(data.action).length > 4 || data.buttonWide;
@@ -5101,7 +5105,8 @@
         // 问题F：进度条 group(14,92,110,22) 内部结构是「5% 小字」(顶部,10px/500/黑0.6)+ 轨道条(top:16,h:6)
         chartWrap.style.cssText = `position:absolute;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;`;
         chartWrap.appendChild(mk(
-          `position:absolute;left:0;top:0;width:110px;height:12px;font-size:10px;font-weight:500;color:${sc};`,
+          `position:absolute;left:0;top:0;width:110px;height:12px;font-size:${fitFontSize(data.chartProgressLabel, 10, 110)}px;font-weight:500;color:${sc};` +
+          `overflow:hidden;white-space:nowrap;text-overflow:ellipsis;`,
           data.chartProgressLabel || '5%'));
         const barWrap = document.createElement('div');
         barWrap.style.cssText = 'position:absolute;left:0;top:16px;width:110px;height:6px;';
