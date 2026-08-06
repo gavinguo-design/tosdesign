@@ -1,5 +1,6 @@
 const CRS_KEY = "cr_3a07c6ba66da659eaae348c5782ac9934507be57af7c040220bbc1af67bc1b49";
 const NICK_KEY = "sk-151c42f6f5dcea5cb53e1434f9390cbc4b88dd71babf58456de6b99514494079";
+const MOONSHOT_KEY = "sk-x…u2e";
 const TOKEN_SECRET = 'tosdesign-secret-2024';
 
 function parseSseTextResponse(raw) {
@@ -47,6 +48,18 @@ const API_CANDIDATES = [
     buildBody: (msgs) => JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1400, system: SYSTEM_PROMPT, messages: msgs }),
     parseText: (d) => d.content?.[0]?.text || '',
     label: 'nickcloud',
+  },
+  {
+    // 国产兜底：月之暗面 Kimi K3（reasoning 模型，max_tokens 需预留思考预算）
+    url: "https://api.moonshot.cn/v1/chat/completions",
+    headers: { 'Authorization': `Bearer ${MOONSHOT_KEY}`, 'Content-Type': 'application/json' },
+    buildBody: (msgs) => JSON.stringify({
+      model: 'kimi-k3',
+      max_tokens: 4000,
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...msgs],
+    }),
+    parseText: (d) => d.choices?.[0]?.message?.content || '',
+    label: 'moonshot-k3',
   },
 ];
 
