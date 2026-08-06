@@ -55,7 +55,8 @@
     [14, 402, 83, 'Games'], [97, 402, 83, 'Phone Master'], [180, 402, 83, 'App Center'], [263, 402, 83, 'File Manager'],
     [28, 222, 138, 'Clock'], [214, 222, 98, 'AI Suggestions'],
   ];
-  var SEARCH_BAR = { x: 27, y: 722, w: 301, h: 48, r: 23.48 };
+  // 搜索栏与图标列左右对齐（x=28…332，同 ICON_BOXES 28…277+55），与 Dock 底部（657+55=712）拉开 18px 呼吸
+  var SEARCH_BAR = { x: 28, y: 730, w: 304, h: 42, r: 21 };
   var SEARCH_BAR_CENTER_Y = SEARCH_BAR.y + SEARCH_BAR.h / 2;
   var STATUS_BAR = { x: 0, y: 0, w: 360, h: 36, name: '手机：状态栏.svg' };
   var SEARCH_ICONS = [
