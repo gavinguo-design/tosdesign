@@ -88,9 +88,9 @@
 
 ## 9. 异常状态变体
 
-**门锁异常**（#0:1083）：卡片外描边 `1px #FF0000`（strokeAlign OUTSIDE）；Header 状态「异常 · 未上锁」红色 #FF0303；红色按钮「立即上锁」（底 #EF4444 圆角 16px，白字 Medium 11px，78×32）；异常提示栏（底 #FDECEC 圆角 12px）：「检测到异常开启」Medium 12px + 「2 分钟前」Regular 10px，均 #EF4444。
+**门锁异常**（#0:1083）：卡片外描边 `1px #FF0000`（strokeAlign OUTSIDE）；Header 状态「异常 · 未上锁」红色 #FE0202；红色按钮「立即上锁」（底 #EF4444 圆角 16px，白字 Medium 11px，78×32）；异常提示栏（底 #FDECEC 圆角 12px）：「检测到异常开启」Medium 12px + 「2 分钟前」Regular 10px，均 #EF4444。
 
-**传感器异常**（#0:1041）：外描边红；状态「异常 · 刷新于20秒前」红色 #EF4444（圆点 #EF4444）；数据栏数值与标签全部变红 #EF4444（28.5℃ / 65% / PM 2.5 75）。
+**传感器异常**（#0:1041）：外描边红；状态「异常 · 刷新于20秒前」红色 #EF4444（圆点 #EF4444）；**仅异常数据值（PM 2.5 数值 75）变红 #EF4444，温度/湿度数值与标签保持黑色**（Figma 实测，非全部变红）。
 
 ## 10. 摄像头大卡片（328 × 252，圆角 24px）
 
@@ -124,7 +124,20 @@
 - Header：状态「异常 · 信号中断」红点 #EF4444 + 红字 #EF4444；右侧红色按钮「重新连接」（78×32 圆角 16，#EF4444 白字 11px Medium）。
 - 异常提示栏（296×60 圆角 12，底 #FDECEC）：`HDMI 信号丢失` Medium 12px + `检测到异常 · 2 分钟前` Regular 10px，均 #EF4444。
 
-## 组件清单（本页引用）
+### 控制面板（控制卡 328 × 236，圆角 20px）— Smart TV Control Card
+
+**节点参考**：Frame 15 内 `Smart TV Control Card`（Figma vb3pATUyg3XHhsCX2cNSwF）。电视控制面板独立形态，非播放大卡降级。
+
+- **Header Row（296×60，y16 起）**：
+  - 设备图 60×60 **圆角 12px 方形**（底 #F5F5F7 + 电视图，区别于其他卡片的 60×60 圆形 Mask）。
+  - 名称「智能电视」**18px Medium** #000000（本卡设备名为 18px，其他卡片为 14px）。
+  - 状态「客厅 · 已连接」**12px Regular** #545559 + 绿点 **6×6 #08CC71**（本卡绿点为 #08CC71，其他卡片为 #10B981）。
+  - 开关 44×44（底 #F0F0F2 + `Shut_down` 24px #48484D）。
+- **Control Area（296×118）**：
+  - **Content Preview（296×62，底 #F5F5F7 圆角 12px）**：左「央视一套」14px #000000 + 「CCTV-1 综合频道」12px #545559；右 **Volume Badge**（56×24，黑 `#000000` **12% 透明**，圆角 6px）内「VOL 45」12px #48484D。
+  - **Button Row（296×40）**：4 个 40×40 圆形按钮（底 #F5F5F7 圆角 20px），图标 20px：`skip-back` / `volume-1` / `volume-2` / `skip-forward`，色 #48484D。
+
+## 12. 组件清单（本页引用）
 
 | 组件 ID | 名称 | 用途 |
 |---|---|---|
@@ -137,6 +150,8 @@
 | 0:430 / 0:796 | Lock / Unlock2 | 门锁锁定状态 |
 | 0:794 | 图标/编辑/Add_fill | 温度加号 |
 | 0:348 | 设备列表（全页面=红外-相机） | 相机小卡片实例 |
+| skip-back / skip-forward | 控制图标 | TV 控制卡频道切换按钮 |
+| volume-1 / volume-2 | 控制图标 | TV 控制卡音量减/加按钮 |
 
 ## 文本样式速查
 
@@ -145,9 +160,14 @@
 | 页面标题 | PingFang SC Semibold | 48px | LEFT | #000 |
 | 分类标题 | PingFang SC Medium | 28px | LEFT | #030303 |
 | 设备名称 | TransSans VF Regular / PingFang SC Medium | 14px | LEFT | #000 |
+| TV 控制卡设备名 | PingFang SC Medium | 18px | LEFT | #000 |
 | 状态文本 | PingFang SC Regular | 14px | LEFT/CENTER | #545559 |
+| TV 控制卡状态 | TransSans VF Regular | 12px | LEFT | #545559 |
 | 电量数值 | TransSans VF Regular | 14px | CENTER | #545559 |
 | 数据栏数值 | PingFang SC Medium | 12px | CENTER | #000 |
 | 数据栏标签 | PingFang SC Regular | 10px | CENTER | #000 |
 | 功能块标签 | TransSans VF Medium / Regular | 12px | CENTER | #000 |
 | 耳机电量标签 | TOS_250226 Medium | 9px | LEFT | #FFF（深底） |
+| TV 频道名 | PingFang SC Regular | 14px | LEFT | #000 |
+| TV 节目名 | TransSans VF Regular | 12px | LEFT | #545559 |
+| TV 音量 | TransSans VF Regular | 12px | LEFT | #48484D |
