@@ -122,6 +122,20 @@
   .bulb-area { background: #F5F6F7; border-radius: 12px; padding: 14px 14px 10px; display: flex; flex-direction: column; gap: 12px; }
   .bulb-top { display: flex; align-items: center; gap: 10px; }
 
+  /* TV 控制卡（Figma Smart TV Control Card 328×236） */
+  .tv-thumb { width: 60px; height: 60px; border-radius: 12px; background: #F5F5F7; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .tv-thumb svg { width: 32px; height: 32px; stroke: #48494D; }
+  .tv-name { font-size: 18px; font-weight: 500; color: #000; }
+  .tv-status { font-size: 12px; color: #545559; margin-top: 4px; display: flex; align-items: center; gap: 5px; }
+  .tv-status .dot { width: 6px; height: 6px; border-radius: 50%; background: #08CC71; }
+  .tv-preview { background: #F5F5F7; border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; }
+  .tv-channel { font-size: 14px; color: #000; }
+  .tv-program { font-size: 12px; color: #545559; margin-top: 2px; }
+  .tv-vol-badge { background: rgba(0,0,0,0.12); border-radius: 6px; padding: 4px 9px; font-size: 12px; color: #48494D; white-space: nowrap; }
+  .tv-btn-row { display: flex; gap: 8px; justify-content: flex-end; }
+  .tv-btn { width: 40px; height: 40px; border-radius: 20px; background: #F5F5F7; border: none; color: #48494D; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .tv-btn svg { width: 20px; height: 20px; }
+
   /* 播放器 */
   .player { margin-top: 8px; background: #F5F6F7; border-radius: 12px; padding: 14px 14px 12px; }
   .player .song { font-size: 12px; font-weight: 500; }
@@ -168,6 +182,11 @@
   .card.abnormal .warn-bar { display: block; }
   .card.abnormal .danger-btn { display: inline-block; }
   .card.abnormal .temp-num { color: #EF4444; }
+  /* 传感器异常（Figma）：仅 PM2.5 数值变红，温度/湿度保持黑色 */
+  .card[data-card="sensor"].abnormal .data-val:not(.pm-val), .card[data-card="sensor"].abnormal .data-lbl { color: #000000; }
+  .card[data-card="sensor"].abnormal .data-val.pm-val { color: #EF4444; }
+  /* 门锁异常（Figma）：状态文本精确色 #FE0202 */
+  .card[data-card="lock"].abnormal .device-status { color: #FE0202; }
   .hidden { display: none !important; }
 </style>
 </head>
@@ -293,7 +312,7 @@
           <div class="data-bar">
             <div class="data-col"><span class="data-val">28.5℃</span><span class="data-lbl">温度</span></div>
             <div class="data-col"><span class="data-val">65%</span><span class="data-lbl">湿度</span></div>
-            <div class="data-col"><span class="data-val">18</span><span class="data-lbl">PM 2.5</span></div>
+            <div class="data-col"><span class="data-val pm-val">18</span><span class="data-lbl">PM 2.5</span></div>
           </div>
         </div>
       </div>
@@ -465,12 +484,45 @@
           </div>
         </div>
       </div>
+
+      <div class="card control tv-control-card" data-card="tv-control">
+        <span class="badge-type">智能电视 · 控制面板（236）</span>
+        <div class="card-content" style="padding-top:16px;display:flex;flex-direction:column;gap:12px">
+          <div class="card-header" style="padding:0;height:60px;align-items:center;gap:12px">
+            <div class="tv-thumb"><svg viewBox="0 0 40 40" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="10" width="26" height="17" rx="2.5"/><path d="M14 30.5h12M20 27v3.5"/></svg></div>
+            <div class="name-area" style="padding-top:0">
+              <div class="tv-name">智能电视</div>
+              <div class="tv-status"><span class="dot"></span>客厅 · 已连接</div>
+            </div>
+            <button class="power-btn" data-switch style="margin-left:auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 4v7"/></svg></button>
+          </div>
+          <div class="tv-preview">
+            <div>
+              <div class="tv-channel" data-channel>央视一套</div>
+              <div class="tv-program" data-program>CCTV-1 综合频道</div>
+            </div>
+            <div class="tv-vol-badge" data-vol>VOL 45</div>
+          </div>
+          <div class="tv-btn-row">
+            <button class="tv-btn" data-tv="back" title="上一个频道"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 6v12M18 6.5 11 12l7 5.5z"/></svg></button>
+            <button class="tv-btn" data-tv="vol-" title="音量减"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h3l4 3.5v-11L7 10z"/><path d="M15 9.5a4 4 0 0 1 0 5"/></svg></button>
+            <button class="tv-btn" data-tv="vol+" title="音量加"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h3l4 3.5v-11L7 10z"/><path d="M15 9.5a4 4 0 0 1 0 5M17.5 7a7.5 7.5 0 0 1 0 10"/></svg></button>
+            <button class="tv-btn" data-tv="next" title="下一个频道"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 6v12M6 6.5 13 12l-7 5.5z"/></svg></button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
   (function () {
+    var channels = [
+      { name: '央视一套', prog: 'CCTV-1 综合频道' },
+      { name: '央视五套', prog: 'CCTV-5 体育频道' },
+      { name: '湖南卫视', prog: '快乐大本营' },
+      { name: '东方卫视', prog: '新闻联播' }
+    ];
     var scaleSeg = document.getElementById('scaleSeg');
     var cards = Array.prototype.slice.call(document.querySelectorAll('.card'));
     scaleSeg.addEventListener('click', function (e) {
@@ -524,6 +576,25 @@
       if (play) {
         play.innerHTML = play.dataset.paused ? '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>' : '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13M15 5.5v13"/></svg>';
         play.dataset.paused = play.dataset.paused ? '' : '1';
+        return;
+      }
+      var tvBtn = e.target.closest('[data-tv]');
+      if (tvBtn) {
+        var tvc = tvBtn.closest('.card');
+        var volEl = tvc.querySelector('[data-vol]');
+        var chEl = tvc.querySelector('[data-channel]');
+        var prEl = tvc.querySelector('[data-program]');
+        var act = tvBtn.dataset.tv;
+        if (act === 'vol+' || act === 'vol-') {
+          var vol = parseInt(volEl.textContent.replace(/\D/g, ''), 10) || 0;
+          vol = Math.max(0, Math.min(100, vol + (act === 'vol+' ? 5 : -5)));
+          volEl.textContent = 'VOL ' + vol;
+        } else {
+          var idx = (parseInt(chEl.dataset.idx || '0', 10) + (act === 'next' ? 1 : -1) + channels.length) % channels.length;
+          chEl.dataset.idx = idx;
+          chEl.textContent = channels[idx].name;
+          prEl.textContent = channels[idx].prog;
+        }
         return;
       }
     });
