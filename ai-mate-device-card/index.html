@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Mate 设备卡片 · 可交互原型</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "PingFang SC", "TransSans VF", -apple-system, "Helvetica Neue", sans-serif;
+    background: #F4F5F7;
+    color: #000000;
+    padding-bottom: 80px;
+  }
+  .page { max-width: 1200px; margin: 0 auto; padding: 48px 24px; }
+  .page-title { font-size: 48px; font-weight: 600; letter-spacing: -0.5px; }
+  .page-sub { font-size: 14px; color: #545559; margin-top: 8px; }
+  .toolbar {
+    margin-top: 28px; padding: 16px 20px; background: #FFFFFF;
+    border-radius: 16px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  .toolbar .label { font-size: 13px; color: #48494D; }
+  .seg { display: flex; background: #F0F1F2; border-radius: 12px; padding: 4px; }
+  .seg button {
+    border: none; background: transparent; font-family: inherit; font-size: 13px;
+    padding: 6px 16px; border-radius: 9px; cursor: pointer; color: #48494D;
+  }
+  .seg button.on { background: #FFFFFF; color: #000000; font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .toggle-abnormal {
+    display: inline-flex; align-items: center; gap: 8px; margin-left: auto;
+    font-size: 13px; color: #48494D; cursor: pointer; user-select: none;
+  }
+  .switch { width: 44px; height: 26px; border-radius: 13px; background: #D1D1D1; position: relative; transition: background .2s; }
+  .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #FFF; transition: left .2s; }
+  .switch.on { background: #10B981; }
+  .switch.on::after { left: 21px; }
+  .section { margin-top: 44px; }
+  .section-title { font-size: 28px; font-weight: 500; color: #030303; margin-bottom: 4px; }
+  .section-desc { font-size: 13px; color: #939599; margin-bottom: 20px; }
+  .grid { display: flex; flex-wrap: wrap; gap: 24px; }
+
+  /* ========== 卡片容器 ========== */
+  .card {
+    width: 328px; background: #FFFFFF; position: relative; flex-shrink: 0;
+    transition: box-shadow .2s, outline-color .2s;
+  }
+  .card.small { height: 94px; border-radius: 20px; }
+  .card.large { height: 172px; border-radius: 24px; }
+  .card.extended { border-radius: 24px; }
+  .card.control { height: 236px; border-radius: 20px; }
+  .card.abnormal { outline: 1px solid #FF0000; outline-offset: 0px; }
+  .card .badge-type {
+    position: absolute; top: -24px; left: 0; font-size: 11px; color: #939599; white-space: nowrap;
+  }
+
+  /* ========== Header ========== */
+  .card-header { position: relative; height: 60px; padding: 16px 16px 0; display: flex; align-items: flex-start; }
+  .device-icon {
+    width: 60px; height: 60px; border-radius: 50%; background: #F0F1F2;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .device-icon svg { width: 32px; height: 32px; stroke: #48494D; }
+  .name-area { margin-left: 14px; padding-top: 2px; min-width: 0; flex: 1; }
+  .device-name { font-size: 14px; font-weight: 500; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .device-status { font-size: 14px; color: #545559; margin-top: 3px; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: #10B981; flex-shrink: 0; }
+  .dot.gray { background: #C9CBCF; }
+  .battery { display: flex; align-items: center; gap: 6px; font-size: 14px; color: #545559; white-space: nowrap; }
+  .ear-tag { font-size: 9px; font-weight: 500; color: #FFF; background: #2C2C2A; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; }
+  .arrow { color: rgba(0,0,0,0.8); margin-left: auto; align-self: center; display: flex; }
+  .arrow svg { width: 14px; height: 14px; }
+
+  /* 开关 */
+  .power-btn {
+    width: 44px; height: 44px; border-radius: 50%; background: #F0F1F2; border: none;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    color: #48494D; flex-shrink: 0; transition: opacity .2s;
+  }
+  .power-btn svg { width: 24px; height: 24px; }
+  .power-btn.off { opacity: 0.45; }
+  .power-btn .led { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 6px; height: 6px; border-radius: 50%; background: #10B981; opacity: 0; }
+  .power-btn.on .led { opacity: 1; }
+
+  /* ========== Content 内容区 ========== */
+  .card-content { padding: 12px 16px 16px; }
+  .data-bar {
+    background: #F5F6F7; border-radius: 12px; display: flex; height: 60px; overflow: hidden;
+  }
+  .data-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-left: 1px solid #FFFFFF; }
+  .data-col:first-child { border-left: none; }
+  .data-val { font-size: 12px; font-weight: 500; color: #000; }
+  .data-lbl { font-size: 10px; color: #000; }
+  .func-grid { display: flex; gap: 0; }
+  .func-block { width: 109px; height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+  .func-block .fb-icon { width: 44px; height: 44px; border-radius: 50%; background: #F5F6F7; display: flex; align-items: center; justify-content: center; color: #000; }
+  .func-block .fb-icon svg { width: 22px; height: 22px; }
+  .func-block .fb-label { font-size: 12px; color: #000; }
+  .func-block.active { background: #F5F6F7; border-radius: 12px; }
+  .func-block.active .fb-label { color: #6459FF; font-weight: 500; }
+  .func-block.active .fb-icon { background: #6459FF; color: #FFF; }
+
+  /* 操作区 */
+  .action-bar { background: #F5F6F7; border-radius: 12px; height: 60px; display: flex; align-items: center; padding: 0 14px; gap: 12px; margin-top: 8px; }
+  .action-bar .act-icon { width: 36px; height: 36px; border-radius: 50%; background: #FFF; display: flex; align-items: center; justify-content: center; color: #48494D; }
+  .action-bar .act-icon svg { width: 20px; height: 20px; }
+  .action-bar .act-text { font-size: 18px; font-weight: 500; color: #000; flex: 1; }
+  .action-bar .act-side { margin-left: auto; display: flex; align-items: center; color: #48494D; }
+
+  /* 温度控制 */
+  .temp-control { margin-top: 8px; height: 60px; background: #F5F6F7; border-radius: 30px; display: flex; align-items: center; padding: 0 16px; gap: 8px; }
+  .temp-num { font-size: 18px; font-weight: 500; }
+  .temp-btn { width: 32px; height: 32px; border-radius: 50%; border: none; background: #FFFFFF; color: #48494D; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .temp-plus { margin-left: auto; }
+  .temp-min { margin-left: 8px; }
+
+  /* 滑块 */
+  .slider-row { display: flex; align-items: center; gap: 10px; }
+  .slider-row .s-label { font-size: 13px; color: #48494D; width: 34px; }
+  .slider-row .s-end { font-size: 11px; color: #545559; width: 42px; }
+  input[type="range"] { -webkit-appearance: none; appearance: none; flex: 1; height: 4px; border-radius: 2px; background: #D1D1D1; outline: none; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #FFFFFF; border: 1px solid #D1D1D1; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+  .bulb-area { background: #F5F6F7; border-radius: 12px; padding: 14px 14px 10px; display: flex; flex-direction: column; gap: 12px; }
+  .bulb-top { display: flex; align-items: center; gap: 10px; }
+
+  /* TV 控制卡（Figma Smart TV Control Card 328×236） */
+  .tv-thumb { width: 60px; height: 60px; border-radius: 12px; background: #F5F5F7; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .tv-thumb svg { width: 32px; height: 32px; stroke: #48494D; }
+  .tv-name { font-size: 18px; font-weight: 500; color: #000; }
+  .tv-status { font-size: 12px; color: #545559; margin-top: 4px; display: flex; align-items: center; gap: 5px; }
+  .tv-status .dot { width: 6px; height: 6px; border-radius: 50%; background: #08CC71; }
+  .tv-preview { background: #F5F5F7; border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; }
+  .tv-channel { font-size: 14px; color: #000; }
+  .tv-program { font-size: 12px; color: #545559; margin-top: 2px; }
+  .tv-vol-badge { background: rgba(0,0,0,0.12); border-radius: 6px; padding: 4px 9px; font-size: 12px; color: #48494D; white-space: nowrap; }
+  .tv-btn-row { display: flex; gap: 8px; justify-content: flex-end; }
+  .tv-btn { width: 40px; height: 40px; border-radius: 20px; background: #F5F5F7; border: none; color: #48494D; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .tv-btn svg { width: 20px; height: 20px; }
+
+  /* 播放器 */
+  .player { margin-top: 8px; background: #F5F6F7; border-radius: 12px; padding: 14px 14px 12px; }
+  .player .song { font-size: 12px; font-weight: 500; }
+  .player .artist { font-size: 10px; color: #545559; margin-top: 2px; }
+  .progress-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+  .progress-track { flex: 1; height: 4px; border-radius: 2px; background: #D1D1D1; position: relative; cursor: pointer; }
+  .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 48%; background: #4F4F4F; border-radius: 2px; }
+  .time-stamp { font-size: 8px; color: #979797; }
+  .player-controls { display: flex; align-items: center; gap: 12px; margin-top: 10px; justify-content: center; }
+  .pc-btn { width: 32px; height: 32px; border: none; background: transparent; color: #48494D; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .pc-btn svg { width: 20px; height: 20px; }
+  .pc-round { width: 36px; height: 36px; border-radius: 50%; background: #EEEEEE; border: none; color: #48494D; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .pc-round svg { width: 18px; height: 18px; }
+
+  /* 视频区 */
+  .video-area { margin-top: 8px; border-radius: 12px; overflow: hidden; position: relative; background: linear-gradient(135deg, #1a2733, #0e1620); }
+  .video-cam { height: 140px; background: linear-gradient(160deg, #24303c, #0d141b 70%); position: relative; }
+  .video-tv { height: 128px; background: linear-gradient(135deg, #1c2b4a, #0a1220); position: relative; }
+  .live-badge { position: absolute; top: 8px; left: 8px; background: #EF4444; color: #FFF; font-size: 10px; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.5px; }
+  .channel-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 34px; background: rgba(0,0,0,0.55); display: flex; align-items: center; gap: 8px; padding: 0 10px; }
+  .channel-tag { background: #EF4444; color: #FFF; font-size: 10px; font-weight: 500; padding: 2px 6px; border-radius: 3px; }
+  .channel-name { color: #FFF; font-size: 12px; }
+  .tv-control { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .tv-control .progress-track { flex: 1; }
+  .vol { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #48494D; }
+  .vol svg { width: 16px; height: 16px; }
+
+  /* 异常提示栏 */
+  .warn-bar { margin-top: 8px; background: #FDECEC; border-radius: 12px; padding: 10px 14px; display: none; }
+  .warn-bar .w-title { font-size: 12px; font-weight: 500; color: #EF4444; }
+  .warn-bar .w-sub { font-size: 10px; color: #EF4444; margin-top: 2px; }
+
+  /* 异常按钮 */
+  .danger-btn {
+    background: #EF4444; color: #FFF; border: none; border-radius: 16px;
+    font-size: 11px; font-weight: 500; padding: 8px 16px; cursor: pointer;
+    font-family: inherit; margin-left: auto;
+  }
+
+  /* ========== 异常态 override ========== */
+  .card.abnormal .device-status { color: #EF4444; }
+  .card.abnormal .device-status .dot { background: #EF4444; }
+  .card.abnormal .data-val, .card.abnormal .data-lbl { color: #EF4444; }
+  .card.abnormal .warn-bar { display: block; }
+  .card.abnormal .danger-btn { display: inline-block; }
+  .card.abnormal .temp-num { color: #EF4444; }
+  /* 传感器异常（Figma）：仅 PM2.5 数值变红，温度/湿度保持黑色 */
+  .card[data-card="sensor"].abnormal .data-val:not(.pm-val), .card[data-card="sensor"].abnormal .data-lbl { color: #000000; }
+  .card[data-card="sensor"].abnormal .data-val.pm-val { color: #EF4444; }
+  /* 门锁异常（Figma）：状态文本精确色 #FE0202 */
+  .card[data-card="lock"].abnormal .device-status { color: #FE0202; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1 class="page-title">AI Mate 设备卡片</h1>
+  <p class="page-sub">可交互原型 · 严格遵循设备卡片设计规范（328px 宽 / 三段式结构 / 在线-待机-异常状态体系）</p>
+
+  <div class="toolbar">
+    <span class="label">显示比例</span>
+    <div class="seg" id="scaleSeg">
+      <button class="on" data-scale="1">100%</button>
+      <button data-scale="0.75">75%</button>
+      <button data-scale="0.5">50%</button>
+    </div>
+    <label class="toggle-abnormal">
+      <span>异常状态演示</span>
+      <span class="switch" id="abnormalSwitch" role="switch" tabindex="0"></span>
+    </label>
+  </div>
+
+  <!-- ===== 小卡片 328×94 ===== -->
+  <div class="section">
+    <h2 class="section-title">小卡片 328 × 94</h2>
+    <p class="section-desc">简单设备，仅头部信息 · 圆角 20px</p>
+    <div class="grid">
+      <div class="card small" data-card="earbuds-small">
+        <span class="badge-type">耳机 · Buds 3 Neo</span>
+        <div class="card-header">
+          <div class="device-icon"><svg viewBox="0 0 40 40" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 22v-4a6 6 0 0 1 12 0v4"/><circle cx="14" cy="24" r="3.5"/><circle cx="26" cy="24" r="3.5"/><path d="M14 27.5v2M26 27.5v2" opacity=".6"/></svg></div>
+          <div class="name-area">
+            <div class="device-name">Buds 3 Neo</div>
+            <div class="device-status"><span class="dot"></span>在线 · 已连接</div>
+          </div>
+          <div class="battery"><span class="ear-tag">L</span>34%<span class="ear-tag">R</span>34%</div>
+          <span class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        </div>
+      </div>
+
+      <div class="card small" data-card="camera-small">
+        <span class="badge-type">红外相机</span>
+        <div class="card-header">
+          <div class="device-icon"><svg viewBox="0 0 40 40" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="9"/><circle cx="20" cy="20" r="3.5"/><path d="M20 8v3M20 29v3M8 20h3M29 20h3"/></svg></div>
+          <div class="name-area">
+            <div class="device-name">红外相机</div>
+            <div class="device-status"><span class="dot"></span>在线</div>
+          </div>
+          <button class="power-btn" data-switch><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 4v7"/></svg></button>
+        </div>
+      </div>
+
+      <div class="card small" data-card="bulb-small">
+        <span class="badge-type">灯泡 · Bulb</span>
+        <div class="card-header">
+          <div class="device-icon"><svg viewBox="0 0 40 40" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6c-5 0-9 4-9 9 0 4 2.4 6.6 4 8.4V27h10v-3.6c1.6-1.8 4-4.4 4-8.4 0-5-4-9-9-9z"/><path d="M15.5 31h9M16.5 34.5h7" opacity=".7"/></svg></div>
+          <div class="name-area">
+            <div class="device-name">Bulb</div>
+            <div class="device-status"><span class="dot"></span>在线</div>
+          </div>
+          <button class="power-btn" data-switch><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 4v7"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 大卡片 328×172 ===== -->
+  <div class="section">
+    <h2 class="section-title">大卡片 328 × 172</h2>
+    <p class="section-desc">常规设备，含 1 个内容区 · 圆角 24px</p>
+    <div class="grid">
+      <div class="card large" data-card="ac">
+        <span class="badge-type">空调</span>
+        <div class="card-header">
+          <div class="device-icon"><svg viewBox="0 0 40 40" fill="none" stroke-width="2" stroke-linecap="round"><rect x="9" y="14" width="22" height="14" rx="3"/><path d="M13 20h14M13 24h9M26 30v2M20 30v3" opacity=".6"/></svg></div>
+          <div class="name-area">
+            <div class="device-name">空调</div>
+            <div class="device-status"><span class="dot"></span>在线 · 室温24 ℃</div>
+          </div>
+          <button class="power-btn" data-switch><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 4v7"/></svg></button>
+        </div>
+        <div class="card-content" style="padding-top:8px">
+          <div class="temp-control">
+            <span class="temp-num"><span class="temp-val">23</span> ℃</span>
+            <button class="temp-btn temp-min" data-temp="-1">−</button>
+            <button class="temp-btn temp-plus" data-temp="1">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card large" data-card="lock">
+        <span class="badge-type">大门门锁</span>
+        <div class="card-header">
+          <div class="device-icon"><svg viewBox="0 0 40 40" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="17" width="20" height="15" rx="3.5"/><path d="M14 17v-3a6 6 0 0 1 12 0v3"/><circle cx="20" cy="24" r="2.5"/><path d="M20 24v3.5"/></svg></div>
+          <div class="name-area">
+            <div class="device-name">大门门锁</div>
+            <div class="device-status"><span class="dot"></span>已上锁</div>
+          </div>
+          <div class="battery">34%</div>
+          <button class="power-btn" data-switch><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 7.8-1.3"/></svg></button>
+        </div>
+        <div class="card-content" style="padding-top:8px">
+          <div class="action-bar">
+            <span class="act-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <span class="data-val" style="font-size:12px">今日开关</span>
+              <span class="data-lbl" style="font-size:10px">12 次</span>
+            </div>
+            <button class="danger-btn hidden" data-danger>立即上锁</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card large" data-card="sensor">
+        <span class="badge-type">温度传感器</span>
+        <div class="card-header">
+          <div class="device-icon"><svg viewBox="0 0 40 40" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 8v14"/><circle cx="20" cy="25" r="5"/><path d="M20 8a2.5 2.5 0 0 1 2.5 2.5V22h-5V10.5A2.5 2.5 0 0 1 20 8z"/></svg></div>
+          <div class="name-area">
+            <div class="device-name">温度传感器</div>
+            <div class="device-status"><span class="dot"></span>在线 · 刷新于20秒前</div>
+          </div>
+        </div>
+        <div class="card-content" style="padding-top:8px">
+          <div class="data-bar">
+            <div class="data-col"><span class="data-val">28.5℃</span><span class="data-lbl">温度</span></div>
+            <div class="data-col"><span class="data-val">65%</span><span class="data-lbl">湿度</span></div>
+            <div class="data-col"><span class="data-val pm-val">18</span><span class="data-lbl">PM 2.5</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card large" data-card="tv-standby">
+        <span class="badge-type">智能电视 · 待机（大卡 172）</span>
+        <div class="card-header">
+          <div class="device-icon"><svg viewBox="0 0 40 40" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="10" width="26" height="17" rx="2.5"/><path d="M14 30.5h12M20 27v3.5"/></svg></div>
+          <div class="name-area">
+            <div class="device-name">智能电视</div>
+            <div class="device-status"><span class="dot gray"></span>待机中</div>
+          </div>
+          <button class="power-btn off" data-switch data-tv-power><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 4v7"/></svg></button>
+        </div>
+        <div class="card-content" style="padding-top:8px">
+          <div class="data-bar">
+            <div class="data-col"><span class="data-val">4K</span><span class="data-lbl">分辨率</span></div>
+            <div class="data-col"><span class="data-val">HDMI 1</span><span class="data-lbl">信号源</span></div>
+            <div class="data-col"><span class="data-val">2.5h</span><span class="data-lbl">今日观看</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card large" data-card="tv-error">
+        <span class="badge-type">智能电视 · 异常（大卡 172）</span>
+        <div class="card-header">
+          <div class="device-icon"><svg viewBox="0 0 40 40" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="10" width="26" height="17" rx="2.5"/><path d="M14 30.5h12M20 27v3.5"/></svg></div>
+          <div class="name-area">
+            <div class="device-name">智能电视</div>
+            <div class="device-status"><span class="dot"></span>异常 · 信号中断</div>
+          </div>
+          <button class="danger-btn" data-danger>重新连接</button>
+        </div>
+        <div class="card-content" style="padding-top:8px">
+          <div class="warn-bar"><div class="w-title">HDMI 信号丢失</div><div class="w-sub">检测到异常 · 2 分钟前</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 扩展大卡片 ===== -->
+  <div class="section">
+    <h2 class="section-title">扩展大卡片</h2>
+    <p class="section-desc">复杂设备，含视频 / 播放器 / 功能块 · 圆角 24px</p>
+    <div class="grid">
+      <div class="card extended" data-card="earbuds-big" style="height:196px">
+        <span class="badge-type">耳机 · Buds 3 Neo Pro（196）</span>
+        <div class="card-header">
+          <div class="device-icon"><svg viewBox="0 0 40 40" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 22v-4a6 6 0 0 1 12 0v4"/><circle cx="14" cy="24" r="3.5"/><circle cx="26" cy="24" r="3.5"/><path d="M14 27.5v2M26 27.5v2" opacity=".6"/></svg></div>
+          <div class="name-area">
+            <div class="device-name">Buds 3 Neo Pro</div>
+            <div class="device-status"><span class="dot"></span>在线 · 已连接</div>
+          </div>
+          <div class="battery"><span class="ear-tag">L</span>34%<span class="ear-tag">R</span>34%</div>
+          <span class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        </div>
+        <div class="card-content" style="padding-top:12px">
+          <div class="func-grid">
+            <div class="func-block active" data-func><span class="fb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 4v7"/></svg></span><span class="fb-label">Off</span></div>
+            <div class="func-block" data-func><span class="fb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h16M4 15h16"/></svg></span><span class="fb-label">Noise</span></div>
+            <div class="func-block" data-func><span class="fb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/></svg></span><span class="fb-label">Transparency</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card extended" data-card="glasses" style="height:168px">
+        <span class="badge-type">眼镜 · Glass Neo（168）</span>
+        <div class="card-header">
+          <div class="device-icon"><svg viewBox="0 0 40 40" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="21" r="5.5"/><circle cx="26" cy="21" r="5.5"/><path d="M19.5 21h1M8.5 21l-3-4M31.5 21l3-4"/></svg></div>
+          <div class="name-area">
+            <div class="device-name">Glass Neo</div>
+            <div class="device-status"><span class="dot"></span>在线 · 已连接</div>
+          </div>
+          <div class="battery">34%</div>
+          <span class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        </div>
+        <div class="card-content" style="padding-top:12px">
+          <div class="action-bar">
+            <span class="act-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.5"/><path d="M19 12a7 7 0 1 0-2.1 5"/></svg></span>
+            <span class="act-text">Record</span>
+            <span class="act-side" style="width:40px;height:40px;border-radius:50%;background:#FFF;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card extended" data-card="camera-big" style="height:252px">
+        <span class="badge-type">入户摄像头（252）</span>
+        <div class="card-header">
+          <div class="device-icon"><svg viewBox="0 0 40 40" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="9"/><circle cx="20" cy="20" r="3.5"/><path d="M20 8v3M20 29v3M8 20h3M29 20h3"/></svg></div>
+          <div class="name-area">
+            <div class="device-name">入户摄像头</div>
+            <div class="device-status"><span class="dot"></span>录制中 · 智能侦测开启</div>
+          </div>
+        </div>
+        <div class="card-content" style="padding-top:12px">
+          <div class="video-area"><div class="video-cam"><span class="live-badge">LIVE</span></div></div>
+        </div>
+      </div>
+
+      <div class="card extended" data-card="speaker" style="height:268px">
+        <span class="badge-type">智能音箱（268）</span>
+        <div class="card-header">
+          <div class="device-icon"><svg viewBox="0 0 40 40" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="8"/><path d="M20 14v12M16 17v6M24 17v6" opacity=".7"/></svg></div>
+          <div class="name-area">
+            <div class="device-name">智能音箱</div>
+            <div class="device-status"><span class="dot"></span>正在播放</div>
+          </div>
+        </div>
+        <div class="card-content" style="padding-top:12px">
+          <div class="player">
+            <div class="song">七里香</div>
+            <div class="artist">周杰伦</div>
+            <div class="progress-row">
+              <span class="time-stamp">20:12</span>
+              <div class="progress-track" data-progress><div class="progress-fill"></div></div>
+              <span class="time-stamp">42:53</span>
+            </div>
+            <div class="player-controls">
+              <button class="pc-btn" data-prev><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 6v12M17.5 6.5 11 12l6.5 5.5z"/></svg></button>
+              <button class="pc-btn" data-play><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg></button>
+              <button class="pc-btn" data-next><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 6v12M6.5 6.5 13 12l-6.5 5.5z"/></svg></button>
+              <button class="pc-round"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card extended" data-card="tv-playing" style="height:268px">
+        <span class="badge-type">智能电视 · 播放中（268）</span>
+        <div class="card-header">
+          <div class="device-icon"><svg viewBox="0 0 40 40" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="10" width="26" height="17" rx="2.5"/><path d="M14 30.5h12M20 27v3.5"/></svg></div>
+          <div class="name-area">
+            <div class="device-name">智能电视</div>
+            <div class="device-status"><span class="dot"></span>在线 · 正在播放</div>
+          </div>
+          <button class="power-btn on" data-switch data-tv-power><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 4v7"/></svg><span class="led"></span></button>
+        </div>
+        <div class="card-content" style="padding-top:12px">
+          <div class="video-area"><div class="video-tv">
+            <span class="live-badge">LIVE</span>
+            <div class="channel-bar"><span class="channel-tag">CCTV-1</span><span class="channel-name">新闻联播 · 国内要闻</span></div>
+          </div></div>
+          <div class="tv-control">
+            <div class="progress-track" data-progress><div class="progress-fill" style="width:48%"></div></div>
+            <span class="time-stamp">20:12 / 42:53</span>
+            <span class="vol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h3l4 3.5v-11L7 10z"/><path d="M15 9.5a4 4 0 0 1 0 5M17.5 7a7.5 7.5 0 0 1 0 10" opacity=".7"/></svg>60%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 控制卡 328×236 ===== -->
+  <div class="section">
+    <h2 class="section-title">控制卡 328 × 236</h2>
+    <p class="section-desc">完整控制面板：色温 + 亮度 · 圆角 20px</p>
+    <div class="grid">
+      <div class="card control" data-card="bulb-control">
+        <span class="badge-type">灯泡 · 控制面板</span>
+        <div class="card-content" style="padding-top:16px">
+          <div class="bulb-area">
+            <div class="bulb-top">
+              <div class="device-icon" style="width:44px;height:44px;border-radius:50%;background:#F5F6F7"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6c-5 0-9 4-9 9 0 4 2.4 6.6 4 8.4V27h10v-3.6c1.6-1.8 4-4.4 4-8.4 0-5-4-9-9-9z"/><path d="M15.5 31h9M16.5 34.5h7" opacity=".7"/></svg></div>
+              <div class="name-area" style="padding-top:0"><div class="device-name">Bulb</div><div class="device-status"><span class="dot"></span>在线</div></div>
+              <button class="power-btn" data-switch style="margin-left:auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 4v7"/></svg></button>
+            </div>
+            <div class="slider-row"><span class="s-label">色温</span><input type="range" min="0" max="100" value="50" data-slider="temp"><span class="s-end" data-end="temp">中性</span></div>
+            <div class="slider-row"><span class="s-label">亮度</span><input type="range" min="1" max="100" value="80" data-slider="bright"><span class="s-end" data-end="bright">80%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card control tv-control-card" data-card="tv-control">
+        <span class="badge-type">智能电视 · 控制面板（236）</span>
+        <div class="card-content" style="padding-top:16px;display:flex;flex-direction:column;gap:12px">
+          <div class="card-header" style="padding:0;height:60px;align-items:center;gap:12px">
+            <div class="tv-thumb"><svg viewBox="0 0 40 40" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="10" width="26" height="17" rx="2.5"/><path d="M14 30.5h12M20 27v3.5"/></svg></div>
+            <div class="name-area" style="padding-top:0">
+              <div class="tv-name">智能电视</div>
+              <div class="tv-status"><span class="dot"></span>客厅 · 已连接</div>
+            </div>
+            <button class="power-btn" data-switch style="margin-left:auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 4v7"/></svg></button>
+          </div>
+          <div class="tv-preview">
+            <div>
+              <div class="tv-channel" data-channel>央视一套</div>
+              <div class="tv-program" data-program>CCTV-1 综合频道</div>
+            </div>
+            <div class="tv-vol-badge" data-vol>VOL 45</div>
+          </div>
+          <div class="tv-btn-row">
+            <button class="tv-btn" data-tv="back" title="上一个频道"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 6v12M18 6.5 11 12l7 5.5z"/></svg></button>
+            <button class="tv-btn" data-tv="vol-" title="音量减"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h3l4 3.5v-11L7 10z"/><path d="M15 9.5a4 4 0 0 1 0 5"/></svg></button>
+            <button class="tv-btn" data-tv="vol+" title="音量加"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h3l4 3.5v-11L7 10z"/><path d="M15 9.5a4 4 0 0 1 0 5M17.5 7a7.5 7.5 0 0 1 0 10"/></svg></button>
+            <button class="tv-btn" data-tv="next" title="下一个频道"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 6v12M6 6.5 13 12l-7 5.5z"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var channels = [
+      { name: '央视一套', prog: 'CCTV-1 综合频道' },
+      { name: '央视五套', prog: 'CCTV-5 体育频道' },
+      { name: '湖南卫视', prog: '快乐大本营' },
+      { name: '东方卫视', prog: '新闻联播' }
+    ];
+    var scaleSeg = document.getElementById('scaleSeg');
+    var cards = Array.prototype.slice.call(document.querySelectorAll('.card'));
+    scaleSeg.addEventListener('click', function (e) {
+      var btn = e.target.closest('button'); if (!btn) return;
+      var s = parseFloat(btn.dataset.scale);
+      scaleSeg.querySelectorAll('button').forEach(function (b) { b.classList.remove('on'); });
+      btn.classList.add('on');
+      cards.forEach(function (c) { c.style.transform = 'scale(' + s + ')'; c.style.transformOrigin = 'top left'; c.style.marginRight = (s < 1 ? (1 - s) * 328 : 0) + 'px'; c.style.marginBottom = (s < 1 ? (1 - s) * 300 : 0) + 'px'; });
+    });
+
+    var abnormalSwitch = document.getElementById('abnormalSwitch');
+    abnormalSwitch.addEventListener('click', function () {
+      var on = abnormalSwitch.classList.toggle('on');
+      cards.forEach(function (c) { c.classList.toggle('abnormal', on); });
+    });
+
+    document.addEventListener('click', function (e) {
+      var sw = e.target.closest('[data-switch]');
+      if (sw) {
+        var on = sw.classList.toggle('off');
+        sw.classList.toggle('on', !on);
+        if (sw.dataset.tvPower !== undefined) {
+          sw.classList.remove('on');
+          sw.classList.add('off');
+        }
+        return;
+      }
+      var tempBtn = e.target.closest('[data-temp]');
+      if (tempBtn) {
+        var card = tempBtn.closest('.card');
+        var valEl = card.querySelector('.temp-val');
+        var v = parseInt(valEl.textContent, 10) + parseInt(tempBtn.dataset.temp, 10);
+        v = Math.max(16, Math.min(32, v));
+        valEl.textContent = v;
+        return;
+      }
+      var func = e.target.closest('[data-func]');
+      if (func) {
+        func.closest('.func-grid').querySelectorAll('[data-func]').forEach(function (f) { f.classList.remove('active'); });
+        func.classList.add('active');
+        return;
+      }
+      var track = e.target.closest('[data-progress]');
+      if (track) {
+        var rect = track.getBoundingClientRect();
+        var pct = Math.max(0, Math.min(100, (e.clientX - rect.left) / rect.width * 100));
+        track.querySelector('.progress-fill').style.width = pct + '%';
+        return;
+      }
+      var play = e.target.closest('[data-play]');
+      if (play) {
+        play.innerHTML = play.dataset.paused ? '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>' : '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13M15 5.5v13"/></svg>';
+        play.dataset.paused = play.dataset.paused ? '' : '1';
+        return;
+      }
+      var tvBtn = e.target.closest('[data-tv]');
+      if (tvBtn) {
+        var tvc = tvBtn.closest('.card');
+        var volEl = tvc.querySelector('[data-vol]');
+        var chEl = tvc.querySelector('[data-channel]');
+        var prEl = tvc.querySelector('[data-program]');
+        var act = tvBtn.dataset.tv;
+        if (act === 'vol+' || act === 'vol-') {
+          var vol = parseInt(volEl.textContent.replace(/\D/g, ''), 10) || 0;
+          vol = Math.max(0, Math.min(100, vol + (act === 'vol+' ? 5 : -5)));
+          volEl.textContent = 'VOL ' + vol;
+        } else {
+          var idx = (parseInt(chEl.dataset.idx || '0', 10) + (act === 'next' ? 1 : -1) + channels.length) % channels.length;
+          chEl.dataset.idx = idx;
+          chEl.textContent = channels[idx].name;
+          prEl.textContent = channels[idx].prog;
+        }
+        return;
+      }
+    });
+
+    document.querySelectorAll('[data-slider]').forEach(function (input) {
+      input.addEventListener('input', function () {
+        var val = input.value;
+        var end = input.closest('.card').querySelector('[data-end="' + input.dataset.slider + '"]');
+        if (input.dataset.slider === 'temp') {
+          var temps = ['暖光', '暖白', '中性', '冷白', '冷光'];
+          end.textContent = temps[Math.round(val / 25)];
+        } else {
+          end.textContent = val + '%';
+        }
+      });
+    });
+  })();
+</script>
+</body>
+</html>
