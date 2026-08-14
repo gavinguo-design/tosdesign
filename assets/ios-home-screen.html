@@ -95,6 +95,12 @@
   .app.widget .w-head{font-size:11px; font-weight:700; opacity:.9;}
   .app.widget .w-big{font-size:30px; margin-top:2px;}
   .app.widget .w-foot{font-size:10px; opacity:.8; margin-top:auto;}
+  /* 4×2 满行大卡片 */
+  .app.widget.w4x2{border-radius:26px;}
+  .app.widget.w4x2 .inner{padding:14px 16px;}
+  .app.widget.w4x2 .w-head{font-size:15px; font-weight:800; opacity:.95;}
+  .app.widget.w4x2 .w-big{font-size:56px; margin-top:4px; filter:drop-shadow(0 2px 3px rgba(0,0,0,.25));}
+  .app.widget.w4x2 .w-foot{font-size:12px; opacity:.85;}
   .app.dragging{
     cursor:grabbing; z-index:50;
     transform:scale(1.12);
@@ -234,6 +240,7 @@
     <button class="btn add" data-add="1x2">+ 1×2</button>
     <button class="btn add" data-add="2x1">+ 2×1</button>
     <button class="btn add" data-add="2x2">+ 2×2</button>
+    <button class="btn add" data-add="4x2">+ 4×2</button>
     <button class="btn del" id="delBtn">删除选中</button>
     <button class="btn toggle" id="multiBtn">多选模式</button>
     <button class="btn reset" id="resetBtn">重置</button>
@@ -288,7 +295,7 @@
 const COLS=4, ROWS=6, CELL=54, GX=14, GY=20;
 const GW=COLS*CELL+(COLS-1)*GX, GH=ROWS*CELL+(ROWS-1)*GY;
 const cellX=c=>c*(CELL+GX), cellY=r=>r*(CELL+GY);
-const TYPES={'1x1':[1,1],'1x2':[1,2],'2x1':[2,1],'2x2':[2,2]};
+const TYPES={'1x1':[1,1],'1x2':[1,2],'2x1':[2,1],'2x2':[2,2],'4x2':[4,2]};
 const PAL=[
   ['#FF9F0A','#FFCC00'],['#FF375F','#FF6482'],['#BF5AF2','#7C3AED'],
   ['#5E5CE6','#3A7BFF'],['#32ADE6','#0A84FF'],['#64D2FF','#0AE0FF'],
@@ -474,6 +481,7 @@ function render(){
       grid.appendChild(node);
     }
     let cls='app '+(e.type==='1x1'?'icon':'widget');
+    if(e.type==='4x2') cls+=' w4x2';
     if(e.id===selectedId) cls+=' selected';
     if(multiSelection.includes(e.id)){
       cls+=' multi';
@@ -1289,6 +1297,7 @@ function seed(){
 
   const p1=mkPage(a=>{
     a.push(mk('2x2',0,0,null));
+    const w4=mk('4x2',0,2,null); w4.label='全景天气'; w4.glyph='⛅'; a.push(w4);
     for(let i=0;i<6;i++) a.push(mk('1x1',-1,-1,i));
   });
 
