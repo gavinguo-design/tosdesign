@@ -75,8 +75,9 @@ agent_created: true
 - 进入：长按 450ms 或按钮；选择：点击切换（保序 + 序号徽标）；退出：点击空白
 - **仅 1×1 元素可加入多选**（截图规则；点击非 1×1 提示"仅 1×1 元素可多选"）
 - 拖动：按住任意已选元素，集合整体跟手（锚点跟手、其余保持相对像素偏移）
-- **规则判定基于首个选中（leader）的尺寸**（A→B→C→D 复用）
-- 落位：leader 按单元素规则落位 → 其余按选择顺序从 leader 位置**依次紧密排列**占满目标页空隙（orderedCells 行优先）→ **放不下的放回原页**（日志提示 N 个放回）
+- **规则判定基于首个选中（leader）的尺寸**（A→B→C→D 复用；多选落位禁用相邻互换 noSwap——集合语义走插入/排序，避免 swap 目标格被补位占用失败）
+- 落位：leader 按单元素规则落位 → 其余按选择顺序从 leader 位置**依次紧密排列**占满目标页空隙（orderedCells 行优先）→ **放不下的放回原页**（跨页回原页 reflow；同页留在本页找空位）（日志提示 N 个放回）
+- **落位后 `renumberOrders` 按行优先重排各页 1×1 order**（rest 排列后 order 保持旧值会重复/空洞 → 后续拖动错乱，必须重排）
 - 跨页：集合整体移动，目标页需能放下 leader 才允许翻页
 
 ### 四、实时布局变更（iOS 式实时预览）
@@ -85,7 +86,7 @@ agent_created: true
 - 实现：`liveLayoutFor` = 快照重建 + `attemptMove`（挤压/互换/大小让位）+ `placeAtFixed`（dragged 固定当前格，其余按 order 补位填充）
 
 ### 五、原子落位（多选 / 失败零副作用）
-- `multiPlace` 在**克隆的 simPages** 上完整模拟（移除集合 → leader 落位 → rest 紧密排列 → 放不下的放回原页 → 全量校验无重叠无未放置），**通过后才应用到真实 pages**
+- `multiPlace` 在**克隆的 simPages** 上完整模拟（移除集合 → leader 落位（noSwap）→ rest 紧密排列 → 放不下的放回原页 → **renumberOrders 重排各页 order** → 全量校验无重叠无未放置），**通过后才应用到真实 pages**
 - 失败时 pages 不被破坏，配合 pagesSnapshot 整体还原——不会丢元素、不会卡死
 
 ### 六、交互机制（体验层）

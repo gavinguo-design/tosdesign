@@ -437,6 +437,12 @@ function placeOrReflow(list, dragged, tc, tr){
     reflow(list);
   }
 }
+/* 仅重排 1×1 的 order（按行优先位置），不改变任何位置。
+   用于多选落位后修复 order 重复/空洞，保证"order 唯一且 = 行优先序号"。 */
+function renumberOrders(list){
+  const ones=list.filter(e=>e.type==='1x1').sort((a,b)=>(a.r-b.r)||(a.c-b.c));
+  ones.forEach((e,i)=>e.order=i);
+}
 
 /* ============================================================
    渲染
@@ -670,7 +676,7 @@ function liveLayoutFor(target,tc,tr,excludeIds){
   const de={...target,c:tc,r:tr,order:(snap[target.id]||target).order};
   sim.push(de);
   const origin=snap[target.id]||{c:target.c,r:target.r};
-  const res=attemptMove(sim,de,tc,tr,origin); // 挤压/互换/大小让位；相邻 1×1 → 直接互换
+  const res=attemptMove(sim,de,tc,tr,origin, drag&&drag.multi); // 多选：禁用相邻互换（集合走插入/排序）
   if(res.swapped){
     // 相邻互换：直接应用 sim 结果（含 order），不触发补位重排
     for(const e of els){
@@ -926,14 +932,14 @@ function multiPlace(){
   let elsC=simPages[to].els;
   reflow(elsC);
 
-  // 3. leader 落位（单元素规则，simList 只含非集合元素 + leader）
+  // 3. leader 落位（单元素规则，simList 只含非集合元素 + leader；多选禁用相邻互换 noSwap）
   const simList=elsC.map(e=>({...e}));
   const leadClone={...leader,c:leaderTC,r:leaderTR};
   simList.push(leadClone);
   const res=attemptMove(simList,leadClone,leaderTC,leaderTR,
-    (drag.snapMap&&drag.snapMap[leader.id])||{c:leader.c,r:leader.r});
+    (drag.snapMap&&drag.snapMap[leader.id])||{c:leader.c,r:leader.r}, true);
   if(!res.ok) return false;
-  if(!res.swapped) placeOrReflow(simList, leadClone, leaderTC, leaderTR); // 相邻互换已应用；其余走固定/排序落位
+  placeOrReflow(simList, leadClone, leaderTC, leaderTR); // 多选不产生 swapped；统一走固定/排序落位
   if(simList.some(e=>e.c<0) || hasOverlap(simList)) return false;
   for(const s of simList){
     if(ids.has(s.id)) continue;
@@ -960,15 +966,26 @@ function multiPlace(){
     if(!done) failed.push(e);
   }
 
-  // 5. 放不下的放回原页
+  // 5. 放不下的放回原页：跨页 → push 回原页 reflow；同页（目标页=原页）→ 留在本页找空位放置
   drag.returnedCount=failed.length;
-  for(const e of failed){
-    simPages[from].els.push(e);
+  if(from!==to){
+    for(const e of failed) simPages[from].els.push(e);
+    reflow(simPages[from].els);
+  }else{
+    for(const e of failed){
+      const occ2=buildOccupied(elsC);
+      const sp=findAnyFreeSpot(e.w,e.h,occ2);
+      if(!sp) return false;
+      e.c=sp.c; e.r=sp.r;
+      for(let dc=0;dc<e.w;dc++) for(let dr=0;dr<e.h;dr++) occ2[`${e.c+dc},${e.r+dr}`]=e.id;
+      elsC.push(e);
+    }
   }
-  reflow(simPages[from].els);
 
-  // 6. 全量校验（无未放置 / 无重叠）通过后才应用
+  // 6. 全量校验（无未放置 / 无重叠）通过后才应用；应用前按行优先重排各页 1×1 order
+  //    （rest 排列后 order 保持旧值会与目标页重复/空洞 → 后续拖动错乱）
   for(const p of simPages){
+    renumberOrders(p.els);
     if(p.els.some(e=>e.c<0) || hasOverlap(p.els)) return false;
   }
   for(let i=0;i<pages.length;i++) pages[i].els=simPages[i].els;
@@ -980,7 +997,7 @@ function multiPlace(){
 /* ============================================================
    移动规则核心（单元素，截图严格对齐）
    ============================================================ */
-function attemptMove(list,dragged,tc,tr,origin){
+function attemptMove(list,dragged,tc,tr,origin,noSwap){
   const target=cellsOf(dragged,tc,tr);
   const occ=buildOccupied(list,[dragged.id]);
   const ids=new Set();
@@ -1029,9 +1046,10 @@ function attemptMove(list,dragged,tc,tr,origin){
   if(same){
     const E=occEls[0];
     // 新增规则：1×1 与相邻（上下左右，不含斜对角）1×1 间拖动 → 直接互换位置与 order
+    // 多选集合落位（noSwap）禁用互换：集合语义走插入/排序，避免 swap 目标格被补位占用导致失败
     const oc=origin||{c:dragged.c,r:dragged.r};
     const adjacent = Math.abs(oc.c-E.c)+Math.abs(oc.r-E.r)===1;
-    if(adjacent){
+    if(adjacent && !noSwap){
       const eo=E.order;
       E.c=oc.c; E.r=oc.r; E.order=dragged.order;
       dragged.c=tc; dragged.r=tr; dragged.order=eo;
