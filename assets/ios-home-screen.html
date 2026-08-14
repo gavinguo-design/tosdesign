@@ -518,6 +518,7 @@ function render(){
    ============================================================ */
 function removeEl(id){
   els=els.filter(e=>e.id!==id);
+  pages[currentPage].els = els; // 同步回 pages（否则拖动快照基于旧数组，还原会"复活"被删元素）
   if(selectedId===id) selectedId=null;
   multiSelection=multiSelection.filter(x=>x!==id);
   reflow(); render();
@@ -1321,6 +1322,7 @@ document.getElementById('delBtn').addEventListener('click',()=>{
   if(multiSelection.length>0){
     const ids=multiSelection;
     els = els.filter(e=>!ids.includes(e.id));
+    pages[currentPage].els = els; // 同步回 pages（保持还原快照一致）
     multiSelection=[];
     reflow(); render();
     log(`删除 ${ids.length} 个选中元素，1×1 自动补位`);
