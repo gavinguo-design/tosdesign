@@ -467,6 +467,7 @@ function render(){
     let node=nodeMap.get(e.id);
     if(!node){
       node=document.createElement('div');
+      node._eid=e.id; // node 绑定元素 id；事件处理时从当前 els 查找，避免 restoreAll/multiPlace 换数组后操作幽灵对象
       if(e.type==='1x1'){
         node.innerHTML=`<div class="inner"><div class="glyph">${e.glyph}</div></div>`;
       }else{
@@ -474,9 +475,9 @@ function render(){
       }
       const del=document.createElement('div'); del.className='del'; del.textContent='×';
       del.addEventListener('pointerdown',ev=>{ev.stopPropagation();});
-      del.addEventListener('click',ev=>{ev.stopPropagation(); removeEl(e.id);});
+      del.addEventListener('click',ev=>{ev.stopPropagation(); removeEl(node._eid);});
       node.appendChild(del);
-      node.addEventListener('pointerdown',ev=>onDown(ev,e,node));
+      node.addEventListener('pointerdown',ev=>onDown(ev,node));
       nodeMap.set(e.id,node);
       grid.appendChild(node);
     }
@@ -576,8 +577,11 @@ function getMultiEls(){
    拖拽（单元素 + 多选集合）
    ============================================================ */
 let drag=null;
-function onDown(ev,el,node){
+function onDown(ev,node){
   ev.preventDefault();
+  // 从当前 els 按 id 查找元素——restoreAll/multiPlace 换数组后 node 不再持有旧对象引用
+  const el=els.find(x=>x.id===node._eid);
+  if(!el) return;
   if(multiMode){
     if(multiSelection.includes(el.id)){
       // 已选：开始多选拖动（集合整体跟手）
