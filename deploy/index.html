@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iOS 风格桌面 · 4×6 网格 · 元素移动规则交互原型（含多选拖动）</title>
+<style>
+  :root{
+    --cell:54px; --gx:14px; --gy:20px; --pad:16px;
+    --cols:4; --rows:6;
+    --wall-1:#2BB3C0; --wall-2:#8BA6A3; --wall-3:#7B5236; --wall-4:#2E1A10;
+    --bg:#7F9E94;
+    --ink:#15201c;
+    --rule-1x1:#0a84ff; --rule-n1n1:#bf5af2; --rule-cross:#30d158;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,"SF Pro Text","PingFang SC","Helvetica Neue",Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); min-height:100vh; padding:28px 16px 60px;
+    display:flex; flex-direction:column; align-items:center; gap:18px;
+  }
+  h1{font-size:20px; font-weight:600; margin:0; letter-spacing:.5px;}
+  .sub{font-size:13px; color:#2e3d38; margin:-8px 0 0; text-align:center; max-width:780px;}
+  .stage{display:flex; flex-direction:row; align-items:flex-start; gap:18px; flex-wrap:wrap; justify-content:center;}
+  .col-left{display:flex; flex-direction:column; gap:10px; align-items:center;}
+  .col-right{display:flex; flex-direction:column; gap:12px; max-width:360px; min-width:320px;}
+
+  /* ---- Toolbar ---- */
+  .toolbar{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; max-width:760px;}
+  .btn{
+    border:none; cursor:pointer; font-size:13px; font-weight:600; color:#fff;
+    padding:9px 13px; border-radius:12px; background:rgba(255,255,255,.12);
+    backdrop-filter:blur(8px); transition:.15s; user-select:none;
+  }
+  .btn:hover{background:rgba(255,255,255,.2);}
+  .btn:active{transform:scale(.96);}
+  .btn.add{background:linear-gradient(135deg,#0a84ff,#5e5ce6);}
+  .btn.del{background:linear-gradient(135deg,#ff453a,#ff6b6b);}
+  .btn.reset{background:rgba(255,255,255,.1);}
+  .btn.toggle{background:linear-gradient(135deg,#34c759,#30d158);}
+  .btn.toggle.active{background:linear-gradient(135deg,#ffd60a,#ff9f0a); color:#15201c;}
+
+  /* ---- Phone ---- */
+  .phone{
+    width:340px; height:700px; background:#0b0b0d; border-radius:54px;
+    padding:10px; box-shadow:0 50px 110px rgba(0,0,0,.5), inset 0 0 0 2px #2a2a2e;
+    position:relative; flex:none;
+  }
+  .screen{
+    width:100%; height:100%; border-radius:46px; overflow:hidden; position:relative;
+    background:
+      radial-gradient(620px 520px at 82% 6%, rgba(255,255,255,.14), transparent 60%),
+      linear-gradient(225deg,var(--wall-1) 0%,var(--wall-2) 40%,var(--wall-3) 72%,var(--wall-4) 100%);
+  }
+  .island{
+    position:absolute; top:12px; left:50%; transform:translateX(-50%);
+    width:120px; height:30px; background:#000; border-radius:18px; z-index:30;
+  }
+  .statusbar{
+    position:absolute; top:50px; left:0; right:0; height:30px; z-index:25;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 30px; font-size:15px; font-weight:600; color:#fff;
+    text-shadow:0 1px 2px rgba(0,0,0,.25);
+  }
+  .statusbar .right{display:flex; gap:6px; align-items:center; font-size:13px;}
+
+  .grid{
+    position:absolute; top:100px; left:31px; width:258px; height:424px;
+  }
+  .cell-bg{
+    position:absolute; inset:0; border-radius:14px; pointer-events:none;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(255,255,255,.14), transparent 1.4px);
+    background-size: 54px 20px;
+    background-position: 27px 10px;
+  }
+  .app{
+    position:absolute; cursor:grab; touch-action:none; user-select:none;
+    color:#fff; z-index:10;
+    transition: left .22s cubic-bezier(.22,.9,.36,1), top .22s cubic-bezier(.22,.9,.36,1),
+                transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease, opacity .15s;
+    text-shadow:0 1px 2px rgba(0,0,0,.25);
+    will-change:left,top,transform;
+  }
+  .app .inner{
+    position:absolute; inset:0; border-radius:inherit; overflow:hidden;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .app .glyph{font-size:30px; line-height:1; filter:drop-shadow(0 1px 1px rgba(0,0,0,.2));}
+  .app .label{font-size:11px; font-weight:600; margin-top:4px; opacity:.95; text-align:center;}
+  .app.icon{border-radius:16px;}
+  .app.widget{border-radius:18px;}
+  .app.widget .inner{align-items:flex-start; justify-content:flex-start; padding:9px;}
+  .app.widget .w-head{font-size:11px; font-weight:700; opacity:.9;}
+  .app.widget .w-big{font-size:30px; margin-top:2px;}
+  .app.widget .w-foot{font-size:10px; opacity:.8; margin-top:auto;}
+  .app.dragging{
+    cursor:grabbing; z-index:50;
+    transform:scale(1.12);
+    box-shadow:0 18px 40px rgba(0,0,0,.5), 0 0 0 2px rgba(255,255,255,.35);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .app.multi-drag{
+    z-index:45; transform:scale(1.05); opacity:.94;
+    box-shadow:0 14px 32px rgba(0,0,0,.42);
+    transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+  }
+  .app.dropped{ animation:dropBounce .28s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes dropBounce{
+    0%{transform:scale(1.12);}
+    60%{transform:scale(.96);}
+    100%{transform:scale(1);}
+  }
+  .app.selected{outline:3px solid #fff; outline-offset:2px;}
+  .app.multi{outline:3px solid #ffd60a; outline-offset:2px;}
+  .app.multi .del{display:none!important;}
+  .app .mnum{
+    position:absolute; top:-8px; left:-8px; min-width:20px; height:20px; padding:0 5px;
+    border-radius:10px; background:#ffd60a; color:#15201c; font-size:11px; font-weight:800;
+    display:flex; align-items:center; justify-content:center; z-index:63;
+    box-shadow:0 1px 3px rgba(0,0,0,.3); border:2px solid rgba(255,255,255,.92);
+  }
+  .app .del{
+    position:absolute; top:-7px; left:-7px; width:20px; height:20px; border-radius:50%;
+    background:rgba(0,0,0,.55); color:#fff; font-size:13px; line-height:20px; text-align:center;
+    display:none; cursor:pointer; z-index:60; backdrop-filter:blur(4px);
+  }
+  .app:hover .del{display:block;}
+  .app .badge{
+    position:absolute; top:-7px; right:-7px; min-width:21px; height:21px; padding:0 6px;
+    border-radius:11px; background:#ff3b30; color:#fff; font-size:11px; font-weight:700;
+    display:flex; align-items:center; justify-content:center; line-height:1;
+    box-shadow:0 1px 3px rgba(0,0,0,.3); border:2px solid rgba(255,255,255,.92); z-index:62;
+  }
+  .app.icon .badge{top:-8px; right:-8px;}
+
+  .placeholder{
+    position:absolute; border:2px dashed rgba(255,255,255,.9); border-radius:16px;
+    background:rgba(255,255,255,.14); display:none; pointer-events:none; z-index:5;
+    animation:phPulse 1s ease-in-out infinite;
+  }
+  .placeholder.invalid{
+    border-color:#ff453a; background:rgba(255,69,58,.18);
+    animation:none; box-shadow:0 0 0 2px rgba(255,69,58,.4);
+  }
+  @keyframes phPulse{
+    0%,100%{transform:scale(1); opacity:.8;}
+    50%{transform:scale(1.05); opacity:1;}
+  }
+
+  .dock{
+    position:absolute; top:548px; left:20px; width:280px; height:76px;
+    background:rgba(255,255,255,.22); border-radius:34px; backdrop-filter:blur(16px);
+    display:flex; align-items:center; justify-content:space-around; padding:0 14px;
+    box-shadow:0 8px 24px rgba(0,0,0,.18);
+  }
+  .dock .d{
+    width:54px; height:54px; border-radius:14px; display:flex; align-items:center; justify-content:center;
+    font-size:24px; color:#fff; box-shadow:0 4px 10px rgba(0,0,0,.25);
+  }
+
+  .pagedots{
+    position:absolute; top:640px; left:0; right:0; height:12px;
+    display:flex; align-items:center; justify-content:center; gap:7px; z-index:26;
+  }
+  .pagedots .dot{
+    width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.4);
+    cursor:pointer; transition:.2s;
+  }
+  .pagedots .dot.active{ background:#fff; width:18px; border-radius:4px; }
+
+  .home{
+    position:absolute; top:664px; left:50%; transform:translateX(-50%);
+    width:134px; height:5px; border-radius:3px; background:rgba(255,255,255,.85);
+  }
+
+  .toast{
+    position:fixed; bottom:40px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:rgba(20,20,28,.92); color:#fff; padding:12px 18px; border-radius:14px;
+    font-size:13px; opacity:0; transition:.25s; z-index:200; pointer-events:none;
+    box-shadow:0 10px 30px rgba(0,0,0,.4); max-width:80vw; text-align:center;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  /* ---- Rule panel ---- */
+  .panel{
+    background:rgba(255,255,255,.92); backdrop-filter:blur(10px);
+    border-radius:18px; padding:14px 14px 12px; box-shadow:0 12px 36px rgba(0,0,0,.18);
+    width:360px;
+  }
+  .panel h3{margin:0 0 8px; font-size:13px; color:#1d1d1f; display:flex; align-items:center; gap:8px;}
+  .panel h3 .dot{width:8px; height:8px; border-radius:50%; background:#0a84ff; animation:blink 1.6s infinite;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+  .panel .scene{font-size:12px; color:#1d1d1f; line-height:1.55; min-height:52px;}
+  .panel .scene b{color:#0a84ff;}
+  .panel .log{
+    margin-top:8px; padding-top:8px; border-top:1px dashed #cdd2da;
+    max-height:200px; overflow-y:auto; font-size:11px; color:#3a3a3c;
+  }
+  .panel .log .item{padding:4px 6px; border-radius:6px; margin-bottom:3px; background:#f1f3f6;}
+  .panel .log .item.warn{background:#fff4e0; color:#8a4a00;}
+  .panel .log .item.err{background:#ffe5e2; color:#a3231c;}
+  .panel .legend{display:flex; gap:10px; flex-wrap:wrap; font-size:11px; margin-top:8px;}
+  .panel .legend span{display:inline-flex; align-items:center; gap:4px;}
+  .panel .legend i{width:10px; height:10px; border-radius:3px; display:inline-block;}
+
+  /* ---- Cross-page edge hints ---- */
+  .screen::after{
+    content:''; position:absolute; top:0; bottom:0; width:64px; pointer-events:none;
+    opacity:0; transition:opacity .25s ease; z-index:20;
+  }
+  .screen.edge-left::after{ left:0; background:linear-gradient(90deg, rgba(255,255,255,.45), transparent); opacity:1; }
+  .screen.edge-right::after{ right:0; background:linear-gradient(270deg, rgba(255,255,255,.45), transparent); opacity:1; }
+  .grid.flipping .app:not(.dragging){ animation:pageIn .3s cubic-bezier(.22,.61,.36,1); }
+  @keyframes pageIn{ from{opacity:0; transform:translateY(12px) scale(.96);} to{opacity:1; transform:none;} }
+
+  /* ---- Multi-select helper ---- */
+  .multi-hint{
+    position:absolute; bottom:8px; left:8px; right:8px; padding:6px 8px;
+    background:rgba(255,255,255,.22); border-radius:10px; backdrop-filter:blur(8px);
+    color:#fff; font-size:11px; text-align:center; z-index:25;
+    display:none; pointer-events:none;
+  }
+  .multi-hint.show{display:block;}
+</style>
+</head>
+<body>
+  <h1>iOS 风格桌面 · 4×6 网格 · 元素移动规则交互原型</h1>
+  <p class="sub">1×1 顺序排序 / 非 1×1 位置固定 / 大小互换 / 跨页 / <b>多选拖动</b>（长按或按钮进入多选，拖动整个集合，规则基于首个图标）</p>
+
+  <div class="toolbar">
+    <button class="btn add" data-add="1x1">+ 1×1</button>
+    <button class="btn add" data-add="1x2">+ 1×2</button>
+    <button class="btn add" data-add="2x1">+ 2×1</button>
+    <button class="btn add" data-add="2x2">+ 2×2</button>
+    <button class="btn del" id="delBtn">删除选中</button>
+    <button class="btn toggle" id="multiBtn">多选模式</button>
+    <button class="btn reset" id="resetBtn">重置</button>
+  </div>
+
+  <div class="stage">
+    <div class="col-left">
+      <div class="phone">
+        <div class="screen">
+          <div class="island"></div>
+          <div class="statusbar">
+            <span>9:41</span>
+            <span class="right">📶 &nbsp;🔋</span>
+          </div>
+          <div class="grid" id="grid">
+            <div class="cell-bg"></div>
+            <div class="placeholder" id="placeholder"></div>
+          </div>
+          <div class="dock">
+            <div class="d" style="background:linear-gradient(135deg,#34c759,#30d158)">📞</div>
+            <div class="d" style="background:linear-gradient(135deg,#0a84ff,#5ac8fa)">🌐</div>
+            <div class="d" style="background:linear-gradient(135deg,#ff9f0a,#ffcc00)">🎵</div>
+            <div class="d" style="background:linear-gradient(135deg,#ff2d55,#ff6482)">💬</div>
+          </div>
+          <div class="multi-hint" id="multiHint">多选模式 · 点击图标加入选择 · 拖动任意已选图标移动整个集合（首个=leader 决定规则）</div>
+          <div class="pagedots" id="pagedots"></div>
+          <div class="home"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-right">
+      <div class="panel">
+        <h3><span class="dot"></span>实时规则判定</h3>
+        <div class="scene" id="scene">点击 / 长按 / 拖拽元素，这里实时显示命中的移动规则。</div>
+        <div class="legend">
+          <span><i style="background:var(--rule-1x1)"></i>1×1 规则</span>
+          <span><i style="background:var(--rule-n1n1)"></i>非 1×1 规则</span>
+          <span><i style="background:var(--rule-cross)"></i>跨页/多选规则</span>
+        </div>
+        <div class="log" id="log"><div class="item">等待操作…</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   网格参数（4×6 = 24 格）
+   ============================================================ */
+const COLS=4, ROWS=6, CELL=54, GX=14, GY=20;
+const GW=COLS*CELL+(COLS-1)*GX, GH=ROWS*CELL+(ROWS-1)*GY;
+const cellX=c=>c*(CELL+GX), cellY=r=>r*(CELL+GY);
+const TYPES={'1x1':[1,1],'1x2':[1,2],'2x1':[2,1],'2x2':[2,2]};
+const PAL=[
+  ['#FF9F0A','#FFCC00'],['#FF375F','#FF6482'],['#BF5AF2','#7C3AED'],
+  ['#5E5CE6','#3A7BFF'],['#32ADE6','#0A84FF'],['#64D2FF','#0AE0FF'],
+  ['#30D158','#28CD41'],['#A3E635','#84CC16'],['#FFD60A','#FFCC00'],
+  ['#FF9F0A','#FF6B00'],['#FF453A','#FF7A45'],['#FF2D55','#FF375F']
+];
+const GLYPH=['📷','💬','📞','🎵','⚙️','🔔','📅','🗺️','☁️','🌤️','📈','💡','🔒','📁','📝','🎮','❤️','⭐','🔍','📚','🛒','✈️','🍎','⏰','🐧','🅣'];
+const WLAB=['天气','时钟','日历','健身','股票','提醒','音乐','地图','笔记','相册','邮件','健康'];
+
+let nextId=1, pages=[], currentPage=0, selectedId=null, els=[];
+const grid=document.getElementById('grid');
+const placeholder=document.getElementById('placeholder');
+const toastEl=document.getElementById('toast');
+const screenEl=document.querySelector('.screen');
+const sceneEl=document.getElementById('scene');
+const logEl=document.getElementById('log');
+const EDGE=28, EDGE_DELAY=420, LONG_PRESS=450;
+let multiMode=false;
+let multiSelection=[]; // 有序数组（选择顺序），首位为 leader
+const multiBtn=document.getElementById('multiBtn');
+const multiHint=document.getElementById('multiHint');
+
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+function mk(type,c,r,order){
+  const [w,h]=TYPES[type]; const [b1,b2]=rnd(PAL);
+  const isW=type!=='1x1';
+  return {
+    id:nextId++, type, w, h, c, r, order, badge:null,
+    bg1:b1, bg2:b2,
+    glyph: isW ? rnd(GLYPH) : rnd(GLYPH),
+    label: isW ? rnd(WLAB) : ''
+  };
+}
+
+/* ============================================================
+   占用与适配
+   ============================================================ */
+function buildOccupied(list,exclude=[]){
+  const occ={};
+  for(const e of list){
+    if(exclude.includes(e.id)) continue;
+    if(e.c<0) continue;
+    for(let dc=0;dc<e.w;dc++) for(let dr=0;dr<e.h;dr++) occ[`${e.c+dc},${e.r+dr}`]=e.id;
+  }
+  return occ;
+}
+function fitsAt(w,h,c,r,occ){
+  if(c<0||r<0||c+w>COLS||r+h>ROWS) return false;
+  for(let dc=0;dc<w;dc++) for(let dr=0;dr<h;dr++) if(occ[`${c+dc},${r+dr}`]) return false;
+  return true;
+}
+function cellsOf(e,c,r){
+  const out=[];
+  for(let dc=0;dc<e.w;dc++) for(let dr=0;dr<e.h;dr++) out.push([c+dc,r+dr]);
+  return out;
+}
+const DIR={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
+const OPPOSITE={up:'down',down:'up',left:'right',right:'left'};
+function dragDirOf(e,tc,tr){
+  const dc=tc-e.c, dr=tr-e.r;
+  const ax=Math.abs(dc), ay=Math.abs(dr);
+  if(ax>=ay) return dc>0?'right':(dc<0?'left':(dr>0?'down':(dr<0?'up':'down')));
+  return dr>0?'down':'up';
+}
+function findAnyFreeSpot(w,h,occ){
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(fitsAt(w,h,c,r,occ)) return {c,r};
+  return null;
+}
+/* 滞回取格：消除边界微动抖动（|delta|>=1.5 直接取整保持跟手，否则越格线 0.6 才切换） */
+function snapGrid(raw, cur, max){
+  const delta = raw - cur;
+  let next;
+  if(Math.abs(delta) >= 1.5){
+    next = Math.round(raw);
+  }else{
+    next = delta > 0.6 ? cur + 1 : (delta < -0.6 ? cur - 1 : cur);
+  }
+  return Math.max(0, Math.min(max, next));
+}
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+
+/* ============================================================
+   重排（reflow）：固定非 1×1，1×1 从左到右、从上到下顺序补齐
+   ============================================================ */
+function reflow(list){
+  const E=list||els;
+  const occ={};
+  for(const e of E){ if(e.type!=='1x1') for(let dc=0;dc<e.w;dc++) for(let dr=0;dr<e.h;dr++) occ[`${e.c+dc},${e.r+dr}`]=e.id; }
+  const ones=E.filter(e=>e.type==='1x1').sort((a,b)=>a.order-b.order);
+  for(const e of ones){
+    let placed=false;
+    for(let r=0;r<ROWS&&!placed;r++) for(let c=0;c<COLS&&!placed;c++){
+      if(!occ[`${c},${r}`]){ e.c=c; e.r=r; occ[`${c},${r}`]=e.id; placed=true; }
+    }
+    if(!placed) e.c=-1;
+  }
+  ones.forEach((e,i)=>e.order=i);
+}
+
+/* 1×1 拖到空白处的松手落位：被拖元素固定当前位置不变，其他 1×1 基于排序填充剩余空格。
+   填充顺序：先填满"被拖元素前面（行优先更早）"的空格，再填后面 → 严格保证 1×1 前面无空格 */
+function placeAtFixed(list, dragged, tc, tr){
+  dragged.c=tc; dragged.r=tr;
+  const occ={};
+  for(const e of list){
+    if(e===dragged) continue;
+    if(e.type!=='1x1') for(let dc=0;dc<e.w;dc++) for(let dr=0;dr<e.h;dr++) occ[`${e.c+dc},${e.r+dr}`]=e.id;
+  }
+  for(let dc=0;dc<dragged.w;dc++) for(let dr=0;dr<dragged.h;dr++) occ[`${tc+dc},${tr+dr}`]=dragged.id;
+  const others=list.filter(e=>e.type==='1x1'&&e!==dragged).sort((a,b)=>a.order-b.order);
+  const dRank=tc+tr*COLS;
+  const front=[], back=[];
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    if(occ[`${c},${r}`]) continue;
+    (c+r*COLS<dRank ? front : back).push([c,r]);
+  }
+  let idx=0;
+  for(const [c,r] of front){ if(idx>=others.length) break; const e=others[idx++]; e.c=c; e.r=r; occ[`${c},${r}`]=e.id; }
+  for(const [c,r] of back){ if(idx>=others.length) break; const e=others[idx++]; e.c=c; e.r=r; occ[`${c},${r}`]=e.id; }
+  for(;idx<others.length;idx++) others[idx].c=-1;
+  // 按行优先位置重排 1×1 的 order（dragged 的序号由其固定位置决定）
+  const all=list.filter(e=>e.type==='1x1').sort((a,b)=>(a.r-b.r)||(a.c-b.c));
+  all.forEach((e,i)=>e.order=i);
+}
+/* 被拖元素前面（行优先更早）是否存在空格 */
+function hasGapBefore(list, dragged){
+  const occ=buildOccupied(list);
+  const dRank=dragged.c+dragged.r*COLS;
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    if(c+r*COLS>=dRank) continue;
+    if(!occ[`${c},${r}`]) return true;
+  }
+  return false;
+}
+/* 松手落位统一入口：1×1 且目标格空白 → 固定当前位置 + 其余排序；
+   若其他 1×1 不足以填满被拖元素前面的空格（前面仍有空），降级为序列排序放置（reflow），
+   严格保证"1×1 前面不允许有空格" */
+function placeOrReflow(list, dragged, tc, tr){
+  const occ=buildOccupied(list,[dragged.id]);
+  let empty=true;
+  for(const [c,r] of cellsOf(dragged,tc,tr)){ if(occ[`${c},${r}`]){ empty=false; break; } }
+  if(dragged.type==='1x1' && empty){
+    placeAtFixed(list, dragged, tc, tr);
+    if(hasGapBefore(list, dragged)) reflow(list);
+  }else{
+    reflow(list);
+  }
+}
+
+/* ============================================================
+   渲染
+   ============================================================ */
+const nodeMap=new Map();
+function render(){
+  const seen=new Set();
+  for(const e of els){
+    const isDrag = drag && drag.el===e;
+    const inMulti = !!(drag && drag.multi && drag.multiIds.has(e.id)); // 多选集合元素（跨页时 c=-1 也需保留）
+    if(e.c<0 && !isDrag && !inMulti) continue;
+    seen.add(e.id);
+    let node=nodeMap.get(e.id);
+    if(!node){
+      node=document.createElement('div');
+      if(e.type==='1x1'){
+        node.innerHTML=`<div class="inner"><div class="glyph">${e.glyph}</div></div>`;
+      }else{
+        node.innerHTML=`<div class="inner"><div class="w-head">${e.label}</div><div class="w-big">${e.glyph}</div><div class="w-foot">小组件 · ${e.type}</div></div>`;
+      }
+      const del=document.createElement('div'); del.className='del'; del.textContent='×';
+      del.addEventListener('pointerdown',ev=>{ev.stopPropagation();});
+      del.addEventListener('click',ev=>{ev.stopPropagation(); removeEl(e.id);});
+      node.appendChild(del);
+      node.addEventListener('pointerdown',ev=>onDown(ev,e,node));
+      nodeMap.set(e.id,node);
+      grid.appendChild(node);
+    }
+    let cls='app '+(e.type==='1x1'?'icon':'widget');
+    if(e.id===selectedId) cls+=' selected';
+    if(multiSelection.includes(e.id)){
+      cls+=' multi';
+      const idx=multiSelection.indexOf(e.id);
+      if(!node.querySelector('.mnum')){
+        const mn=document.createElement('div'); mn.className='mnum'; node.appendChild(mn);
+      }
+      node.querySelector('.mnum').textContent=idx+1;
+    }else{
+      const mn=node.querySelector('.mnum'); if(mn) mn.remove();
+    }
+    node.className=cls;
+    if(!isDrag && e.c>=0){
+      node.style.left=cellX(e.c)+'px';
+      node.style.top=cellY(e.r)+'px';
+    }
+    node.style.width=(e.w*CELL+(e.w-1)*GX)+'px';
+    node.style.height=(e.h*CELL+(e.h-1)*GY)+'px';
+    node.style.background=`linear-gradient(150deg,${e.bg1},${e.bg2})`;
+    if(e.badge){
+      let b=node.querySelector('.badge');
+      if(!b){ b=document.createElement('div'); b.className='badge'; node.appendChild(b); }
+      b.textContent=e.badge;
+    }
+  }
+  for(const [id,node] of nodeMap){
+    if(!seen.has(id)){ node.remove(); nodeMap.delete(id); }
+  }
+}
+
+/* ============================================================
+   增删
+   ============================================================ */
+function removeEl(id){
+  els=els.filter(e=>e.id!==id);
+  if(selectedId===id) selectedId=null;
+  multiSelection=multiSelection.filter(x=>x!==id);
+  reflow(); render();
+  log(`删除元素 #${id}，1×1 自动补位`);
+}
+function addElement(type){
+  const [w,h]=TYPES[type];
+  if(type==='1x1'){
+    const maxO=els.filter(e=>e.type==='1x1').reduce((m,e)=>Math.max(m,e.order),-1);
+    const e=mk('1x1',-1,-1,maxO+1); els.push(e); reflow();
+    if(e.c<0){ els.pop(); toast('桌面已放满'); }
+  }else{
+    const occ=buildOccupied(els,[]); const fit=findAnyFreeSpot(w,h,occ);
+    if(!fit){ toast('空间不足，无法添加'); return; }
+    els.push(mk(type,fit.c,fit.r,null));
+  }
+  render();
+  log(`新增 ${type}（按规则自动落位）`);
+}
+
+/* ============================================================
+   多选模式控制
+   ============================================================ */
+function enterMulti(el){
+  multiMode=true;
+  if(el) multiSelection=[el.id];
+  multiBtn.textContent = multiSelection.length ? `多选(${multiSelection.length})` : '退出多选';
+  multiBtn.classList.toggle('active', multiMode);
+  multiHint.classList.toggle('show', multiMode);
+  showMultiScene();
+  render();
+}
+function exitMulti(){
+  multiMode=false;
+  multiSelection=[];
+  multiBtn.textContent='多选模式';
+  multiBtn.classList.remove('active');
+  multiHint.classList.remove('show');
+  sceneEl.textContent='点击 / 长按 / 拖拽元素，这里实时显示命中的移动规则。';
+  render();
+}
+multiBtn.addEventListener('click',()=>{ multiMode ? exitMulti() : enterMulti(null); });
+
+/* 点击 grid 空白区域退出多选 */
+grid.addEventListener('pointerdown',ev=>{
+  if(multiMode && !drag && (ev.target===grid || ev.target.classList.contains('cell-bg'))){
+    exitMulti();
+  }
+});
+
+function getMultiEls(){
+  return multiSelection.map(id=>els.find(e=>e.id===id)).filter(Boolean);
+}
+
+/* ============================================================
+   拖拽（单元素 + 多选集合）
+   ============================================================ */
+let drag=null;
+function onDown(ev,el,node){
+  ev.preventDefault();
+  if(multiMode){
+    if(multiSelection.includes(el.id)){
+      // 已选：开始多选拖动（集合整体跟手）
+      startMultiDrag(ev,el,node);
+    }else{
+      multiSelection.push(el.id);
+      multiBtn.textContent=`多选(${multiSelection.length})`;
+      showMultiScene();
+      render();
+    }
+    return;
+  }
+  // 单元素拖拽 + 长按进入多选
+  el.oldC=el.c; el.oldR=el.r;
+  node.style.transition='none';
+  const gr=grid.getBoundingClientRect();
+  drag={el,node,moved:false,multi:false,
+        sx:ev.clientX, sy:ev.clientY, fromPage:currentPage,
+        pagesSnapshot:pages.map(p=>({els:p.els.map(e=>({...e}))})),
+        snapMap:takeSnapshot(els),
+        grabDX:ev.clientX-(gr.left+cellX(el.c)),
+        grabDY:ev.clientY-(gr.top+cellY(el.r)),
+        tc:el.c, tr:el.r, edgeTimer:null, liveOk:true, swapped:false,
+        _raf:null, lastClientX:ev.clientX, lastClientY:ev.clientY, edgeBlocked:false,
+        longPressTimer:setTimeout(()=>{
+          // 长按进入多选并选中该元素，取消本次拖拽
+          enterMulti(el);
+          cancelDrag();
+        },LONG_PRESS)};
+  try{node.setPointerCapture(ev.pointerId);}catch(_){}
+  node.addEventListener('pointermove',onMove);
+  node.addEventListener('pointerup',onUp);
+  node.addEventListener('pointercancel',onUp);
+}
+
+/* 多选拖动：drag.el=按下的锚点元素（跟手），drag.leader=首个选中（规则判定） */
+function startMultiDrag(ev,anchor,node){
+  const list=getMultiEls();
+  if(list.length<1) return;
+  const leader=list[0];
+  anchor.oldC=anchor.c; anchor.oldR=anchor.r;
+  const gr=grid.getBoundingClientRect();
+  drag={el:anchor,node,moved:false,multi:true,leader,
+        multiEls:list,multiIds:new Set(list.map(e=>e.id)),
+        sx:ev.clientX, sy:ev.clientY, fromPage:currentPage,
+        pagesSnapshot:pages.map(p=>({els:p.els.map(e=>({...e}))})),
+        snapMap:takeSnapshot(els),
+        grabDX:ev.clientX-(gr.left+cellX(anchor.c)),
+        grabDY:ev.clientY-(gr.top+cellY(anchor.r)),
+        tc:anchor.c, tr:anchor.r, edgeTimer:null, liveOk:true, swapped:false,
+        _raf:null, lastClientX:ev.clientX, lastClientY:ev.clientY, edgeBlocked:false,
+        relX:{}, relY:{}, leaderTC:leader.c, leaderTR:leader.r};
+  // 记录集合元素相对锚点的像素偏移；关闭集合元素过渡以跟手
+  for(const e of list){
+    drag.relX[e.id]=cellX(e.c)-cellX(anchor.c);
+    drag.relY[e.id]=cellY(e.r)-cellY(anchor.r);
+    const n=nodeMap.get(e.id);
+    if(n){ n.style.transition='none'; n.classList.add('multi-drag'); }
+  }
+  try{node.setPointerCapture(ev.pointerId);}catch(_){}
+  node.addEventListener('pointermove',onMove);
+  node.addEventListener('pointerup',onUp);
+  node.addEventListener('pointercancel',onUp);
+}
+
+/* 取消拖拽（长按进入多选时调用） */
+function cancelDrag(){
+  if(!drag) return;
+  if(drag._raf){ cancelAnimationFrame(drag._raf); drag._raf=null; }
+  if(drag.edgeTimer){ clearTimeout(drag.edgeTimer); drag.edgeTimer=null; }
+  screenEl.classList.remove('edge-left','edge-right');
+  placeholder.style.display='none';
+  try{ if(drag.node.releasePointerCapture) drag.node.releasePointerCapture(drag._pid); }catch(_){}
+  drag.node.removeEventListener('pointermove',onMove);
+  drag.node.removeEventListener('pointerup',onUp);
+  drag.node.removeEventListener('pointercancel',onUp);
+  drag.node.style.transition='';
+  drag.node.classList.remove('dragging');
+  if(drag.multi) for(const e of drag.multiEls){
+    const n=nodeMap.get(e.id); if(n) n.classList.remove('multi-drag');
+  }
+  drag=null;
+  render();
+}
+
+/* 快照：拖动前各元素位置（用于挤压链让位计算） */
+function takeSnapshot(list){
+  const m={};
+  for(const e of list) m[e.id]={c:e.c,r:e.r,order:e.order};
+  return m;
+}
+
+/* 实时让位：基于拖动元素的位置实时变更整体布局——
+   拖动元素固定当前格，空出区域由其他 1×1 实时补位，挤压/互换由 attemptMove 分支处理。
+   关键：每次调用都从"拖动前快照"重建输入（位置与 order 全取快照），保证输入稳定可重复。 */
+function liveLayoutFor(target,tc,tr,excludeIds){
+  const ex=excludeIds||(drag?[drag.el.id]:[]);
+  const snap=drag.snapMap||{};
+  const sim=els.filter(e=>!ex.includes(e.id)).map(e=>{
+    const s=snap[e.id];
+    return s ? {...e,c:s.c,r:s.r,order:s.order} : {...e};
+  });
+  const de={...target,c:tc,r:tr,order:(snap[target.id]||target).order};
+  sim.push(de);
+  const origin=snap[target.id]||{c:target.c,r:target.r};
+  const res=attemptMove(sim,de,tc,tr,origin); // 挤压/互换/大小让位；相邻 1×1 → 直接互换
+  if(res.swapped){
+    // 相邻互换：直接应用 sim 结果（含 order），不触发补位重排
+    for(const e of els){
+      if(ex.includes(e.id)) continue;
+      const se=sim.find(x=>x.id===e.id);
+      if(!se) continue;
+      const node=nodeMap.get(e.id);
+      if(node && (se.c!==e.c || se.r!==e.r)){
+        node.style.left=cellX(se.c)+'px';
+        node.style.top=cellY(se.r)+'px';
+      }
+      e.c=se.c; e.r=se.r; e.order=se.order;
+    }
+    drag.livePos={c:de.c,r:de.r,order:de.order};
+    drag.liveOk=true; drag.swapped=true;
+    return true;
+  }
+  drag.swapped=false;
+  placeAtFixed(sim, de, tc, tr);          // 实时布局：de 固定当前格，其余 1×1 按 order 补位填充剩余空格
+  const ok=!sim.some(e=>e.c<0) && !hasOverlap(sim);
+  if(ok){
+    for(const e of els){
+      if(ex.includes(e.id)) continue;
+      const se=sim.find(x=>x.id===e.id);
+      if(!se) continue;
+      const node=nodeMap.get(e.id);
+      // 位置变化才实时移动（位置不变的元素保持不动 → 拖起后原位空白不补位）
+      if(node && (se.c!==e.c || se.r!==e.r)){
+        node.style.left=cellX(se.c)+'px';
+        node.style.top=cellY(se.r)+'px';
+      }
+      e.c=se.c; e.r=se.r; // 只写回位置；order 保持快照值，松手时 reflow 统一重排
+    }
+    const deF=sim.find(x=>x.id===de.id);
+    drag.livePos={c:deF.c,r:deF.r,order:deF.order};
+  }else{
+    drag.livePos=null;
+  }
+  drag.liveOk=ok;
+  return ok;
+}
+const liveLayout=(tc,tr)=>liveLayoutFor(drag.el,tc,tr,[drag.el.id]);
+
+function onMove(ev){
+  if(!drag) return;
+  if(drag.longPressTimer && Math.hypot(ev.clientX-drag.sx,ev.clientY-drag.sy)>5){
+    clearTimeout(drag.longPressTimer); drag.longPressTimer=null;
+  }
+  drag.lastClientX=ev.clientX; drag.lastClientY=ev.clientY;
+  const gr=grid.getBoundingClientRect();
+  if(!drag.moved && Math.hypot(ev.clientX-drag.sx, ev.clientY-drag.sy)>5){
+    drag.moved=true; drag.node.classList.add('dragging');
+  }
+  if(drag.moved){
+    const x=ev.clientX-gr.left-drag.grabDX;
+    const y=ev.clientY-gr.top-drag.grabDY;
+    drag.node.style.left=x+'px';
+    drag.node.style.top=y+'px';
+    // 多选：集合其他元素相对锚点整体平移
+    if(drag.multi){
+      for(const e of drag.multiEls){
+        if(e===drag.el) continue;
+        const n=nodeMap.get(e.id); if(!n) continue;
+        n.style.left=(x+drag.relX[e.id])+'px';
+        n.style.top=(y+drag.relY[e.id])+'px';
+      }
+    }
+    // 锚点目标格（滞回）
+    const tc=snapGrid(x/(CELL+GX), drag.tc, COLS-drag.el.w);
+    const tr=snapGrid(y/(CELL+GY), drag.tr, ROWS-drag.el.h);
+    if(tc!==drag.tc || tr!==drag.tr){
+      drag.tc=tc; drag.tr=tr;
+      scheduleLive();
+    }
+    checkEdge();
+  }
+}
+
+/* 仅目标格变化时，RAF 合并帧执行实时让位 */
+function scheduleLive(){
+  if(drag._raf) return;
+  drag._raf=requestAnimationFrame(()=>{
+    drag._raf=null;
+    if(!drag) return;
+    if(drag.multi){
+      // leader 落点 = 锚点目标格 + leader 相对锚点的格偏移（用拖动前快照，跨页后 c/r 为 -1）
+      const snap=drag.snapMap||{};
+      const sa=snap[drag.el.id]||{c:drag.el.c,r:drag.el.r};
+      const sl=snap[drag.leader.id]||{c:drag.leader.c,r:drag.leader.r};
+      const ldc=sl.c-sa.c, ldr=sl.r-sa.r;
+      const ltc=clamp(drag.tc+ldc,0,COLS-drag.leader.w);
+      const ltr=clamp(drag.tr+ldr,0,ROWS-drag.leader.h);
+      drag.leaderTC=ltc; drag.leaderTR=ltr;
+      placeholder.style.left=cellX(ltc)+'px';
+      placeholder.style.top=cellY(ltr)+'px';
+      placeholder.style.width=(drag.leader.w*CELL+(drag.leader.w-1)*GX)+'px';
+      placeholder.style.height=(drag.leader.h*CELL+(drag.leader.h-1)*GY)+'px';
+      placeholder.style.display='block';
+      const ok=liveLayoutFor(drag.leader,ltc,ltr,[...drag.multiIds]);
+      if(drag.edgeBlocked) placeholder.classList.add('invalid');
+      else placeholder.classList.toggle('invalid', !ok);
+      showMultiDragScene(ltc,ltr);
+    }else{
+      const tc=drag.tc, tr=drag.tr;
+      placeholder.style.display='block';
+      placeholder.style.left=cellX(tc)+'px';
+      placeholder.style.top=cellY(tr)+'px';
+      placeholder.style.width=(drag.el.w*CELL+(drag.el.w-1)*GX)+'px';
+      placeholder.style.height=(drag.el.h*CELL+(drag.el.h-1)*GY)+'px';
+      const ok=liveLayout(tc,tr);
+      if(drag.edgeBlocked) placeholder.classList.add('invalid');
+      else placeholder.classList.toggle('invalid', !ok);
+      showLiveScene(tc,tr);
+    }
+  });
+}
+
+/* 跨页边缘判定（每帧执行） */
+function checkEdge(){
+  if(!drag) return;
+  const sr=screenEl.getBoundingClientRect();
+  const px=drag.lastClientX-sr.left;
+  const atLeft = px<EDGE && currentPage>0;
+  const atRight = px>sr.width-EDGE && currentPage<pages.length-1;
+  let tp=-1;
+  if(atLeft) tp=currentPage-1;
+  else if(atRight) tp=currentPage+1;
+  if(tp>=0){
+    const probe=drag.multi ? drag.leader : drag.el;
+    if(!drag.pageCheck || drag.pageCheck.tp!==tp)
+      drag.pageCheck={tp, ok:canPlaceOnPage(pages[tp].els, probe)};
+    if(drag.pageCheck.ok){
+      screenEl.classList.toggle('edge-left', atLeft);
+      screenEl.classList.toggle('edge-right', atRight);
+      if(!drag.edgeTimer) drag.edgeTimer=setTimeout(()=>doEdgePage(tp),EDGE_DELAY);
+      drag.lastBlocked=false; drag.edgeBlocked=false;
+    }else{
+      screenEl.classList.remove('edge-left','edge-right');
+      if(drag.edgeTimer){ clearTimeout(drag.edgeTimer); drag.edgeTimer=null; }
+      if(!drag.lastBlocked){ toast('目标页空间不足，无法跨页'); drag.lastBlocked=true; }
+      drag.edgeBlocked=true;
+      placeholder.classList.add('invalid');
+    }
+  }else{
+    screenEl.classList.remove('edge-left','edge-right');
+    if(drag.edgeTimer){ clearTimeout(drag.edgeTimer); drag.edgeTimer=null; }
+    drag.pageCheck=null; drag.lastBlocked=false; drag.edgeBlocked=false;
+  }
+}
+function onUp(ev){
+  if(!drag) return;
+  if(drag.longPressTimer){ clearTimeout(drag.longPressTimer); drag.longPressTimer=null; }
+  if(drag._raf){ cancelAnimationFrame(drag._raf); drag._raf=null; }
+  const {el,node,moved}=drag;
+  if(drag.edgeTimer){ clearTimeout(drag.edgeTimer); drag.edgeTimer=null; }
+  screenEl.classList.remove('edge-left','edge-right');
+  try{node.releasePointerCapture(ev.pointerId);}catch(_){}
+  node.removeEventListener('pointermove',onMove);
+  node.removeEventListener('pointerup',onUp);
+  node.removeEventListener('pointercancel',onUp);
+  placeholder.style.display='none';
+  node.style.transition='';
+  if(drag.multi){
+    for(const e of drag.multiEls){
+      const n=nodeMap.get(e.id);
+      if(n){ n.classList.remove('multi-drag'); n.style.transition=''; }
+    }
+  }
+  if(moved){
+    if(drag.multi){
+      // 多选落位
+      if(drag.liveOk && multiPlace()){
+        log(`多选移动成功：${drag.multiEls.length} 个图标（leader ${drag.leader.type}）`);
+        if(drag.returnedCount>0) log(`${drag.returnedCount} 个图标因空隙不足放回原页`,'warn');
+        node.classList.add('dropped');
+        setTimeout(()=>node.classList.remove('dropped'),300);
+      }else{
+        restoreAll();
+        toast('空间不足，已还原');
+        log('多选操作失败：目标空间不足，整体还原','err');
+      }
+    }else{
+      if(drag.liveOk){
+        if(drag.livePos){
+          el.c=drag.livePos.c; el.r=drag.livePos.r; el.order=drag.livePos.order;
+        }
+        if(!drag.swapped) placeOrReflow(els, el, el.c, el.r); // 相邻互换已应用；其余走固定/排序落位
+        if(els.some(e=>e.c<0) || hasOverlap()){
+          if(drag.fromPage!==currentPage) findAndApplyPlacement(els, el);
+          if(els.some(e=>e.c<0) || hasOverlap()){
+            restoreAll();
+            toast('空间不足，已还原');
+            log('操作失败：目标空间不足，整体还原','err');
+            drag=null; node.classList.remove('dragging'); render(); return;
+          }
+        }
+        log(`移动成功：${el.type} → (${el.c},${el.r})`,'ok');
+        node.classList.add('dropped');
+        setTimeout(()=>node.classList.remove('dropped'),300);
+      }else{
+        restoreAll();
+        toast('空间不足，已还原');
+        log('操作失败：目标空间不足，整体还原','err');
+        drag=null; node.classList.remove('dragging'); render(); return;
+      }
+    }
+  }else{
+    if(!drag.multi) selectedId=(selectedId===el.id)?null:el.id; // 多选单击已选元素不切换选中态
+    render();
+  }
+  drag=null;
+  node.classList.remove('dragging');
+  render();
+}
+function restoreAll(){
+  pages=drag.pagesSnapshot.map(p=>({els:p.els.map(e=>({...e}))}));
+  currentPage=drag.fromPage; els=pages[currentPage].els;
+}
+
+/* ============================================================
+   多选落位：leader 按单元素规则落位，其余按选择顺序依次紧密排列，
+   占满目标页空隙；放不下的放回原页（截图规则）
+   ============================================================ */
+function orderedCells(sr,sc){
+  const out=[];
+  for(let r=sr;r<ROWS;r++){
+    const c0=(r===sr)?sc:0;
+    for(let c=c0;c<COLS;c++) out.push([c,r]);
+  }
+  for(let r=0;r<sr;r++) for(let c=0;c<COLS;c++) out.push([c,r]);
+  return out;
+}
+function multiPlace(){
+  const sel=drag.multiEls;
+  const idsC=new Set(sel.map(e=>e.id));
+  const leaderTC=drag.leaderTC, leaderTR=drag.leaderTR;
+  drag.returnedCount=0;
+
+  // ===== 原子操作：在克隆的页面上完整模拟，成功后才应用到真实 pages（失败不破坏任何状态）=====
+  const simPages=pages.map(p=>({els:p.els.map(e=>({...e}))}));
+  const selClones=sel.map(e=>({...e}));
+  const ids=idsC; // 克隆元素 id 与真实一致
+  const leader=selClones[0];
+  const from=drag.fromPage, to=currentPage;
+
+  // 1. 从原页移除集合 → 原页 1×1 自动补位
+  simPages[from].els = simPages[from].els.filter(e=>!ids.has(e.id));
+  reflow(simPages[from].els);
+  // 2. 目标页（跨页时已含集合）也移除集合元素
+  if(from!==to){
+    simPages[to].els = simPages[to].els.filter(e=>!ids.has(e.id));
+  }
+  let elsC=simPages[to].els;
+  reflow(elsC);
+
+  // 3. leader 落位（单元素规则，simList 只含非集合元素 + leader）
+  const simList=elsC.map(e=>({...e}));
+  const leadClone={...leader,c:leaderTC,r:leaderTR};
+  simList.push(leadClone);
+  const res=attemptMove(simList,leadClone,leaderTC,leaderTR,
+    (drag.snapMap&&drag.snapMap[leader.id])||{c:leader.c,r:leader.r});
+  if(!res.ok) return false;
+  if(!res.swapped) placeOrReflow(simList, leadClone, leaderTC, leaderTR); // 相邻互换已应用；其余走固定/排序落位
+  if(simList.some(e=>e.c<0) || hasOverlap(simList)) return false;
+  for(const s of simList){
+    if(ids.has(s.id)) continue;
+    const o=elsC.find(x=>x.id===s.id);
+    if(o){ o.c=s.c; o.r=s.r; o.order=s.order; }
+  }
+  const leadFinal=simList.find(x=>x.id===leader.id);
+  elsC.push({...leader,c:leadFinal.c,r:leadFinal.r,order:leadFinal.order});
+
+  // 4. 其余元素按选择顺序依次紧密排列（从 leader 实际位置开始行优先扫描）
+  const rest=selClones.slice(1);
+  const occ=buildOccupied(elsC);
+  const ordered=orderedCells(leadFinal.r,leadFinal.c);
+  const failed=[];
+  for(const e of rest){
+    let done=false;
+    for(const [c,r] of ordered){
+      if(fitsAt(e.w,e.h,c,r,occ)){
+        e.c=c; e.r=r;
+        for(let dc=0;dc<e.w;dc++) for(let dr=0;dr<e.h;dr++) occ[`${c+dc},${r+dr}`]=e.id;
+        elsC.push(e); done=true; break;
+      }
+    }
+    if(!done) failed.push(e);
+  }
+
+  // 5. 放不下的放回原页
+  drag.returnedCount=failed.length;
+  for(const e of failed){
+    simPages[from].els.push(e);
+  }
+  reflow(simPages[from].els);
+
+  // 6. 全量校验（无未放置 / 无重叠）通过后才应用
+  for(const p of simPages){
+    if(p.els.some(e=>e.c<0) || hasOverlap(p.els)) return false;
+  }
+  for(let i=0;i<pages.length;i++) pages[i].els=simPages[i].els;
+  els=pages[currentPage].els;
+  multiSelection=[];
+  return true;
+}
+
+/* ============================================================
+   移动规则核心（单元素，截图严格对齐）
+   ============================================================ */
+function attemptMove(list,dragged,tc,tr,origin){
+  const target=cellsOf(dragged,tc,tr);
+  const occ=buildOccupied(list,[dragged.id]);
+  const ids=new Set();
+  for(const [c,r] of target){ const id=occ[`${c},${r}`]; if(id) ids.add(id); }
+
+  /* A. 移向空白处 */
+  if(ids.size===0){
+    if(dragged.type==='1x1'){
+      const ones=list.filter(e=>e.type==='1x1'&&e!==dragged).sort((a,b)=>a.order-b.order);
+      ones.push(dragged);
+      ones.forEach((e,i)=>e.order=i);
+    }else{
+      dragged.c=tc; dragged.r=tr;
+    }
+    return {ok:true};
+  }
+
+  const occEls=[...ids].map(id=>list.find(e=>e.id===id));
+  const same = occEls.length===1 && occEls[0].w===dragged.w && occEls[0].h===dragged.h;
+
+  /* B. 同尺寸互换 */
+  if(same && dragged.type!=='1x1'){
+    const E=occEls[0];
+    const occX=buildOccupied(list,[dragged.id,E.id]);
+    for(const [c,r] of target) occX[`${c},${r}`]='D';
+    const sp=findAnyFreeSpot(E.w,E.h,occX);
+    if(sp){ E.c=sp.c; E.r=sp.r; dragged.c=tc; dragged.r=tr; }
+    else { const oc=dragged.c,or=dragged.r; dragged.c=E.c; dragged.r=E.r; E.c=oc; E.r=or; }
+    return {ok:true};
+  }
+  if(same){
+    const E=occEls[0];
+    // 新增规则：1×1 与相邻（上下左右，不含斜对角）1×1 间拖动 → 直接互换位置与 order
+    const oc=origin||{c:dragged.c,r:dragged.r};
+    const adjacent = Math.abs(oc.c-E.c)+Math.abs(oc.r-E.r)===1;
+    if(adjacent){
+      const eo=E.order;
+      E.c=oc.c; E.r=oc.r; E.order=dragged.order;
+      dragged.c=tc; dragged.r=tr; dragged.order=eo;
+      return {ok:true, swapped:true};
+    }
+    const t=E.order, d=dragged.order;
+    if(d<t){
+      for(const x of list){ if(x.type==='1x1'&&x.order>d&&x.order<=t) x.order--; }
+      dragged.order=t;
+    }else if(d>t){
+      for(const x of list){ if(x.type==='1x1'&&x.order>=t&&x.order<d) x.order++; }
+      dragged.order=t;
+    }
+    return {ok:true};
+  }
+
+  const dArea=dragged.w*dragged.h;
+  const maxArea=Math.max(...occEls.map(e=>e.w*e.h));
+
+  /* C. 大 → 小（截图：无论空满屏均可直接移动） */
+  if(dArea>maxArea){
+    // 被挤压的所有元素（含 1×1 与非 1×1）都挪到空位；大块先放更易成功
+    const movers=[...occEls].sort((a,b)=>(b.w*b.h)-(a.w*a.h));
+    const base=buildOccupied(list,[dragged.id, ...movers.map(m=>m.id)]);
+    for(const [c,r] of target) base[`${c},${r}`]='D';
+    const planned=[];
+    for(const E of movers){
+      const occ2={...base};
+      for(const p of planned) for(let dc=0;dc<E.w;dc++) for(let dr=0;dr<E.h;dr++) occ2[`${p.c+dc},${p.r+dr}`]='P';
+      const sp=findAnyFreeSpot(E.w,E.h,occ2);
+      if(!sp) return {ok:false, msg:'空间不足，被挤占的元素找不到空位'};
+      planned.push({e:E,c:sp.c,r:sp.r});
+    }
+    dragged.c=tc; dragged.r=tr;
+    for(const p of planned){ p.e.c=p.c; p.e.r=p.r; }
+    return {ok:true};
+  }
+
+  /* D. 小 → 大（截图：仅当被压大元素水平/垂直有空位才可让位） */
+  const E=occEls.reduce((a,b)=>(a.w*a.h)>(b.w*b.h)?a:b);
+  const occX=buildOccupied(list,[dragged.id,E.id]);
+  for(const [c,r] of target) occX[`${c},${r}`]='D';
+  const dir=dragDirOf(dragged,tc,tr);
+  const rev=OPPOSITE[dir];
+  const cands=[rev, ...['up','down','left','right'].filter(d=>d!==rev)];
+  let moved=false;
+  for(const d of cands){
+    const nc=E.c+DIR[d][0], nr=E.r+DIR[d][1];
+    if(fitsAt(E.w,E.h,nc,nr,occX)){
+      E.c=nc; E.r=nr; dragged.c=tc; dragged.r=tr; moved=true; break;
+    }
+  }
+  if(!moved) return {ok:false, msg:'大组件水平/垂直向无空位，无法移动'};
+  return {ok:true};
+}
+
+function hasOverlap(list){
+  const L=list||els;
+  const occ={};
+  for(const e of L){
+    if(e.c<0) continue;
+    for(let dc=0;dc<e.w;dc++) for(let dr=0;dr<e.h;dr++){
+      const k=`${e.c+dc},${e.r+dr}`;
+      if(occ[k]) return true;
+      occ[k]=1;
+    }
+  }
+  return false;
+}
+
+/* ============================================================
+   跨页预检 / 兜底（截图：不足够位置放置，禁止移动）
+   ============================================================ */
+function canPlaceOnPage(pageEls, el){
+  for(let r=0;r+el.h<=ROWS;r++){
+    for(let c=0;c+el.w<=COLS;c++){
+      const sim=pageEls.map(e=>({...e}));
+      const de={...el, c, r};
+      sim.push(de);
+      attemptMove(sim,de,c,r);
+      reflow(sim);
+      if(!sim.some(x=>x.c<0) && !hasOverlap(sim)) return true;
+    }
+  }
+  return false;
+}
+function findAndApplyPlacement(list, el){
+  for(let r=0;r+el.h<=ROWS;r++){
+    for(let c=0;c+el.w<=COLS;c++){
+      const sim=list.map(e=>({...e}));
+      const de=sim.find(x=>x.id===el.id);
+      de.c=c; de.r=r;
+      attemptMove(sim,de,c,r);
+      reflow(sim);
+      if(!sim.some(x=>x.c<0) && !hasOverlap(sim)){
+        for(const s of sim){ const o=list.find(x=>x.id===s.id); if(o){o.c=s.c;o.r=s.r;o.order=s.order;} }
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/* ============================================================
+   跨页拖动（截图：原页 1×1 自动补位）
+   ============================================================ */
+function doEdgePage(tp){
+  if(!drag || tp===currentPage) return;
+  if(drag.edgeTimer){ clearTimeout(drag.edgeTimer); drag.edgeTimer=null; }
+  screenEl.classList.remove('edge-left','edge-right');
+  const from=currentPage;
+  if(drag.multi){
+    // 整个集合跨页
+    pages[from].els = pages[from].els.filter(x=>!drag.multiIds.has(x.id));
+    reflow(pages[from].els);
+    currentPage=tp;
+    els=pages[currentPage].els;
+    for(const e of drag.multiEls){ e.c=-1; e.r=-1; els.push(e); }
+  }else{
+    pages[from].els = pages[from].els.filter(x=>x!==drag.el);
+    reflow(pages[from].els);
+    currentPage=tp;
+    els=pages[currentPage].els;
+    drag.el.c=-1; drag.el.r=-1;
+    els.push(drag.el);
+  }
+  render(); updateDots();
+  drag.pageCheck=null; drag.lastBlocked=false;
+  // 翻页后立即在新页实时让位预览
+  scheduleLive();
+  grid.classList.add('flipping');
+  setTimeout(()=>grid.classList.remove('flipping'),320);
+  log(`跨页：第 ${from+1} 页 → 第 ${tp+1} 页${drag.multi?`（多选 ${drag.multiEls.length} 个）`:''}，原页 1×1 已自动补位`);
+}
+function updateDots(){
+  const wrap=document.getElementById('pagedots');
+  wrap.innerHTML='';
+  for(let i=0;i<pages.length;i++){
+    const d=document.createElement('div');
+    d.className='dot'+(i===currentPage?' active':'');
+    d.addEventListener('click',()=>{ if(!drag) switchPage(i); });
+    wrap.appendChild(d);
+  }
+}
+function switchPage(n){
+  if(drag || n<0 || n>=pages.length || n===currentPage) return;
+  currentPage=n;
+  els=pages[currentPage].els;
+  selectedId=null;
+  render(); updateDots();
+}
+
+/* ============================================================
+   规则面板实时反馈
+   ============================================================ */
+function showLiveScene(tc,tr){
+  const el = drag && drag.el;
+  if(!el) return;
+  const occ = buildOccupied(els, [el.id]);
+  const target = cellsOf(el, tc, tr);
+  const ids = new Set();
+  for(const [c,r] of target){ const id=occ[`${c},${r}`]; if(id) ids.add(id); }
+  if(ids.size===0){
+    sceneEl.innerHTML = el.type==='1x1'
+      ? `向<b>空白处</b>移动 · 1×1 元素 · 松手后<b>基于排序规则</b>放置`
+      : `向<b>空白处</b>移动 · 非 1×1 元素 · 松手后<b>直接放置</b>，1×1 顺序补齐空位`;
+  }else{
+    const occEls = [...ids].map(id=>els.find(e=>e.id===id));
+    const same = occEls.length===1 && occEls[0].w===el.w && occEls[0].h===el.h;
+    if(same){
+      sceneEl.innerHTML = el.type==='1x1'
+        ? `<b>同尺寸 1×1</b> · 相邻（上下左右）直接互换；不相邻则插入补位排序`
+        : `<b>同尺寸 非 1×1 互换</b> · 寻找不与目标重叠的空位，否则直接交换`;
+    }else{
+      const dArea = el.w*el.h, maxArea = Math.max(...occEls.map(e=>e.w*e.h));
+      if(dArea>maxArea){
+        sceneEl.innerHTML = `<b>大 → 小</b> · 大元素落位，被挤压的元素（<b>含 1×1 与非 1×1</b>）挪到空位；1×1 重新排序`;
+      }else if(dArea<maxArea){
+        sceneEl.innerHTML = `<b>小 → 大</b> · 被挤压对象仅当水平/垂直有空位才可让位，否则禁止移动`;
+      }else{
+        sceneEl.innerHTML = `大小相等，判定为<b>同尺寸互换</b>`;
+      }
+    }
+  }
+}
+function showMultiDragScene(ltc,ltr){
+  const leader=drag.leader;
+  sceneEl.innerHTML = `多选拖动 · <b>${drag.multiEls.length}</b> 个 · 规则基于首个图标（leader：<b>${leader.type}</b>）
+    松手后 leader 落 (${ltc},${ltr})，其余按选择顺序依次紧密排列，空隙不足部分放回原页。`;
+}
+function showMultiScene(){
+  if(multiSelection.length===0){
+    sceneEl.textContent = '多选模式：点击图标加入选择（黄色序号），拖动任意已选图标移动整个集合；点击空白退出。';
+    return;
+  }
+  const lead=els.find(e=>e.id===multiSelection[0]);
+  sceneEl.innerHTML = `多选 · 已选 <b>${multiSelection.length}</b> 个 · 首个（leader）为 <b>${lead?lead.type:'?'}</b>，按 leader 尺寸规则判定移动；落位后集合依次紧密排列占满空隙，放不下的返回原位。`;
+}
+
+/* ============================================================
+   日志 / Toast
+   ============================================================ */
+function log(msg, kind='ok'){
+  const d=document.createElement('div');
+  d.className='item'+(kind==='warn'?' warn':kind==='err'?' err':'');
+  const t=new Date();
+  d.textContent = `${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}:${String(t.getSeconds()).padStart(2,'0')} · ${msg}`;
+  logEl.prepend(d);
+  while(logEl.children.length>30) logEl.removeChild(logEl.lastChild);
+}
+function toast(msg){
+  toastEl.textContent=msg; toastEl.classList.add('show');
+  clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.classList.remove('show'),1600);
+}
+
+/* ============================================================
+   初始数据
+   ============================================================ */
+function seed(){
+  pages=[]; currentPage=0; selectedId=null;
+  multiMode=false; multiSelection=[];
+  multiBtn.textContent='多选模式'; multiBtn.classList.remove('active');
+  multiHint.classList.remove('show');
+  const mkPage=build=>{ const arr=[]; build(arr); reflow(arr); return {els:arr}; };
+
+  const p0=mkPage(a=>{
+    const w=mk('2x2',0,0,null); w.label='天气'; w.glyph='⛅'; a.push(w);
+    const w2=mk('1x2',2,0,null); w2.label='股票'; w2.glyph='📈'; a.push(w2);
+    const w3=mk('2x1',2,3,null); w3.label='健康'; w3.glyph='❤️'; a.push(w3);
+    const qq=mk('1x1',-1,-1,0); qq.glyph='🐧'; qq.badge='2,058'; a.push(qq);
+    const tx=mk('1x1',-1,-1,1); tx.glyph='🅣'; tx.badge='50'; tx.bg1='#0A84FF'; tx.bg2='#5AC8FA'; a.push(tx);
+    for(let i=2;i<9;i++) a.push(mk('1x1',-1,-1,i));
+  });
+
+  const p1=mkPage(a=>{
+    a.push(mk('2x2',0,0,null));
+    for(let i=0;i<6;i++) a.push(mk('1x1',-1,-1,i));
+  });
+
+  const p2=mkPage(a=>{
+    a.push(mk('1x2',0,0,null));
+    for(let i=0;i<22;i++) a.push(mk('1x1',-1,-1,i));
+  });
+
+  pages=[p0,p1,p2];
+  els=pages[0].els;
+  render(); updateDots();
+  log('初始化：3 页桌面（4×6=24 格），支持多选拖动');
+}
+
+document.querySelectorAll('[data-add]').forEach(b=>b.addEventListener('click',()=>addElement(b.dataset.add)));
+document.getElementById('delBtn').addEventListener('click',()=>{
+  if(multiSelection.length>0){
+    const ids=multiSelection;
+    els = els.filter(e=>!ids.includes(e.id));
+    multiSelection=[];
+    reflow(); render();
+    log(`删除 ${ids.length} 个选中元素，1×1 自动补位`);
+  }else if(selectedId){
+    removeEl(selectedId);
+  }else{
+    toast('请先点选一个元素（多选模式下可多选）');
+  }
+});
+document.getElementById('resetBtn').addEventListener('click',seed);
+
+seed();
+</script>
+</body>
+</html>

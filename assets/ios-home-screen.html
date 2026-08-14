@@ -258,7 +258,7 @@
             <div class="d" style="background:linear-gradient(135deg,#ff9f0a,#ffcc00)">🎵</div>
             <div class="d" style="background:linear-gradient(135deg,#ff2d55,#ff6482)">💬</div>
           </div>
-          <div class="multi-hint" id="multiHint">多选模式 · 点击图标加入选择 · 拖动任意已选图标移动整个集合（首个=leader 决定规则）</div>
+          <div class="multi-hint" id="multiHint">多选模式 · 仅 1×1 可多选 · 拖动任意已选图标移动整个集合（首个=leader 决定规则）</div>
           <div class="pagedots" id="pagedots"></div>
           <div class="home"></div>
         </div>
@@ -526,7 +526,8 @@ function addElement(type){
    ============================================================ */
 function enterMulti(el){
   multiMode=true;
-  if(el) multiSelection=[el.id];
+  // 截图规则：多选仅限 1×1 元素
+  multiSelection = (el && el.type==='1x1') ? [el.id] : [];
   multiBtn.textContent = multiSelection.length ? `多选(${multiSelection.length})` : '退出多选';
   multiBtn.classList.toggle('active', multiMode);
   multiHint.classList.toggle('show', multiMode);
@@ -565,6 +566,9 @@ function onDown(ev,el,node){
     if(multiSelection.includes(el.id)){
       // 已选：开始多选拖动（集合整体跟手）
       startMultiDrag(ev,el,node);
+    }else if(el.type!=='1x1'){
+      // 截图规则：多选仅限 1×1 元素
+      toast('仅 1×1 元素可多选');
     }else{
       multiSelection.push(el.id);
       multiBtn.textContent=`多选(${multiSelection.length})`;
@@ -997,14 +1001,29 @@ function attemptMove(list,dragged,tc,tr,origin){
   const occEls=[...ids].map(id=>list.find(e=>e.id===id));
   const same = occEls.length===1 && occEls[0].w===dragged.w && occEls[0].h===dragged.h;
 
-  /* B. 同尺寸互换 */
+  /* B. 同尺寸互换（非 1×1）——截图规则：目标相邻方向有空隙 → 沿方向平移一格让位（多空隙优先反方向）；无空隙 → 直接交换 */
   if(same && dragged.type!=='1x1'){
     const E=occEls[0];
     const occX=buildOccupied(list,[dragged.id,E.id]);
     for(const [c,r] of target) occX[`${c},${r}`]='D';
-    const sp=findAnyFreeSpot(E.w,E.h,occX);
-    if(sp){ E.c=sp.c; E.r=sp.r; dragged.c=tc; dragged.r=tr; }
-    else { const oc=dragged.c,or=dragged.r; dragged.c=E.c; dragged.r=E.r; E.c=oc; E.r=or; }
+    const oc=origin||{c:dragged.c,r:dragged.r};
+    // 拖进方向（基于拖动前原位 → 目标格）
+    const ddc=tc-oc.c, ddr=tr-oc.r;
+    const dir = (Math.abs(ddc)>=Math.abs(ddr)) ? (ddc>0?'right':(ddc<0?'left':(ddr>0?'down':'up')))
+                                              : (ddr>0?'down':'up');
+    const rev=OPPOSITE[dir];
+    const cands=[rev, ...['up','down','left','right'].filter(d=>d!==rev)];
+    let moved=false;
+    for(const d of cands){
+      const nc=E.c+DIR[d][0], nr=E.r+DIR[d][1];
+      if(fitsAt(E.w,E.h,nc,nr,occX)){
+        E.c=nc; E.r=nr; dragged.c=tc; dragged.r=tr; moved=true; break;
+      }
+    }
+    if(!moved){
+      // 无空隙 → 直接交换（E 回到 dragged 原位，dragged 占目标格）
+      E.c=oc.c; E.r=oc.r; dragged.c=tc; dragged.r=tr;
+    }
     return {ok:true};
   }
   if(same){
@@ -1051,11 +1070,12 @@ function attemptMove(list,dragged,tc,tr,origin){
     return {ok:true};
   }
 
-  /* D. 小 → 大（截图：仅当被压大元素水平/垂直有空位才可让位） */
+  /* D. 小 → 大（截图：仅当被压大元素水平/垂直有空位才可让位，多空隙优先反方向） */
   const E=occEls.reduce((a,b)=>(a.w*a.h)>(b.w*b.h)?a:b);
   const occX=buildOccupied(list,[dragged.id,E.id]);
   for(const [c,r] of target) occX[`${c},${r}`]='D';
-  const dir=dragDirOf(dragged,tc,tr);
+  const oc2=origin||{c:dragged.c,r:dragged.r};
+  const dir=dragDirOf({c:oc2.c,r:oc2.r,w:dragged.w,h:dragged.h},tc,tr); // 方向基于拖动前原位
   const rev=OPPOSITE[dir];
   const cands=[rev, ...['up','down','left','right'].filter(d=>d!==rev)];
   let moved=false;
@@ -1205,7 +1225,7 @@ function showMultiDragScene(ltc,ltr){
 }
 function showMultiScene(){
   if(multiSelection.length===0){
-    sceneEl.textContent = '多选模式：点击图标加入选择（黄色序号），拖动任意已选图标移动整个集合；点击空白退出。';
+    sceneEl.textContent = '多选模式：仅 1×1 元素可加入选择（黄色序号），拖动任意已选图标移动整个集合；点击空白退出。';
     return;
   }
   const lead=els.find(e=>e.id===multiSelection[0]);
