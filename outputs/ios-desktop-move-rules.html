@@ -413,26 +413,17 @@ function placeAtFixed(list, dragged, tc, tr){
   const all=list.filter(e=>e.type==='1x1').sort((a,b)=>(a.r-b.r)||(a.c-b.c));
   all.forEach((e,i)=>e.order=i);
 }
-/* 被拖元素前面（行优先更早）是否存在空格 */
-function hasGapBefore(list, dragged){
-  const occ=buildOccupied(list);
-  const dRank=dragged.c+dragged.r*COLS;
-  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
-    if(c+r*COLS>=dRank) continue;
-    if(!occ[`${c},${r}`]) return true;
-  }
-  return false;
-}
-/* 松手落位统一入口：1×1 且目标格空白 → 固定当前位置 + 其余排序；
-   若其他 1×1 不足以填满被拖元素前面的空格（前面仍有空），降级为序列排序放置（reflow），
-   严格保证"1×1 前面不允许有空格" */
+/* 松手落位统一入口：1×1 拖到空白 → 固定当前位置（其他 1×1 基于排序填充剩余空格，
+   优先填满被拖元素前面的空格、再填后面）；
+   挤压/插入/大小互换等目标格被占场景 → reflow 排序落位。
+   注：不再做"降级弹回"（hasGapBefore）——拖到空白松手必须停在松手位置，
+   若其他 1×1 不足以填满其前面的空格，则允许其前面留空（用户主动放置的语义）。 */
 function placeOrReflow(list, dragged, tc, tr){
   const occ=buildOccupied(list,[dragged.id]);
   let empty=true;
   for(const [c,r] of cellsOf(dragged,tc,tr)){ if(occ[`${c},${r}`]){ empty=false; break; } }
   if(dragged.type==='1x1' && empty){
     placeAtFixed(list, dragged, tc, tr);
-    if(hasGapBefore(list, dragged)) reflow(list);
   }else{
     reflow(list);
   }
@@ -1215,7 +1206,7 @@ function showLiveScene(tc,tr){
   for(const [c,r] of target){ const id=occ[`${c},${r}`]; if(id) ids.add(id); }
   if(ids.size===0){
     sceneEl.innerHTML = el.type==='1x1'
-      ? `向<b>空白处</b>移动 · 1×1 元素 · 松手后<b>基于排序规则</b>放置`
+      ? `向<b>空白处</b>移动 · 1×1 元素 · 松手后<b>固定当前位置</b>，其他 1×1 排序补位`
       : `向<b>空白处</b>移动 · 非 1×1 元素 · 松手后<b>直接放置</b>，1×1 顺序补齐空位`;
   }else{
     const occEls = [...ids].map(id=>els.find(e=>e.id===id));
