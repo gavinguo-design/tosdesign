@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="zh-CN" data-page-node-id="DCizAnhYDycdqQftYjYXGS">
+<head data-page-node-id="0gbQ9yCGg5Q70FVdHiDCvN">
+<meta charset="UTF-8" data-page-node-id="w5UgIAq8KJq2YK60JfCICa">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="4u901zZmw23XZM4k8pFZ3k">
 <title>iOS 风格桌面 · 4×6 网格 · 元素移动规则交互原型（含多选拖动）</title>
 <style>
   :root{
@@ -231,62 +231,62 @@
   .multi-hint.show{display:block;}
 </style>
 </head>
-<body>
-  <h1>iOS 风格桌面 · 4×6 网格 · 元素移动规则交互原型</h1>
-  <p class="sub">1×1 顺序排序 / 非 1×1 位置固定 / 大小互换 / 跨页 / <b>多选拖动</b>（长按或按钮进入多选，拖动整个集合，规则基于首个图标）</p>
+<body data-page-node-id="OD7lBfpBn6WMdPcqrFzwWq">
+  <h1 data-page-node-id="kEHwodQaiIM7A2N1DskHyQ">iOS 风格桌面 · 4×6 网格 · 元素移动规则交互原型</h1>
+  <p class="sub" data-page-node-id="CGVwaOSJjfw4sL7z5wOxmW">1×1 顺序排序 / 非 1×1 位置固定 / 大小互换 / <b data-page-node-id="lq8scEIGqmkIFd5jDs3rdL">跨页必成功（挤出/新建页）</b> / <b data-page-node-id="lq8scEIGqmkIFd5jDs3rdL">多选拖动</b>（单选拖动不实时补位，多选实时补位）</p>
 
-  <div class="toolbar">
-    <button class="btn add" data-add="1x1">+ 1×1</button>
-    <button class="btn add" data-add="1x2">+ 1×2</button>
-    <button class="btn add" data-add="2x1">+ 2×1</button>
-    <button class="btn add" data-add="2x2">+ 2×2</button>
-    <button class="btn add" data-add="4x2">+ 4×2</button>
-    <button class="btn del" id="delBtn">删除选中</button>
-    <button class="btn toggle" id="multiBtn">多选模式</button>
-    <button class="btn reset" id="resetBtn">重置</button>
+  <div class="toolbar" data-page-node-id="DFNNbDF9pFnPGBxaBrz1jj">
+    <button class="btn add" data-add="1x1" data-page-node-id="KoSh7ESz2aGeVLwA67AQ1e">+ 1×1</button>
+    <button class="btn add" data-add="1x2" data-page-node-id="hYhMgO2ZWRoK4qV1FoAtNU">+ 1×2</button>
+    <button class="btn add" data-add="2x1" data-page-node-id="84D7hVCL8D4tOkPB47luOO">+ 2×1</button>
+    <button class="btn add" data-add="2x2" data-page-node-id="GPqs0T5EnFlVUX3aofeQBn">+ 2×2</button>
+    <button class="btn add" data-add="4x2" data-page-node-id="VGIhJV4EQcvryjhXY7S5AL">+ 4×2</button>
+    <button class="btn del" id="delBtn" data-page-node-id="vFySuf6t9V3MIGMAdpwahZ">删除选中</button>
+    <button class="btn toggle" id="multiBtn" data-page-node-id="1WB7HX8HsyzDGS5tGwp10E">多选模式</button>
+    <button class="btn reset" id="resetBtn" data-page-node-id="YjW10P135ivXr8SzeZvTg3">重置</button>
   </div>
 
-  <div class="stage">
-    <div class="col-left">
-      <div class="phone">
-        <div class="screen">
-          <div class="island"></div>
-          <div class="statusbar">
-            <span>9:41</span>
-            <span class="right">📶 &nbsp;🔋</span>
+  <div class="stage" data-page-node-id="ArqCa36xSaBYcG18N3JGRF">
+    <div class="col-left" data-page-node-id="NGwSss0xyIQ4FevWJK6oEG">
+      <div class="phone" data-page-node-id="kWRun0vHasE6unrFlEPWLS">
+        <div class="screen" data-page-node-id="2Zeu39KOvefQWBkebl7S2T">
+          <div class="island" data-page-node-id="HRCDQ3EjxiAJIfaOFySkTa"></div>
+          <div class="statusbar" data-page-node-id="CVc7Wm7DU4Vt0QH0N068OW">
+            <span data-page-node-id="B9GL4KGkmI2X8s0FfKKON1">9:41</span>
+            <span class="right" data-page-node-id="zh2nPoG5uQJ1wLoJF9FLgv">📶 &nbsp;🔋</span>
           </div>
-          <div class="grid" id="grid">
-            <div class="cell-bg"></div>
-            <div class="placeholder" id="placeholder"></div>
+          <div class="grid" id="grid" data-page-node-id="btulrTPKwzmhfr8hOkieCN">
+            <div class="cell-bg" data-page-node-id="x5UwOTfrumKvoOGLLXDzeG"></div>
+            <div class="placeholder" id="placeholder" data-page-node-id="38dM3vQ1uIPlBoHukgFLb2"></div>
           </div>
-          <div class="dock">
-            <div class="d" style="background:linear-gradient(135deg,#34c759,#30d158)">📞</div>
-            <div class="d" style="background:linear-gradient(135deg,#0a84ff,#5ac8fa)">🌐</div>
-            <div class="d" style="background:linear-gradient(135deg,#ff9f0a,#ffcc00)">🎵</div>
-            <div class="d" style="background:linear-gradient(135deg,#ff2d55,#ff6482)">💬</div>
+          <div class="dock" data-page-node-id="4rDOyjlRKJHTPyKCFXCYSj">
+            <div class="d" style="background:linear-gradient(135deg,#34c759,#30d158)" data-page-node-id="EGhQJDfajXlfX7hJMBIuab">📞</div>
+            <div class="d" style="background:linear-gradient(135deg,#0a84ff,#5ac8fa)" data-page-node-id="mFWkl5YEL7aHHhbqR29vdj">🌐</div>
+            <div class="d" style="background:linear-gradient(135deg,#ff9f0a,#ffcc00)" data-page-node-id="QSa37tTPTqFGHIPS9HiD0i">🎵</div>
+            <div class="d" style="background:linear-gradient(135deg,#ff2d55,#ff6482)" data-page-node-id="VlwqBrFR4VCg0M0ZYvamgP">💬</div>
           </div>
-          <div class="multi-hint" id="multiHint">多选模式 · 仅 1×1 可多选 · 拖动任意已选图标移动整个集合（首个=leader 决定规则）</div>
-          <div class="pagedots" id="pagedots"></div>
-          <div class="home"></div>
+          <div class="multi-hint" id="multiHint" data-page-node-id="aeRdOINUB8Crmk37GjeTIP">多选模式 · 仅 1×1 可多选 · 拖动任意已选图标移动整个集合（首个=leader 决定规则）</div>
+          <div class="pagedots" id="pagedots" data-page-node-id="Bba6pLCKZ2Pcq9C0tYVInu"></div>
+          <div class="home" data-page-node-id="eNgyH1KCaxOW7w2SGznsDk"></div>
         </div>
       </div>
     </div>
 
-    <div class="col-right">
-      <div class="panel">
-        <h3><span class="dot"></span>实时规则判定</h3>
-        <div class="scene" id="scene">点击 / 长按 / 拖拽元素，这里实时显示命中的移动规则。</div>
-        <div class="legend">
-          <span><i style="background:var(--rule-1x1)"></i>1×1 规则</span>
-          <span><i style="background:var(--rule-n1n1)"></i>非 1×1 规则</span>
-          <span><i style="background:var(--rule-cross)"></i>跨页/多选规则</span>
+    <div class="col-right" data-page-node-id="kPYzjT8w4MLDA8vXvpaXwn">
+      <div class="panel" data-page-node-id="AN05IWepTodCmAz2MT0cMS">
+        <h3 data-page-node-id="HDVpkACFK6TKjFn9t4TsWR"><span class="dot" data-page-node-id="OjWg2Xk7CTIIjRiobFsFAF"></span>实时规则判定</h3>
+        <div class="scene" id="scene" data-page-node-id="aXDcvlaBzjFIk7qPkVFgOH">点击 / 长按 / 拖拽元素，这里实时显示命中的移动规则。</div>
+        <div class="legend" data-page-node-id="cD1gLPF3mmj9BZyZ3edeYi">
+          <span data-page-node-id="E3hsKA4SaLyMobEeU2zyQq"><i style="background:var(--rule-1x1)" data-page-node-id="rYEBBFw4RoItrx6WE2xOGA"></i>1×1 规则</span>
+          <span data-page-node-id="9XwDhcYf3JPkdlbtuKYTfG"><i style="background:var(--rule-n1n1)" data-page-node-id="dOyFGvM8Xio9RlGmKsrj30"></i>非 1×1 规则</span>
+          <span data-page-node-id="QCqoOQ2mBX2KRKqtiqRC5y"><i style="background:var(--rule-cross)" data-page-node-id="m0FAd4lIV1rfAyEm5tD6sQ"></i>跨页/多选规则</span>
         </div>
-        <div class="log" id="log"><div class="item">等待操作…</div></div>
+        <div class="log" id="log" data-page-node-id="efHRWRFwcSqDL2oKCZoM79"><div class="item" data-page-node-id="upE48v0fU22mrEkFhOSr7t">等待操作…</div></div>
       </div>
     </div>
   </div>
 
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast" data-page-node-id="WICLEnq0W1FKfvGTOrhvUC"></div>
 
 <script>
 /* ============================================================
@@ -363,6 +363,16 @@ function dragDirOf(e,tc,tr){
 function findAnyFreeSpot(w,h,occ){
   for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(fitsAt(w,h,c,r,occ)) return {c,r};
   return null;
+}
+/* 距参考点最近的空位（用于大→小：被挤非 1×1 向大元素原本空出的方向挪动） */
+function nearestFreeSpot(w,h,occ,refC,refR){
+  let best=null, bd=Infinity;
+  for(let r=0;r+h<=ROWS;r++) for(let c=0;c+w<=COLS;c++){
+    if(!fitsAt(w,h,c,r,occ)) continue;
+    const d=Math.abs(c-refC)+Math.abs(r-refR);
+    if(d<bd){ bd=d; best={c,r}; }
+  }
+  return best;
 }
 /* 滞回取格：消除边界微动抖动（|delta|>=1.5 直接取整保持跟手，否则越格线 0.6 才切换） */
 function snapGrid(raw, cur, max){
@@ -530,13 +540,39 @@ function addElement(type){
     const maxO=els.filter(e=>e.type==='1x1').reduce((m,e)=>Math.max(m,e.order),-1);
     const e=mk('1x1',-1,-1,maxO+1); els.push(e); reflow();
     if(e.c<0){ els.pop(); toast('桌面已放满'); }
-  }else{
-    const occ=buildOccupied(els,[]); const fit=findAnyFreeSpot(w,h,occ);
-    if(!fit){ toast('空间不足，无法添加'); return; }
-    els.push(mk(type,fit.c,fit.r,null));
+    render();
+    log(`新增 ${type}（按规则自动落位）`);
+    return;
   }
-  render();
-  log(`新增 ${type}（按规则自动落位）`);
+  // 候选位置：① 纯空位优先 ② 整块被 1×1 占据的区域（1×1 可自动补位）
+  //   每个候选都用克隆页完整模拟（放置 + 1×1 重排），全部能放下才应用
+  const occ=buildOccupied(els,[]);
+  const cands=[];
+  for(let r=0;r+h<=ROWS;r++) for(let c=0;c+w<=COLS;c++)
+    if(fitsAt(w,h,c,r,occ)) cands.push({c,r});
+  const oneCells=new Set();
+  for(const e of els) if(e.type==='1x1'&&e.c>=0) oneCells.add(`${e.c},${e.r}`);
+  for(let r=0;r+h<=ROWS;r++) for(let c=0;c+w<=COLS;c++){
+    if(cands.some(x=>x.c===c&&x.r===r)) continue;
+    let ok=true;
+    for(let dc=0;dc<w&&ok;dc++) for(let dr=0;dr<h&&ok;dr++){
+      const k=`${c+dc},${r+dr}`;
+      if(occ[k] && !oneCells.has(k)) ok=false;
+    }
+    if(ok) cands.push({c,r});
+  }
+  for(const cand of cands){
+    const sim=els.map(e=>({...e}));
+    sim.push(mk(type,cand.c,cand.r,null));
+    reflow(sim);
+    if(sim.some(e=>e.c<0) || hasOverlap(sim)) continue; // 该位置放不下 → 试下一个
+    els.push(mk(type,cand.c,cand.r,null));
+    reflow();
+    render();
+    log(`新增 ${type}（按规则自动落位）`);
+    return;
+  }
+  toast('空间不足，无法添加');
 }
 
 /* ============================================================
@@ -637,7 +673,7 @@ function startMultiDrag(ev,anchor,node){
         grabDY:ev.clientY-(gr.top+cellY(anchor.r)),
         tc:anchor.c, tr:anchor.r, edgeTimer:null, liveOk:true, swapped:false,
         _raf:null, lastClientX:ev.clientX, lastClientY:ev.clientY, edgeBlocked:false,
-        relX:{}, relY:{}, leaderTC:leader.c, leaderTR:leader.r};
+        relX:{}, relY:{}, leaderTC:leader.c, leaderTR:leader.r, liveDirty:false};
   // 记录集合元素相对锚点的像素偏移；关闭集合元素过渡以跟手
   for(const e of list){
     drag.relX[e.id]=cellX(e.c)-cellX(anchor.c);
@@ -649,8 +685,9 @@ function startMultiDrag(ev,anchor,node){
   node.addEventListener('pointermove',onMove);
   node.addEventListener('pointerup',onUp);
   node.addEventListener('pointercancel',onUp);
+  // 多选实时补位：拖起瞬间立即补位一次（空出的位置由当前页 1×1 实时补位）
+  scheduleLive();
 }
-
 /* 取消拖拽（长按进入多选时调用） */
 function cancelDrag(){
   if(!drag) return;
@@ -702,6 +739,7 @@ function liveLayoutFor(target,tc,tr,excludeIds){
       if(node && (se.c!==e.c || se.r!==e.r)){
         node.style.left=cellX(se.c)+'px';
         node.style.top=cellY(se.r)+'px';
+        drag.liveDirty=true; // 记录：实时补位已改动真实布局，未移动松手时需还原
       }
       e.c=se.c; e.r=se.r; e.order=se.order;
     }
@@ -722,6 +760,7 @@ function liveLayoutFor(target,tc,tr,excludeIds){
       if(node && (se.c!==e.c || se.r!==e.r)){
         node.style.left=cellX(se.c)+'px';
         node.style.top=cellY(se.r)+'px';
+        drag.liveDirty=true;
       }
       e.c=se.c; e.r=se.r; // 只写回位置；order 保持快照值，松手时 reflow 统一重排
     }
@@ -733,7 +772,7 @@ function liveLayoutFor(target,tc,tr,excludeIds){
   drag.liveOk=ok;
   return ok;
 }
-const liveLayout=(tc,tr)=>liveLayoutFor(drag.el,tc,tr,[drag.el.id]);
+/* liveLayout 已由 canDropSingle（单选）与 liveLayoutFor（多选）取代 */
 
 function onMove(ev){
   if(!drag) return;
@@ -801,44 +840,33 @@ function scheduleLive(){
       placeholder.style.top=cellY(tr)+'px';
       placeholder.style.width=(drag.el.w*CELL+(drag.el.w-1)*GX)+'px';
       placeholder.style.height=(drag.el.h*CELL+(drag.el.h-1)*GY)+'px';
-      const ok=liveLayout(tc,tr);
-      if(drag.edgeBlocked) placeholder.classList.add('invalid');
-      else placeholder.classList.toggle('invalid', !ok);
+      // Xmind 究极版：单选拖动不实时补位——其他元素保持原位，仅预览落点有效性
+      const ok=canDropSingle(tc,tr);
+      placeholder.classList.toggle('invalid', !ok);
       showLiveScene(tc,tr);
     }
   });
 }
 
-/* 跨页边缘判定（每帧执行） */
+/* 跨页边缘判定（每帧执行）
+   Xmind 究极版：跨页优先级最高，一定可以移动成功——不再预检目标页空间；
+   最后一页继续向右 → 直接新建一页。 */
 function checkEdge(){
   if(!drag) return;
   const sr=screenEl.getBoundingClientRect();
   const px=drag.lastClientX-sr.left;
   const atLeft = px<EDGE && currentPage>0;
-  const atRight = px>sr.width-EDGE && currentPage<pages.length-1;
+  const atRight = px>sr.width-EDGE;
   let tp=-1;
   if(atLeft) tp=currentPage-1;
   else if(atRight) tp=currentPage+1;
   if(tp>=0){
-    const probe=drag.multi ? drag.leader : drag.el;
-    if(!drag.pageCheck || drag.pageCheck.tp!==tp)
-      drag.pageCheck={tp, ok:canPlaceOnPage(pages[tp].els, probe)};
-    if(drag.pageCheck.ok){
-      screenEl.classList.toggle('edge-left', atLeft);
-      screenEl.classList.toggle('edge-right', atRight);
-      if(!drag.edgeTimer) drag.edgeTimer=setTimeout(()=>doEdgePage(tp),EDGE_DELAY);
-      drag.lastBlocked=false; drag.edgeBlocked=false;
-    }else{
-      screenEl.classList.remove('edge-left','edge-right');
-      if(drag.edgeTimer){ clearTimeout(drag.edgeTimer); drag.edgeTimer=null; }
-      if(!drag.lastBlocked){ toast('目标页空间不足，无法跨页'); drag.lastBlocked=true; }
-      drag.edgeBlocked=true;
-      placeholder.classList.add('invalid');
-    }
+    screenEl.classList.toggle('edge-left', atLeft);
+    screenEl.classList.toggle('edge-right', atRight);
+    if(!drag.edgeTimer) drag.edgeTimer=setTimeout(()=>doEdgePage(tp),EDGE_DELAY);
   }else{
     screenEl.classList.remove('edge-left','edge-right');
     if(drag.edgeTimer){ clearTimeout(drag.edgeTimer); drag.edgeTimer=null; }
-    drag.pageCheck=null; drag.lastBlocked=false; drag.edgeBlocked=false;
   }
 }
 function onUp(ev){
@@ -873,33 +901,36 @@ function onUp(ev){
         toast('空间不足，已还原');
         log('多选操作失败：目标空间不足，整体还原','err');
       }
-    }else{
-      if(drag.liveOk){
-        if(drag.livePos){
-          el.c=drag.livePos.c; el.r=drag.livePos.r; el.order=drag.livePos.order;
-        }
-        if(!drag.swapped) placeOrReflow(els, el, el.c, el.r); // 相邻互换已应用；其余走固定/排序落位
-        if(els.some(e=>e.c<0) || hasOverlap()){
-          if(drag.fromPage!==currentPage) findAndApplyPlacement(els, el);
-          if(els.some(e=>e.c<0) || hasOverlap()){
-            restoreAll();
-            toast('空间不足，已还原');
-            log('操作失败：目标空间不足，整体还原','err');
-            drag=null; node.classList.remove('dragging'); render(); return;
-          }
-        }
-        log(`移动成功：${el.type} → (${el.c},${el.r})`,'ok');
-        node.classList.add('dropped');
-        setTimeout(()=>node.classList.remove('dropped'),300);
-      }else{
+    }else if(drag.fromPage===currentPage){
+      // 同页：按移动规则一次性判定落位（单选拖动中不实时补位）
+      const res=attemptMove(els, el, drag.tc, drag.tr, {c:el.oldC, r:el.oldR});
+      if(res.ok && !res.swapped) placeOrReflow(els, el, drag.tc, drag.tr);
+      if(!res.ok || els.some(e=>e.c<0) || hasOverlap()){
         restoreAll();
         toast('空间不足，已还原');
-        log('操作失败：目标空间不足，整体还原','err');
-        drag=null; node.classList.remove('dragging'); render(); return;
+        log(`操作失败：${res.ok?'目标空间不足':'无法移动（'+(res.msg||'规则不允许')+'）'}，整体还原`,'err');
+      }else{
+        log(`移动成功：${el.type} → (${el.c},${el.r})`);
+        node.classList.add('dropped');
+        setTimeout(()=>node.classList.remove('dropped'),300);
       }
+    }else{
+      // 跨页：Xmind 究极版总原则——一定可以移动成功（挤出 / 新建页承接）
+      const r=crossPagePlace(currentPage, el, drag.tc, drag.tr);
+      updateDots();
+      if(r.overflow>0){
+        log(`跨页放置成功：${el.type} 落位，挤出 ${r.overflow} 个元素至后一页`,'warn');
+      }else{
+        log(`跨页放置成功：${el.type} → 第 ${currentPage+1} 页 (${el.c},${el.r})`);
+      }
+      node.classList.add('dropped');
+      setTimeout(()=>node.classList.remove('dropped'),300);
     }
   }else{
     if(!drag.multi) selectedId=(selectedId===el.id)?null:el.id; // 多选单击已选元素不切换选中态
+    // 多选拖起即实时补位：若最终未移动（单击/微动后松手），必须还原补位前的布局，
+    // 否则集合元素跟随复位、而补位元素已占其原格 → 数据层遗留重叠
+    else if(drag.liveDirty) restoreAll();
     render();
   }
   drag=null;
@@ -954,31 +985,30 @@ function multiPlace(){
   const res=attemptMove(simList,leadClone,leaderTC,leaderTR,
     (drag.snapMap&&drag.snapMap[leader.id])||{c:leader.c,r:leader.r}, true);
   if(!res.ok) return false;
-  placeOrReflow(simList, leadClone, leaderTC, leaderTR); // 多选不产生 swapped；统一走固定/排序落位
+  placeAtFixed(simList, leadClone, leaderTC, leaderTR); // leader 固定目标格，其余 1×1 按 order 补位
   if(simList.some(e=>e.c<0) || hasOverlap(simList)) return false;
+
+  // 4. 其余集合元素紧跟 leader 之后插入 1×1 序列（规则：整组按选择顺序连续排列，后续 1×1 顺延）
+  const rest=selClones.slice(1).map(e=>({...e}));
+  const ones=simList.filter(e=>e.type==='1x1').sort((a,b)=>a.order-b.order);
+  const li=ones.findIndex(e=>e.id===leader.id);
+  if(li<0) return false;
+  const seq=ones.slice(0,li+1).concat(rest, ones.slice(li+1));
+  seq.forEach((e,i)=>e.order=i);
+  for(const e of rest) simList.push(e);
+  reflow(simList);
+
+  // 5. 目标页放不下的集合元素 → 返回原位（其余仍落下）；非集合元素放不下则整体失败
+  const failed=[];
+  for(const e of [...simList]){
+    if(e.c>=0) continue;
+    if(ids.has(e.id)){ failed.push(e); simList.splice(simList.indexOf(e),1); }
+    else return false;
+  }
   for(const s of simList){
-    if(ids.has(s.id)) continue;
+    if(ids.has(s.id)){ if(!failed.includes(s)) elsC.push({...s}); continue; }
     const o=elsC.find(x=>x.id===s.id);
     if(o){ o.c=s.c; o.r=s.r; o.order=s.order; }
-  }
-  const leadFinal=simList.find(x=>x.id===leader.id);
-  elsC.push({...leader,c:leadFinal.c,r:leadFinal.r,order:leadFinal.order});
-
-  // 4. 其余元素按选择顺序依次紧密排列（从 leader 实际位置开始行优先扫描）
-  const rest=selClones.slice(1);
-  const occ=buildOccupied(elsC);
-  const ordered=orderedCells(leadFinal.r,leadFinal.c);
-  const failed=[];
-  for(const e of rest){
-    let done=false;
-    for(const [c,r] of ordered){
-      if(fitsAt(e.w,e.h,c,r,occ)){
-        e.c=c; e.r=r;
-        for(let dc=0;dc<e.w;dc++) for(let dr=0;dr<e.h;dr++) occ[`${c+dc},${r+dr}`]=e.id;
-        elsC.push(e); done=true; break;
-      }
-    }
-    if(!done) failed.push(e);
   }
 
   // 5. 放不下的放回原页：跨页 → push 回原页 reflow；同页（目标页=原页）→ 留在本页找空位放置
@@ -1084,17 +1114,18 @@ function attemptMove(list,dragged,tc,tr,origin,noSwap){
   const dArea=dragged.w*dragged.h;
   const maxArea=Math.max(...occEls.map(e=>e.w*e.h));
 
-  /* C. 大 → 小（截图：无论空满屏均可直接移动） */
+  /* C. 大 → 小（Xmind：无论是否满屏均可直接移动；非 1×1 向大元素原本空出的方向移动） */
   if(dArea>maxArea){
-    // 被挤压的所有元素（含 1×1 与非 1×1）都挪到空位；大块先放更易成功
+    // 被挤压的所有元素（含 1×1 与非 1×1）都挪到空位；大块先放，非 1×1 优先靠向拖动起点方向
     const movers=[...occEls].sort((a,b)=>(b.w*b.h)-(a.w*a.h));
     const base=buildOccupied(list,[dragged.id, ...movers.map(m=>m.id)]);
     for(const [c,r] of target) base[`${c},${r}`]='D';
+    const oc=origin||{c:dragged.c,r:dragged.r};
     const planned=[];
     for(const E of movers){
       const occ2={...base};
       for(const p of planned) for(let dc=0;dc<E.w;dc++) for(let dr=0;dr<E.h;dr++) occ2[`${p.c+dc},${p.r+dr}`]='P';
-      const sp=findAnyFreeSpot(E.w,E.h,occ2);
+      const sp = E.type==='1x1' ? findAnyFreeSpot(E.w,E.h,occ2) : nearestFreeSpot(E.w,E.h,occ2,oc.c,oc.r);
       if(!sp) return {ok:false, msg:'空间不足，被挤占的元素找不到空位'};
       planned.push({e:E,c:sp.c,r:sp.r});
     }
@@ -1137,36 +1168,232 @@ function hasOverlap(list){
 }
 
 /* ============================================================
-   跨页预检 / 兜底（截图：不足够位置放置，禁止移动）
+   跨页落位（Xmind 究极版）：跨页优先级最高，一定可以移动成功。
+   目标页放不下 → 挤出规则：下一页有空间直接放；没有则新建一页承接；
+   多个被挤出元素视作整体处理。
    ============================================================ */
-function canPlaceOnPage(pageEls, el){
-  for(let r=0;r+el.h<=ROWS;r++){
-    for(let c=0;c+el.w<=COLS;c++){
-      const sim=pageEls.map(e=>({...e}));
-      const de={...el, c, r};
-      sim.push(de);
-      attemptMove(sim,de,c,r);
-      reflow(sim);
-      if(!sim.some(x=>x.c<0) && !hasOverlap(sim)) return true;
+function endRank(e){ return (e.r+e.h-1)*COLS+(e.c+e.w-1); }
+/* 末位元素：占据页面行优先最靠后位置（右下角格子序最大）的元素 */
+function isLastElem(list, T){
+  const rk=endRank(T);
+  return !list.some(e=>e!==T && e.c>=0 && endRank(e)>rk);
+}
+/* order 最大的 1×1（末位 1×1） */
+function lastOneOf(list, excludeIds=[]){
+  let best=null;
+  for(const e of list){
+    if(e.type!=='1x1'||e.c<0||excludeIds.includes(e.id)) continue;
+    if(!best||e.order>best.order) best=e;
+  }
+  return best;
+}
+/* 末位元素（任意类型） */
+function lastElemAny(list, excludeIds=[]){
+  let best=null, br=-1;
+  for(const e of list){
+    if(e.c<0||excludeIds.includes(e.id)) continue;
+    const rk=endRank(e);
+    if(rk>br){ br=rk; best=e; }
+  }
+  return best;
+}
+/* 页面是否存在 1×1 空位 */
+function freeOneCellExists(list){
+  return findAnyFreeSpot(1,1,buildOccupied(list))!==null;
+}
+/* 尝试让位：被挤的最大元素向空隙方向移动一格（多空隙优先反方向） */
+function tryMoveAside(list, dragged, tc, tr, occEls, dir){
+  const E=occEls.reduce((a,b)=>(a.w*a.h)>=(b.w*b.h)?a:b);
+  const rev=OPPOSITE[dir];
+  const cands=[rev, ...['up','down','left','right'].filter(d=>d!==rev)];
+  const occX=buildOccupied(list,[dragged.id,E.id]);
+  for(const [c,r] of cellsOf(dragged,tc,tr)) occX[`${c},${r}`]='D';
+  for(const d of cands){
+    const nc=E.c+DIR[d][0], nr=E.r+DIR[d][1];
+    if(fitsAt(E.w,E.h,nc,nr,occX)){
+      E.c=nc; E.r=nr; dragged.c=tc; dragged.r=tr;
+      return true;
     }
   }
   return false;
 }
-function findAndApplyPlacement(list, el){
-  for(let r=0;r+el.h<=ROWS;r++){
-    for(let c=0;c+el.w<=COLS;c++){
-      const sim=list.map(e=>({...e}));
-      const de=sim.find(x=>x.id===el.id);
-      de.c=c; de.r=r;
-      attemptMove(sim,de,c,r);
-      reflow(sim);
-      if(!sim.some(x=>x.c<0) && !hasOverlap(sim)){
-        for(const s of sim){ const o=list.find(x=>x.id===s.id); if(o){o.c=s.c;o.r=s.r;o.order=s.order;} }
-        return true;
-      }
-    }
+/* 挤出承接：整组元素放到 fromIdx 的下一页；下一页放不下整组 → 在其后新建一页 */
+function evictToPage(fromIdx, group){
+  if(!group.length) return;
+  const target=fromIdx+1;
+  let destIdx=target, newPage=false;
+  if(target>=pages.length){
+    pages.push({els:[]}); newPage=true;
+  }else if(!placeGroupOnPage(pages[target].els, group)){
+    const np={els:[]};
+    pages.splice(target+1,0,np);
+    destIdx=target+1; newPage=true;
+    log(`后一页空间不足，已新建第 ${destIdx+1} 页承接挤出的 ${group.length} 个元素`,'warn');
   }
-  return false;
+  if(newPage){
+    placeGroupOnPage(pages[destIdx].els, group);
+    pages[destIdx].els.push(...group);
+  }else{
+    pages[target].els.push(...group);
+  }
+  renumberOrders(pages[destIdx].els);
+  updateDots();
+}
+/* 在 baseEls 占用基础上为整组找空位（面积大的先放）；全部放下返回 true */
+function placeGroupOnPage(baseEls, group){
+  const occ=buildOccupied(baseEls);
+  const g=[...group].sort((a,b)=>(b.w*b.h)-(a.w*a.h));
+  for(const e of g){
+    const sp=findAnyFreeSpot(e.w,e.h,occ);
+    if(!sp) return false;
+    e.c=sp.c; e.r=sp.r;
+    for(let dc=0;dc<e.w;dc++) for(let dr=0;dr<e.h;dr++) occ[`${e.c+dc},${e.r+dr}`]=e.id;
+  }
+  return true;
+}
+/* 跨页松手落位主流程（dragged 已被 doEdgePage 移入 pages[pageIdx].els，c=-1） */
+function crossPagePlace(pageIdx, dragged, tc, tr){
+  const list=pages[pageIdx].els;
+  // 归一化 dragged 的 order（外页 order 不属于本页序列，追加到末位）
+  const ones=list.filter(e=>e.type==='1x1'&&e!==dragged);
+  dragged.order=ones.length?Math.max(...ones.map(e=>e.order))+1:0;
+
+  const occ=buildOccupied(list,[dragged.id]);
+  const target=cellsOf(dragged,tc,tr);
+  const ids=new Set();
+  for(const [c,r] of target){ const id=occ[`${c},${r}`]; if(id) ids.add(id); }
+  const overflow=[];
+  const collectOverflow=()=>{
+    for(const e of [...list]){
+      if(e.c<0 && e!==dragged){ overflow.push(e); list.splice(list.indexOf(e),1); }
+    }
+  };
+
+  /* 目标位置为空 → 直接放置，1×1 基于顺序排序规则放置 */
+  if(ids.size===0){
+    if(dragged.type==='1x1'){
+      placeAtFixed(list,dragged,tc,tr);
+      if(hasGapBefore(list,dragged)) reflow(list);
+    }else{
+      dragged.c=tc; dragged.r=tr; reflow(list);
+    }
+    collectOverflow();
+    evictToPage(pageIdx, overflow);
+    return {ok:true, overflow:overflow.length};
+  }
+
+  const occEls=[...ids].map(id=>list.find(e=>e.id===id));
+  const T=occEls.find(e=>e.type!=='1x1'); // 被挤压的非 1×1（若有）
+  const dir=(drag.fromPage<pageIdx)?'right':'left'; // 移进方向
+
+  /* 占据 1×1 位置：被占 1×1 依次向后顺排；空间不足最末尾移至下一页 */
+  if(!T){
+    if(dragged.type==='1x1'){
+      placeAtFixed(list,dragged,tc,tr);
+      if(hasGapBefore(list,dragged)) reflow(list);
+    }else{
+      dragged.c=tc; dragged.r=tr; reflow(list);
+    }
+    collectOverflow();
+    evictToPage(pageIdx, overflow);
+    return {ok:true, overflow:overflow.length};
+  }
+
+  /* 占据非 1×1 位置：先尝试挤走（向空隙方向移动，反方向优先） */
+  if(tryMoveAside(list,dragged,tc,tr,occEls,dir)){
+    if(dragged.type==='1x1'){
+      placeAtFixed(list,dragged,tc,tr);
+      if(hasGapBefore(list,dragged)) reflow(list);
+    }else{
+      reflow(list); // 松手后 1×1 基于顺序规则自动跳整
+    }
+    collectOverflow();
+    evictToPage(pageIdx, overflow);
+    return {ok:true, overflow:overflow.length};
+  }
+
+  /* 挤不走 */
+  if(dragged.type==='1x1'){
+    // 页面上有 1×1 空位：目标元素保持不动，1×1 落在空位处
+    if(freeOneCellExists(list)){
+      dragged.c=-1; dragged.r=-1;
+      reflow(list); // dragged order 最大 → 落入空位
+      return {ok:true, overflow:0};
+    }
+    if(isLastElem(list,T)){
+      // 目标元素处于末位 → 被挤动至下一页
+      overflow.push({...T});
+      list.splice(list.indexOf(T),1);
+      dragged.c=tc; dragged.r=tr; reflow(list);
+      collectOverflow();
+      evictToPage(pageIdx, overflow);
+      return {ok:true, overflow:overflow.length};
+    }
+    // 目标元素非末位：保持不动，仅能挤走末位的元素
+    let guard=0;
+    while(!freeOneCellExists(list) && guard++<32){
+      const cand=lastOneOf(list,[dragged.id]);
+      if(!cand) break;
+      overflow.push({...cand});
+      list.splice(list.indexOf(cand),1);
+    }
+    if(freeOneCellExists(list)){
+      dragged.c=-1; dragged.r=-1; reflow(list);
+    }else{
+      const l=lastElemAny(list,[dragged.id]);
+      if(l){ overflow.push({...l}); list.splice(list.indexOf(l),1); }
+      dragged.c=tc; dragged.r=tr; reflow(list);
+      collectOverflow();
+    }
+    evictToPage(pageIdx, overflow);
+    return {ok:true, overflow:overflow.length};
+  }
+
+  /* 非 1×1 拖入 & 挤不走 */
+  if(isLastElem(list,T)){
+    // 目标元素处于末位 → 被挤动至下一页
+    overflow.push({...T});
+    list.splice(list.indexOf(T),1);
+    dragged.c=tc; dragged.r=tr; reflow(list);
+    collectOverflow();
+    evictToPage(pageIdx, overflow);
+    return {ok:true, overflow:overflow.length};
+  }
+  // 目标元素非末位：依次向后挤走末位元素，直到 T 能挪到新位置
+  let guard=0;
+  while(guard++<32){
+    const occT=buildOccupied(list,[dragged.id]);
+    if(findAnyFreeSpot(T.w,T.h,occT)) break;
+    const cand=lastOneOf(list,[dragged.id,T.id]);
+    if(!cand) break;
+    overflow.push({...cand});
+    list.splice(list.indexOf(cand),1);
+  }
+  const occT=buildOccupied(list,[dragged.id]);
+  const sp=findAnyFreeSpot(T.w,T.h,occT);
+  if(sp){
+    T.c=sp.c; T.r=sp.r;
+    dragged.c=tc; dragged.r=tr;
+    reflow(list);
+  }else{
+    overflow.push({...T});
+    list.splice(list.indexOf(T),1);
+    dragged.c=tc; dragged.r=tr; reflow(list);
+  }
+  collectOverflow();
+  evictToPage(pageIdx, overflow);
+  return {ok:true, overflow:overflow.length};
+}
+
+/* 同页松手有效性预检（非破坏性模拟，用于拖动中 placeholder 红/绿反馈） */
+function canDropSingle(tc,tr){
+  const el=drag.el;
+  const sim=els.map(e=>({...e}));
+  const de=sim.find(x=>x.id===el.id);
+  const res=attemptMove(sim,de,tc,tr,{c:el.oldC,r:el.oldR});
+  if(!res.ok) return false;
+  if(!res.swapped) placeOrReflow(sim,de,tc,tr);
+  return !sim.some(x=>x.c<0) && !hasOverlap(sim);
 }
 
 /* ============================================================
@@ -1177,6 +1404,8 @@ function doEdgePage(tp){
   if(drag.edgeTimer){ clearTimeout(drag.edgeTimer); drag.edgeTimer=null; }
   screenEl.classList.remove('edge-left','edge-right');
   const from=currentPage;
+  const created=tp>=pages.length;
+  if(tp>=pages.length) pages.push({els:[]}); // 最后一页继续向右 → 新建一页
   if(drag.multi){
     // 整个集合跨页
     pages[from].els = pages[from].els.filter(x=>!drag.multiIds.has(x.id));
@@ -1193,12 +1422,11 @@ function doEdgePage(tp){
     els.push(drag.el);
   }
   render(); updateDots();
-  drag.pageCheck=null; drag.lastBlocked=false;
-  // 翻页后立即在新页实时让位预览
+  // 翻页后立即在新页实时让位预览（多选）；单选仅刷新落点预览
   scheduleLive();
   grid.classList.add('flipping');
   setTimeout(()=>grid.classList.remove('flipping'),320);
-  log(`跨页：第 ${from+1} 页 → 第 ${tp+1} 页${drag.multi?`（多选 ${drag.multiEls.length} 个）`:''}，原页 1×1 已自动补位`);
+  log(`跨页：第 ${from+1} 页 → 第 ${tp+1} 页${created?'（新建页）':''}${drag.multi?`（多选 ${drag.multiEls.length} 个）`:''}，原页 1×1 已自动补位`);
 }
 function updateDots(){
   const wrap=document.getElementById('pagedots');
@@ -1224,6 +1452,10 @@ function switchPage(n){
 function showLiveScene(tc,tr){
   const el = drag && drag.el;
   if(!el) return;
+  if(drag.fromPage!==currentPage){
+    sceneEl.innerHTML = `<b>跨页放置</b> · 跨页优先级最高，<b>一定成功</b>；目标页空间不足时自动挤出至后一页，后一页放不下则新建一页承接`;
+    return;
+  }
   const occ = buildOccupied(els, [el.id]);
   const target = cellsOf(el, tc, tr);
   const ids = new Set();
