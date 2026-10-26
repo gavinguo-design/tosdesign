@@ -835,14 +835,17 @@ function scheduleLive(){
       showMultiDragScene(ltc,ltr);
     }else{
       const tc=drag.tc, tr=drag.tr;
+      // 单选：其他元素基于拖动位置【实时位移】（与松手落位同一算法 → 所见即所得）
+      const land=previewSingle(tc,tr);
+      drag.liveOk=land.ok;
       placeholder.style.display='block';
-      placeholder.style.left=cellX(tc)+'px';
-      placeholder.style.top=cellY(tr)+'px';
+      placeholder.style.left=cellX(land.c)+'px';
+      placeholder.style.top=cellY(land.r)+'px';
       placeholder.style.width=(drag.el.w*CELL+(drag.el.w-1)*GX)+'px';
       placeholder.style.height=(drag.el.h*CELL+(drag.el.h-1)*GY)+'px';
-      // Xmind 究极版：单选拖动不实时补位——其他元素保持原位，仅预览落点有效性
-      const ok=canDropSingle(tc,tr);
-      placeholder.classList.toggle('invalid', !ok);
+      // 跨页一定成功，故跨页时不标红
+      const valid = drag.fromPage===currentPage ? land.ok : true;
+      placeholder.classList.toggle('invalid', !valid);
       showLiveScene(tc,tr);
     }
   });
@@ -1385,7 +1388,7 @@ function crossPagePlace(pageIdx, dragged, tc, tr){
   return {ok:true, overflow:overflow.length};
 }
 
-/* 同页松手有效性预检（非破坏性模拟，用于拖动中 placeholder 红/绿反馈） */
+/* 同页松手有效性预检（非破坏性模拟，仅返回是否可落位，不改动任何位置） */
 function canDropSingle(tc,tr){
   const el=drag.el;
   const sim=els.map(e=>({...e}));
@@ -1394,6 +1397,42 @@ function canDropSingle(tc,tr){
   if(!res.ok) return false;
   if(!res.swapped) placeOrReflow(sim,de,tc,tr);
   return !sim.some(x=>x.c<0) && !hasOverlap(sim);
+}
+
+/* ============================================================
+   单选拖动【实时位置反馈】
+   目标格一变就重算整页布局，其他元素立刻移动到新位置（只动 DOM，不改数据模型），
+   松手时用同一套算法（attemptMove + placeOrReflow）落到数据 → 预览与结果完全一致。
+   返回 {ok, c, r}：c/r 为被拖元素"磁吸后"的落点
+   （1×1 拖到空白但序列前面仍有空隙时，会被吸附到序列末位紧凑位置）。
+   ============================================================ */
+function previewSingle(tc,tr){
+  const el=drag.el;
+  const sim=els.map(e=>({...e}));
+  const de=sim.find(x=>x.id===el.id);
+  if(!de) return {ok:false, c:tc, r:tr};
+  de.c=tc; de.r=tr;
+  const origin = (drag.fromPage===currentPage) ? {c:el.oldC,r:el.oldR} : {c:de.c,r:de.r};
+  const res=attemptMove(sim,de,tc,tr,origin);
+  if(res.ok && !res.swapped) placeOrReflow(sim,de,tc,tr);
+  const ok = res.ok && !sim.some(x=>x.c<0) && !hasOverlap(sim);
+
+  // 其他元素实时位移（被拖元素跟手，不在此处理）
+  for(const e of els){
+    if(e.id===el.id) continue;
+    const n=nodeMap.get(e.id); if(!n) continue;
+    const s=sim.find(x=>x.id===e.id);
+    const c=(ok&&s&&s.c>=0)?s.c:e.c;
+    const r=(ok&&s&&s.r>=0)?s.r:e.r;
+    if(c<0||r<0) continue;
+    const L=cellX(c)+'px', T=cellY(r)+'px';
+    if(n.style.left!==L) n.style.left=L;
+    if(n.style.top!==T) n.style.top=T;
+  }
+
+  const landC = (res.ok && de.c>=0) ? de.c : tc;
+  const landR = (res.ok && de.r>=0) ? de.r : tr;
+  return {ok, c:landC, r:landR};
 }
 
 /* ============================================================
@@ -1462,21 +1501,21 @@ function showLiveScene(tc,tr){
   for(const [c,r] of target){ const id=occ[`${c},${r}`]; if(id) ids.add(id); }
   if(ids.size===0){
     sceneEl.innerHTML = el.type==='1x1'
-      ? `向<b>空白处</b>移动 · 1×1 元素 · 松手后<b>吸附到最近紧凑位置</b>（前面无空隙）`
-      : `向<b>空白处</b>移动 · 非 1×1 元素 · 松手后<b>直接放置</b>，1×1 顺序补齐空位`;
+      ? `向<b>空白处</b>移动 · 1×1 · 其他 1×1 <b>实时重排</b>，落点吸附到紧凑序列（前面无空隙）`
+      : `向<b>空白处</b>移动 · 非 1×1 · 1×1 <b>实时补齐</b>空位，大件直接落位`;
   }else{
     const occEls = [...ids].map(id=>els.find(e=>e.id===id));
     const same = occEls.length===1 && occEls[0].w===el.w && occEls[0].h===el.h;
     if(same){
       sceneEl.innerHTML = el.type==='1x1'
-        ? `<b>同尺寸 1×1</b> · 相邻（上下左右）直接互换；不相邻则插入补位排序`
-        : `<b>同尺寸 非 1×1 互换</b> · 寻找不与目标重叠的空位，否则直接交换`;
+        ? `<b>同尺寸 1×1</b> · 相邻（上下左右）<b>实时互换</b>；不相邻则插入补位排序`
+        : `<b>同尺寸 非 1×1 互换</b> · 有空隙则<b>实时平移让位</b>，否则直接交换`;
     }else{
       const dArea = el.w*el.h, maxArea = Math.max(...occEls.map(e=>e.w*e.h));
       if(dArea>maxArea){
-        sceneEl.innerHTML = `<b>大 → 小</b> · 大元素落位，被挤压的元素（<b>含 1×1 与非 1×1</b>）挪到空位；1×1 重新排序`;
+        sceneEl.innerHTML = `<b>大 → 小</b> · 大元素落位，被挤元素（<b>含 1×1 与非 1×1</b>）<b>实时挪到空位</b>；1×1 重新排序`;
       }else if(dArea<maxArea){
-        sceneEl.innerHTML = `<b>小 → 大</b> · 被挤压对象仅当水平/垂直有空位才可让位，否则禁止移动`;
+        sceneEl.innerHTML = `<b>小 → 大</b> · 大件水平/垂直有空隙才让位，否则<b>禁止移动</b>`;
       }else{
         sceneEl.innerHTML = `大小相等，判定为<b>同尺寸互换</b>`;
       }
