@@ -79,7 +79,8 @@
     position:absolute; cursor:grab; touch-action:none; user-select:none;
     color:#fff; z-index:10;
     transition: left .22s cubic-bezier(.22,.9,.36,1), top .22s cubic-bezier(.22,.9,.36,1),
-                transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease, opacity .15s;
+                transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease, opacity .15s,
+                filter .22s ease;
     text-shadow:0 1px 2px rgba(0,0,0,.25);
     will-change:left,top,transform;
   }
@@ -145,15 +146,88 @@
     position:absolute; border:2px dashed rgba(255,255,255,.9); border-radius:16px;
     background:rgba(255,255,255,.14); display:none; pointer-events:none; z-index:5;
     animation:phPulse 1s ease-in-out infinite;
+    box-shadow:0 0 0 1px rgba(255,255,255,.18), inset 0 0 22px rgba(255,255,255,.14);
+    transition:box-shadow .18s ease, border-color .18s ease, background .18s ease;
+  }
+  /* 格变化时的"到位"脉冲：仅闪 box-shadow，不打断 phPulse */
+  .placeholder.pop{
+    box-shadow:0 0 0 3px rgba(255,255,255,.55), inset 0 0 30px rgba(255,255,255,.34);
   }
   .placeholder.invalid{
     border-color:#ff453a; background:rgba(255,69,58,.18);
-    animation:none; box-shadow:0 0 0 2px rgba(255,69,58,.4);
+    animation:phInvalid .34s cubic-bezier(.36,.07,.19,.97);
+    box-shadow:0 0 0 2px rgba(255,69,58,.4), inset 0 0 22px rgba(255,69,58,.22);
   }
   @keyframes phPulse{
     0%,100%{transform:scale(1); opacity:.8;}
     50%{transform:scale(1.05); opacity:1;}
   }
+  @keyframes phInvalid{
+    0%,100%{transform:translateX(0);}
+    20%{transform:translateX(-3px);}
+    45%{transform:translateX(3px);}
+    70%{transform:translateX(-2px);}
+  }
+
+  /* ---- Drag feedback (视觉层，不影响规则判定) ---- */
+  /* 拖起后其他元素后退聚焦 */
+  .grid.is-dragging .app:not(.dragging):not(.multi-drag):not(.lifted){
+    opacity:.7; filter:saturate(.8) brightness(.94);
+  }
+  /* 拖动中的被挤元素预览高亮 */
+  .app.will-push{
+    outline:2px dashed rgba(255,255,255,.6); outline-offset:3px;
+  }
+  .app.will-push::after{
+    content:''; position:absolute; inset:-6px; border-radius:24px;
+    box-shadow:0 0 20px rgba(255,255,255,.22); pointer-events:none;
+  }
+  /* 无效落点：红色警示光圈直接打在被拖元素上（占位框会被拖动元素盖住） */
+  .app.dragging.over-invalid, .app.multi-drag.over-invalid{
+    box-shadow:0 18px 40px rgba(0,0,0,.5), 0 0 0 2px rgba(255,69,58,.9), 0 0 22px rgba(255,69,58,.45);
+  }
+  /* 拖起瞬间的"拿起"手势反馈 */
+  .app.lifted{ box-shadow:0 22px 48px rgba(0,0,0,.52), 0 0 0 2px rgba(255,255,255,.4); }
+  /* 长按进入多选：环形进度（@property 不支持时退化为呼吸缩放，无副作用） */
+  @property --lp{syntax:'<percentage>'; inherits:false; initial-value:0%;}
+  .app.longpressing{ animation:lpBreath .45s ease-in-out; }
+  .app.longpressing::before{
+    content:''; position:absolute; inset:-7px; border-radius:24px; z-index:-1;
+    background:conic-gradient(rgba(255,255,255,.95) var(--lp), rgba(255,255,255,.14) var(--lp));
+    -webkit-mask:radial-gradient(circle at 50% 50%, transparent 0 60%, #000 62%);
+    mask:radial-gradient(circle at 50% 50%, transparent 0 60%, #000 62%);
+    animation:lpRing .45s linear forwards;
+  }
+  @keyframes lpRing{ from{--lp:0%;} to{--lp:100%;} }
+  @keyframes lpBreath{ 0%{transform:scale(1);} 100%{transform:scale(1.08);} }
+  /* 落位扩散光环 */
+  .ripple{
+    position:absolute; border-radius:18px; pointer-events:none; z-index:9;
+    border:2px solid rgba(255,255,255,.92);
+    box-shadow:0 0 26px rgba(255,255,255,.45), inset 0 0 20px rgba(255,255,255,.3);
+    animation:rippleOut .5s cubic-bezier(.22,.9,.36,1) forwards;
+  }
+  .ripple.ripple-bad{
+    border-color:rgba(255,69,58,.95);
+    box-shadow:0 0 26px rgba(255,69,58,.45), inset 0 0 20px rgba(255,69,58,.28);
+  }
+  @keyframes rippleOut{ from{transform:scale(.94); opacity:.95;} to{transform:scale(1.26); opacity:0;} }
+  /* 落位失败抖动 */
+  .app.shake{ animation:shakeX .42s cubic-bezier(.36,.07,.19,.97); }
+  @keyframes shakeX{
+    10%,90%{transform:translateX(-2px);}
+    20%,80%{transform:translateX(4px);}
+    30%,50%,70%{transform:translateX(-6px);}
+    40%,60%{transform:translateX(6px);}
+  }
+  /* 跨页边缘停留进度光带 */
+  .edge-progress{
+    position:absolute; top:0; bottom:0; width:0; opacity:0; z-index:21; pointer-events:none;
+  }
+  .edge-progress.left{ left:0; background:linear-gradient(90deg, rgba(255,255,255,.55), rgba(255,255,255,0)); }
+  .edge-progress.right{ right:0; background:linear-gradient(270deg, rgba(255,255,255,.55), rgba(255,255,255,0)); }
+  .edge-progress.run{ animation:edgeFill .42s linear forwards; }
+  @keyframes edgeFill{ from{width:0; opacity:.45;} to{width:66px; opacity:1;} }
 
   .dock{
     position:absolute; top:548px; left:20px; width:280px; height:76px;
@@ -223,7 +297,7 @@
 
   /* ---- Multi-select helper ---- */
   .multi-hint{
-    position:absolute; bottom:8px; left:8px; right:8px; padding:6px 8px;
+    position:absolute; bottom:118px; left:14px; right:14px; padding:6px 8px;
     background:rgba(255,255,255,.22); border-radius:10px; backdrop-filter:blur(8px);
     color:#fff; font-size:11px; text-align:center; z-index:25;
     display:none; pointer-events:none;
@@ -255,6 +329,7 @@
             <span data-page-node-id="B9GL4KGkmI2X8s0FfKKON1">9:41</span>
             <span class="right" data-page-node-id="zh2nPoG5uQJ1wLoJF9FLgv">📶 &nbsp;🔋</span>
           </div>
+          <div class="edge-progress" id="edgeProg" data-page-node-id="EPprog01xpage"></div>
           <div class="grid" id="grid" data-page-node-id="btulrTPKwzmhfr8hOkieCN">
             <div class="cell-bg" data-page-node-id="x5UwOTfrumKvoOGLLXDzeG"></div>
             <div class="placeholder" id="placeholder" data-page-node-id="38dM3vQ1uIPlBoHukgFLb2"></div>
@@ -317,6 +392,65 @@ let multiMode=false;
 let multiSelection=[]; // 有序数组（选择顺序），首位为 leader
 const multiBtn=document.getElementById('multiBtn');
 const multiHint=document.getElementById('multiHint');
+const edgeProg=document.getElementById('edgeProg');
+
+/* ============================================================
+   拖动实时反馈层（纯视觉，不参与任何规则判定）
+   ============================================================ */
+function haptic(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(_){} }
+/* 拖起/结束：其他元素后退聚焦 */
+function setDragFocus(on){
+  grid.classList.toggle('is-dragging', on);
+  if(!on){
+    for(const n of nodeMap.values()) n.classList.remove('will-push','lifted','longpressing','shake','over-invalid');
+  }
+}
+/* 目标格变化：占位框"到位"脉冲 + 轻触感 */
+let _popT=null;
+function popPlaceholder(){
+  if(!placeholder) return;
+  placeholder.classList.add('pop');
+  clearTimeout(_popT);
+  _popT=setTimeout(()=>placeholder.classList.remove('pop'),140);
+  haptic(4);
+}
+/* 被挤元素预览高亮（拖向已占位置时，事先标出谁会被挤） */
+let _pushIds=[];
+function highlightPush(ids){
+  const next=new Set(ids||[]);
+  for(const [id,n] of nodeMap){
+    if(next.has(id)) n.classList.add('will-push');
+    else if(n.classList.contains('will-push')) n.classList.remove('will-push');
+  }
+  _pushIds=[...next];
+}
+/* 落位扩散光环 */
+function rippleAt(c,r,w,h,ok){
+  if(!(c>=0&&r>=0)) return;
+  const d=document.createElement('div');
+  d.className='ripple'+(ok?'':' ripple-bad');
+  d.style.left=cellX(c)+'px'; d.style.top=cellY(r)+'px';
+  d.style.width=(w*CELL+(w-1)*GX)+'px';
+  d.style.height=(h*CELL+(h-1)*GY)+'px';
+  grid.appendChild(d);
+  setTimeout(()=>d.remove(),540);
+}
+function shakeNode(n){
+  if(!n) return;
+  n.classList.remove('shake'); void n.offsetWidth; n.classList.add('shake');
+  setTimeout(()=>n.classList.remove('shake'),440);
+}
+/* 跨页边缘停留进度光带 */
+function edgeProgress(on, side){
+  if(!edgeProg) return;
+  if(on){
+    edgeProg.className='edge-progress '+(side==='left'?'left':'right');
+    void edgeProg.offsetWidth;
+    edgeProg.classList.add('run');
+  }else{
+    edgeProg.className='edge-progress';
+  }
+}
 
 const rnd=a=>a[Math.floor(Math.random()*a.length)];
 function mk(type,c,r,order){
@@ -494,6 +628,9 @@ function render(){
     let cls='app '+(e.type==='1x1'?'icon':'widget');
     if(e.type==='4x2') cls+=' w4x2';
     if(e.id===selectedId) cls+=' selected';
+    /* render 会重置 className：拖动中的视觉状态必须重新挂上（翻页后 render 尤其重要） */
+    if(isDrag) cls += drag.moved ? ' dragging' : ' lifted';
+    else if(drag && drag.multi && drag.multiIds && drag.multiIds.has(e.id)) cls += ' multi-drag';
     if(multiSelection.includes(e.id)){
       cls+=' multi';
       const idx=multiSelection.indexOf(e.id);
@@ -637,6 +774,9 @@ function onDown(ev,node){
   // 单元素拖拽 + 长按进入多选
   el.oldC=el.c; el.oldR=el.r;
   node.style.transition='none';
+  node.classList.add('lifted','longpressing'); // 拿起反馈 + 长按进度环
+  setDragFocus(true);
+  haptic(8);
   const gr=grid.getBoundingClientRect();
   drag={el,node,moved:false,multi:false,
         sx:ev.clientX, sy:ev.clientY, fromPage:currentPage,
@@ -648,6 +788,7 @@ function onDown(ev,node){
         _raf:null, lastClientX:ev.clientX, lastClientY:ev.clientY, edgeBlocked:false,
         longPressTimer:setTimeout(()=>{
           // 长按进入多选并选中该元素，取消本次拖拽
+          node.classList.remove('longpressing');
           enterMulti(el);
           cancelDrag();
         },LONG_PRESS)};
@@ -674,13 +815,20 @@ function startMultiDrag(ev,anchor,node){
         tc:anchor.c, tr:anchor.r, edgeTimer:null, liveOk:true, swapped:false,
         _raf:null, lastClientX:ev.clientX, lastClientY:ev.clientY, edgeBlocked:false,
         relX:{}, relY:{}, leaderTC:leader.c, leaderTR:leader.r, liveDirty:false};
-  // 记录集合元素相对锚点的像素偏移；关闭集合元素过渡以跟手
+  // 记录集合元素相对锚点的像素偏移；锚点跟手，其余留极短延迟形成轻微拖尾
   for(const e of list){
     drag.relX[e.id]=cellX(e.c)-cellX(anchor.c);
     drag.relY[e.id]=cellY(e.r)-cellY(anchor.r);
     const n=nodeMap.get(e.id);
-    if(n){ n.style.transition='none'; n.classList.add('multi-drag'); }
+    if(n){
+      n.style.transition = (e===anchor)
+        ? 'none'
+        : 'left 60ms linear, top 60ms linear, transform .12s ease, box-shadow .12s ease';
+      n.classList.add('multi-drag');
+    }
   }
+  setDragFocus(true);
+  haptic(8);
   try{node.setPointerCapture(ev.pointerId);}catch(_){}
   node.addEventListener('pointermove',onMove);
   node.addEventListener('pointerup',onUp);
@@ -704,6 +852,8 @@ function cancelDrag(){
   if(drag.multi) for(const e of drag.multiEls){
     const n=nodeMap.get(e.id); if(n) n.classList.remove('multi-drag');
   }
+  edgeProgress(false);
+  setDragFocus(false);
   drag=null;
   render();
 }
@@ -778,6 +928,7 @@ function onMove(ev){
   if(!drag) return;
   if(drag.longPressTimer && Math.hypot(ev.clientX-drag.sx,ev.clientY-drag.sy)>5){
     clearTimeout(drag.longPressTimer); drag.longPressTimer=null;
+    drag.node.classList.remove('longpressing'); // 已开始拖动 → 取消长按进度
   }
   drag.lastClientX=ev.clientX; drag.lastClientY=ev.clientY;
   const gr=grid.getBoundingClientRect();
@@ -789,13 +940,16 @@ function onMove(ev){
     const y=ev.clientY-gr.top-drag.grabDY;
     drag.node.style.left=x+'px';
     drag.node.style.top=y+'px';
-    // 多选：集合其他元素相对锚点整体平移
+    // 多选：集合其他元素相对锚点整体平移（夹在网格范围内，散开的元素贴边可见而非拖出屏外）
     if(drag.multi){
+      const gw=COLS*(CELL+GX)-GX, gh=ROWS*(CELL+GY)-GY;
       for(const e of drag.multiEls){
         if(e===drag.el) continue;
         const n=nodeMap.get(e.id); if(!n) continue;
-        n.style.left=(x+drag.relX[e.id])+'px';
-        n.style.top=(y+drag.relY[e.id])+'px';
+        const nx=clamp(x+drag.relX[e.id], -6, gw-(e.w*CELL+(e.w-1)*GX)+6);
+        const ny=clamp(y+drag.relY[e.id], -6, gh-(e.h*CELL+(e.h-1)*GY)+6);
+        n.style.left=nx+'px';
+        n.style.top=ny+'px';
       }
     }
     // 锚点目标格（滞回）
@@ -804,6 +958,7 @@ function onMove(ev){
     if(tc!==drag.tc || tr!==drag.tr){
       drag.tc=tc; drag.tr=tr;
       scheduleLive();
+      popPlaceholder(); // 目标格变化的"到位"反馈
     }
     checkEdge();
   }
@@ -832,6 +987,8 @@ function scheduleLive(){
       const ok=liveLayoutFor(drag.leader,ltc,ltr,[...drag.multiIds]);
       if(drag.edgeBlocked) placeholder.classList.add('invalid');
       else placeholder.classList.toggle('invalid', !ok);
+      drag.node.classList.toggle('over-invalid', !ok || drag.edgeBlocked);
+      highlightPush([]); // 多选实时补位已把位置算好，无需预览高亮
       showMultiDragScene(ltc,ltr);
     }else{
       const tc=drag.tc, tr=drag.tr;
@@ -843,6 +1000,7 @@ function scheduleLive(){
       // Xmind 究极版：单选拖动不实时补位——其他元素保持原位，仅预览落点有效性
       const ok=canDropSingle(tc,tr);
       placeholder.classList.toggle('invalid', !ok);
+      drag.node.classList.toggle('over-invalid', !ok); // 红色警示光圈打在被拖元素上
       showLiveScene(tc,tr);
     }
   });
@@ -863,10 +1021,22 @@ function checkEdge(){
   if(tp>=0){
     screenEl.classList.toggle('edge-left', atLeft);
     screenEl.classList.toggle('edge-right', atRight);
-    if(!drag.edgeTimer) drag.edgeTimer=setTimeout(()=>doEdgePage(tp),EDGE_DELAY);
+    const side = atLeft ? 'left' : 'right';
+    if(!drag.edgeTimer){
+      drag.edgeTimer=setTimeout(()=>doEdgePage(tp),EDGE_DELAY);
+      drag.edgeSide=side;
+      edgeProgress(true, side); // 停留进度光带（420ms 填满即翻页）
+    }else if(drag.edgeSide!==side){
+      // 左右边缘切换 → 重新计时并重播进度
+      clearTimeout(drag.edgeTimer);
+      drag.edgeTimer=setTimeout(()=>doEdgePage(tp),EDGE_DELAY);
+      drag.edgeSide=side;
+      edgeProgress(true, side);
+    }
   }else{
     screenEl.classList.remove('edge-left','edge-right');
     if(drag.edgeTimer){ clearTimeout(drag.edgeTimer); drag.edgeTimer=null; }
+    if(drag.edgeSide){ drag.edgeSide=null; edgeProgress(false); }
   }
 }
 function onUp(ev){
@@ -894,12 +1064,16 @@ function onUp(ev){
       if(drag.liveOk && multiPlace()){
         log(`多选移动成功：${drag.multiEls.length} 个图标（leader ${drag.leader.type}）`);
         if(drag.returnedCount>0) log(`${drag.returnedCount} 个图标因空隙不足放回原页`,'warn');
+        const ld=drag.multiEls[0];
+        rippleAt(ld.c,ld.r,ld.w,ld.h,true); haptic(14);
         node.classList.add('dropped');
         setTimeout(()=>node.classList.remove('dropped'),300);
       }else{
         restoreAll();
         toast('空间不足，已还原');
         log('多选操作失败：目标空间不足，整体还原','err');
+        rippleAt(drag.leaderTC,drag.leaderTR,drag.leader.w,drag.leader.h,false);
+        haptic([14,40,14]);
       }
     }else if(drag.fromPage===currentPage){
       // 同页：按移动规则一次性判定落位（单选拖动中不实时补位）
@@ -909,8 +1083,11 @@ function onUp(ev){
         restoreAll();
         toast('空间不足，已还原');
         log(`操作失败：${res.ok?'目标空间不足':'无法移动（'+(res.msg||'规则不允许')+'）'}，整体还原`,'err');
+        rippleAt(drag.tc,drag.tr,el.w,el.h,false);
+        shakeNode(node); haptic([14,40,14]);
       }else{
         log(`移动成功：${el.type} → (${el.c},${el.r})`);
+        rippleAt(el.c,el.r,el.w,el.h,true); haptic(12);
         node.classList.add('dropped');
         setTimeout(()=>node.classList.remove('dropped'),300);
       }
@@ -925,6 +1102,7 @@ function onUp(ev){
       }
       node.classList.add('dropped');
       setTimeout(()=>node.classList.remove('dropped'),300);
+      rippleAt(el.c,el.r,el.w,el.h,true); haptic(12);
     }
   }else{
     if(!drag.multi) selectedId=(selectedId===el.id)?null:el.id; // 多选单击已选元素不切换选中态
@@ -935,6 +1113,8 @@ function onUp(ev){
   }
   drag=null;
   node.classList.remove('dragging');
+  setDragFocus(false);   // 退出聚焦：其他元素恢复亮度
+  edgeProgress(false);
   render();
 }
 function restoreAll(){
@@ -1461,10 +1641,12 @@ function showLiveScene(tc,tr){
   const ids = new Set();
   for(const [c,r] of target){ const id=occ[`${c},${r}`]; if(id) ids.add(id); }
   if(ids.size===0){
+    highlightPush([]);
     sceneEl.innerHTML = el.type==='1x1'
       ? `向<b>空白处</b>移动 · 1×1 元素 · 松手后<b>吸附到最近紧凑位置</b>（前面无空隙）`
       : `向<b>空白处</b>移动 · 非 1×1 元素 · 松手后<b>直接放置</b>，1×1 顺序补齐空位`;
   }else{
+    highlightPush([...ids]); // 预览：这些元素将被挤压/让位
     const occEls = [...ids].map(id=>els.find(e=>e.id===id));
     const same = occEls.length===1 && occEls[0].w===el.w && occEls[0].h===el.h;
     if(same){
