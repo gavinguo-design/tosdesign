@@ -504,6 +504,10 @@ function render(){
     }else{
       const mn=node.querySelector('.mnum'); if(mn) mn.remove();
     }
+    // 保留瞬态类（落位弹跳 / 拖动中）——render() 在 onUp/翻页时也会调用，不能把它们清掉
+    if(node.classList.contains('dropped')) cls+=' dropped';
+    if(node.classList.contains('dragging')) cls+=' dragging';
+    if(node.classList.contains('multi-drag')) cls+=' multi-drag';
     node.className=cls;
     if(!isDrag && e.c>=0){
       node.style.left=cellX(e.c)+'px';
